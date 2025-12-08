@@ -10,3 +10,6 @@
 [submodule "service-ticket"]
 	path = service-ticket
 	url = git@github.com:CLD4-T2-IAMConan/service-ticket.git
+[submodule "service-cs"]
+	path = service-cs
+	url = git@github.com:CLD4-T2-IAMConan/service-cs.git
