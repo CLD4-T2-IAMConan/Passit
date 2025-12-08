@@ -7,3 +7,6 @@
 [submodule "service-trade"]
 	path = service-trade
 	url = git@github.com:CLD4-T2-IAMConan/service-trade.git
+[submodule "service-ticket"]
+	path = service-ticket
+	url = git@github.com:CLD4-T2-IAMConan/service-ticket.git
