@@ -4,3 +4,6 @@
 [submodule "service-chat"]
 	path = service-chat
 	url = git@github.com:CLD4-T2-IAMConan/service-chat.git
+[submodule "service-trade"]
+	path = service-trade
+	url = git@github.com:CLD4-T2-IAMConan/service-trade.git
