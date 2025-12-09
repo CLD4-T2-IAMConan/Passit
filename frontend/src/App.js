@@ -17,6 +17,17 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
+// 관리자 페이지
+const AdminDashboardPage = lazy(() =>
+  import("./pages/admin/AdminDashboardPage")
+);
+const AdminUserManagementPage = lazy(() =>
+  import("./pages/admin/AdminUserManagementPage")
+);
+
+// Private Route
+const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
+
 // 커스텀 테마 생성
 const theme = createTheme({
   typography: {
@@ -162,6 +173,21 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                {/* 관리자 페이지 */}
+                <Route
+                  path="/admin"
+                  element={<Navigate to="/admin/users" replace />}
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminUserManagementPage />
+                    </PrivateRoute>
+                  }
+                />
+
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>

@@ -47,20 +47,29 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await userService.login({ email, password });
 
+      // LoginResponse에서 데이터 추출
+      const userData = {
+        userId: response.data.userId,
+        email: response.data.email,
+        name: response.data.name,
+        role: response.data.role,
+      };
+
       // 상태 업데이트
-      setUser(response.user);
-      setToken(response.token);
+      setUser(userData);
+      setToken(response.data.accessToken);
       setIsAuthenticated(true);
 
       // localStorage에 저장
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       if (rememberMe) {
         localStorage.setItem("rememberMe", "true");
       }
 
-      return { success: true, user: response.user };
+      return { success: true, user: userData };
     } catch (error) {
       return {
         success: false,
@@ -126,11 +135,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", newToken);
   };
 
+  /**
+   * 관리자 여부 확인
+   */
+  const isAdmin = user?.role === "ADMIN";
+
   const value = {
     user,
     token,
     isAuthenticated,
     loading,
+    isAdmin,
     login,
     register,
     logout,

@@ -13,7 +13,12 @@ const AuthPage = () => {
 
   const handleLoginSuccess = (user) => {
     console.log("로그인 성공:", user);
-    navigate("/");
+    // role에 따라 리다이렉트
+    if (user.role === "ADMIN") {
+      navigate("/admin/users");
+    } else {
+      navigate("/");
+    }
   };
 
   const handleRegisterSuccess = (user) => {
