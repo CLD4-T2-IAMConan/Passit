@@ -47,33 +47,33 @@
 
 ### 설치
 
-\`\`\`bash
+```bash
 # 의존성 설치
 npm install --legacy-peer-deps
 
 # 환경 변수 설정
 cp .env.example .env
-\`\`\`
+```
 
 ### 개발 서버 실행
 
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 [http://localhost:3000](http://localhost:3000)에서 확인하세요.
 
 ### 빌드
 
-\`\`\`bash
+```bash
 npm run build
-\`\`\`
+```
 
 ---
 
 ## 📁 프로젝트 구조
 
-\`\`\`
+```
 frontend/
 ├── src/
 │   ├── api/                    # API 레이어
@@ -88,9 +88,7 @@ frontend/
 │   ├── hooks/                  # 커스텀 훅 (TypeScript)
 │   └── config/
 └── public/
-\`\`\`
-
-상세 구조는 [IMPROVEMENTS.md](./IMPROVEMENTS.md)를 참조하세요.
+```
 
 ---
 
@@ -105,7 +103,7 @@ frontend/
 
 ### API 클라이언트 사용
 
-\`\`\`javascript
+```javascript
 import { authService } from "../api";
 
 const handleLogin = async () => {
@@ -114,11 +112,11 @@ const handleLogin = async () => {
     password: "password"
   });
 };
-\`\`\`
+```
 
 ### 공통 컴포넌트
 
-\`\`\`jsx
+```jsx
 import { FormField, PasswordField, LoadingSpinner } from "../components/common";
 
 <PasswordField
@@ -127,32 +125,21 @@ import { FormField, PasswordField, LoadingSpinner } from "../components/common";
   onChange={handleChange}
   showStrengthIndicator={true}
 />
-\`\`\`
+```
 
 ### 커스텀 훅
 
-\`\`\`typescript
+```typescript
 import { usePasswordStrength, useTimer } from "../hooks";
 
 const { label, strength } = usePasswordStrength(password);
 const { timer, startTimer } = useTimer();
-\`\`\`
+```
 
 ### 상태 관리
 
-\`\`\`javascript
+```javascript
 import { useAuth } from "../contexts/AuthContext";
 
 const { user, isAuthenticated, login, logout } = useAuth();
-\`\`\`
-
----
-
-## 📚 추가 문서
-
-- [개선 사항](./IMPROVEMENTS.md) - 최근 리팩토링 내역
-- [컨벤션](./CONVENTIONS.md) - 코딩 규칙
-
----
-
-**작성일**: 2025-12-09 | **버전**: 1.0.0
+```
