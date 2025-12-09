@@ -1,0 +1,40 @@
+USE passit_db;
+
+-- 신고(Report) 테이블
+CREATE TABLE report (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT NOT NULL,
+    content     TEXT NOT NULL,
+    status      VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- 고객지원(CS) 테이블
+CREATE TABLE cs (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    message     TEXT NOT NULL,
+    status      VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- 카테고리(Category) 테이블
+CREATE TABLE category (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- 공지(Notice) 테이블
+CREATE TABLE notice (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title       VARCHAR(100) NOT NULL,
+    content     TEXT NOT NULL,
+    created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
