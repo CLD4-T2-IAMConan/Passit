@@ -1,5 +1,7 @@
 -- PAYMENTS 테이블 생성
 -- 거래의 결제 및 환불 정보를 저장합니다.
+USE passit_db;
+
 CREATE TABLE payments (
     -- 기본 키 (Primary Key) 및 AUTO_INCREMENT 속성 추가
     payment_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,

@@ -26,6 +26,6 @@ CREATE TABLE IF NOT EXISTS `chat_rooms`(
     -- FOREIGN KEY (last_message_id) REFERENCES chat_messages(id)
 
     -- 인덱스 추가
-    INDEX `idx_ticket_id` (`ticket_id``),
-    INDEX `idx_buyer_id` (`buyer_id``)
-); ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='채팅방 메인 정보 테이블';
+    INDEX `idx_ticket_id` (`ticket_id`),
+    INDEX `idx_buyer_id` (`buyer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='채팅방 메인 정보 테이블';

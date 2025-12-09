@@ -1,3 +1,4 @@
+-- Switch to passit_db
 USE passit_db;
 
 -- 신고(Report) 테이블
