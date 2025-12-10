@@ -1,15 +1,36 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Paper, Typography, useTheme, useMediaQuery } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Box,
+  Paper,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  Alert,
+} from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LoginForm from "../components/LoginForm";
 import RegisterForm from "../components/RegisterForm";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const message = searchParams.get("message");
+    if (error === "kakao_login_failed") {
+      setErrorMessage(
+        message || "카카오 로그인에 실패했습니다. 다시 시도해주세요."
+      );
+      // URL에서 에러 파라미터 제거
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleLoginSuccess = (user) => {
     console.log("로그인 성공:", user);
@@ -170,22 +191,50 @@ const AuthPage = () => {
               bgcolor: "background.paper",
               order: 2,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               overflow: "hidden",
               height: "100%",
+              position: "relative",
             }}
           >
-            {isLogin ? (
-              <LoginForm
-                onLoginSuccess={handleLoginSuccess}
-                onSwitchToRegister={switchToRegister}
-              />
-            ) : (
-              <RegisterForm
-                onRegisterSuccess={handleRegisterSuccess}
-                onSwitchToLogin={switchToLogin}
-              />
+            {errorMessage && (
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  width: "100%",
+                  position: "absolute",
+                  top: 16,
+                  left: { xs: 3, sm: 4, md: 5, lg: 6 },
+                  right: { xs: 3, sm: 4, md: 5, lg: 6 },
+                  zIndex: 1,
+                }}
+                onClose={() => setErrorMessage(null)}
+              >
+                {errorMessage}
+              </Alert>
             )}
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {isLogin ? (
+                <LoginForm
+                  onLoginSuccess={handleLoginSuccess}
+                  onSwitchToRegister={switchToRegister}
+                />
+              ) : (
+                <RegisterForm
+                  onRegisterSuccess={handleRegisterSuccess}
+                  onSwitchToLogin={switchToLogin}
+                />
+              )}
+            </Box>
           </Box>
         </Paper>
       </Box>

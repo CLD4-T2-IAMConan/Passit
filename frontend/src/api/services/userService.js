@@ -52,6 +52,16 @@ export const userService = {
     const response = await apiClient.post("/users/me/verify-password", { password });
     return response.data;
   },
+
+  /**
+   * 비밀번호 설정 (소셜 로그인 사용자 전용)
+   * @param {Object} data - { newPassword }
+   * @returns {Promise<void>}
+   */
+  setPassword: async (data) => {
+    const response = await apiClient.post("/users/me/set-password", data);
+    return response.data;
+  },
 };
 
 export default userService;

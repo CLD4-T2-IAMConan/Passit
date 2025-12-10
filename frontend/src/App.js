@@ -16,6 +16,7 @@ import "./App.css";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
 
 // 마이페이지
 const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
@@ -176,6 +177,10 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route
+                  path="/auth/kakao/callback"
+                  element={<KakaoCallbackPage />}
+                />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* 마이페이지 */}
@@ -187,7 +192,10 @@ function App() {
                     </PrivateRoute>
                   }
                 >
-                  <Route index element={<Navigate to="/mypage/profile" replace />} />
+                  <Route
+                    index
+                    element={<Navigate to="/mypage/profile" replace />}
+                  />
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
 

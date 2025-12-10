@@ -22,7 +22,14 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const { user: currentUser, updateUser, logout } = useAuth();
 
-  // 비밀번호 확인 상태
+  // 사용자 정보 상태 (서버에서 가져온 전체 정보)
+  const [userInfo, setUserInfo] = useState(null);
+  const [loadingUserInfo, setLoadingUserInfo] = useState(true);
+
+  // 소셜 로그인 사용자 여부 확인 (서버에서 가져온 정보 우선)
+  const isSocialUser = userInfo?.provider != null || currentUser?.provider != null;
+
+  // 비밀번호 확인 상태 (소셜 로그인 사용자는 스킵)
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [verifyPassword, setVerifyPassword] = useState("");
   const [verifyError, setVerifyError] = useState("");
@@ -56,16 +63,35 @@ const ProfilePage = () => {
   // 로딩 상태
   const [loading, setLoading] = useState(false);
 
-  // 초기 데이터 로드
+  // 서버에서 사용자 정보 가져오기
   useEffect(() => {
-    if (currentUser) {
-      setProfileData({
-        name: currentUser.name || "",
-        nickname: currentUser.nickname || "",
-        phone: currentUser.phone || "",
-      });
-    }
-  }, [currentUser]);
+    const fetchUserInfo = async () => {
+      try {
+        setLoadingUserInfo(true);
+        const response = await userService.getMe();
+        const fullUserInfo = response.data;
+        setUserInfo(fullUserInfo);
+        
+        // 소셜 로그인 사용자는 비밀번호 확인 스킵
+        if (fullUserInfo.provider != null) {
+          setPasswordVerified(true);
+        }
+        
+        // 프로필 데이터 설정
+        setProfileData({
+          name: fullUserInfo.name || "",
+          nickname: fullUserInfo.nickname || "",
+          phone: fullUserInfo.phone || "",
+        });
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+      } finally {
+        setLoadingUserInfo(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   // 비밀번호 확인 처리
   const handlePasswordVerify = async () => {
@@ -102,10 +128,11 @@ const ProfilePage = () => {
     setLoading(true);
 
     try {
+      const displayUser = userInfo || currentUser;
       const updates = {};
-      if (profileData.name !== currentUser.name) updates.name = profileData.name;
-      if (profileData.nickname !== currentUser.nickname) updates.nickname = profileData.nickname;
-      if (profileData.phone !== currentUser.phone) updates.phone = profileData.phone;
+      if (profileData.name !== displayUser?.name) updates.name = profileData.name;
+      if (profileData.nickname !== displayUser?.nickname) updates.nickname = profileData.nickname;
+      if (profileData.phone !== displayUser?.phone) updates.phone = profileData.phone;
 
       if (Object.keys(updates).length === 0) {
         setProfileError("변경된 내용이 없습니다");
@@ -131,10 +158,11 @@ const ProfilePage = () => {
   };
 
   const handleCancelEdit = () => {
+    const displayUser = userInfo || currentUser;
     setProfileData({
-      name: currentUser.name || "",
-      nickname: currentUser.nickname || "",
-      phone: currentUser.phone || "",
+      name: displayUser?.name || "",
+      nickname: displayUser?.nickname || "",
+      phone: displayUser?.phone || "",
     });
     setEditMode(false);
     setProfileError("");
@@ -150,9 +178,17 @@ const ProfilePage = () => {
     setPasswordError("");
     setPasswordSuccess("");
 
-    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      setPasswordError("모든 필드를 입력해주세요");
-      return;
+    // 소셜 로그인 사용자는 기존 비밀번호 확인 불필요
+    if (isSocialUser) {
+      if (!passwordData.newPassword || !passwordData.confirmPassword) {
+        setPasswordError("모든 필드를 입력해주세요");
+        return;
+      }
+    } else {
+      if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+        setPasswordError("모든 필드를 입력해주세요");
+        return;
+      }
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -168,12 +204,24 @@ const ProfilePage = () => {
     setLoading(true);
 
     try {
-      await userService.changePassword({
-        oldPassword: passwordData.oldPassword,
-        newPassword: passwordData.newPassword,
-      });
+      if (isSocialUser) {
+        // 소셜 로그인 사용자: 비밀번호 설정 API 사용
+        await userService.setPassword({
+          newPassword: passwordData.newPassword,
+        });
+      } else {
+        // 일반 사용자: 비밀번호 변경 API 사용
+        await userService.changePassword({
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword,
+        });
+      }
 
-      setPasswordSuccess("비밀번호가 성공적으로 변경되었습니다");
+      setPasswordSuccess(
+        isSocialUser
+          ? "비밀번호가 성공적으로 설정되었습니다"
+          : "비밀번호가 성공적으로 변경되었습니다"
+      );
       setPasswordData({
         oldPassword: "",
         newPassword: "",
@@ -213,6 +261,22 @@ const ProfilePage = () => {
     }
   };
 
+  // 사용자 정보 로딩 중
+  if (loadingUserInfo) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <Typography>로딩 중...</Typography>
+      </Box>
+    );
+  }
+
   // 비밀번호 미확인 시 확인 다이얼로그 표시
   if (!passwordVerified) {
     return (
@@ -232,7 +296,9 @@ const ProfilePage = () => {
               본인 확인
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              회원정보 수정을 위해 비밀번호를 입력해주세요
+              {isSocialUser
+                ? "소셜 로그인 사용자는 비밀번호 확인이 필요하지 않습니다"
+                : "회원정보 수정을 위해 비밀번호를 입력해주세요"}
             </Typography>
           </Box>
 
@@ -298,7 +364,7 @@ const ProfilePage = () => {
           <TextField
             fullWidth
             label="이메일"
-            value={currentUser?.email || ""}
+            value={(userInfo || currentUser)?.email || ""}
             disabled
             helperText="이메일은 변경할 수 없습니다"
           />
@@ -374,7 +440,9 @@ const ProfilePage = () => {
         </Box>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요
+          {isSocialUser
+            ? "비밀번호를 설정하면 이메일과 비밀번호로도 로그인할 수 있습니다"
+            : "정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요"}
         </Typography>
 
         <Button
@@ -421,7 +489,9 @@ const ProfilePage = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>비밀번호 변경</DialogTitle>
+        <DialogTitle>
+          {isSocialUser ? "비밀번호 설정" : "비밀번호 변경"}
+        </DialogTitle>
         <DialogContent>
           {passwordError && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -435,15 +505,23 @@ const ProfilePage = () => {
             </Alert>
           )}
 
-          <TextField
-            fullWidth
-            type="password"
-            label="현재 비밀번호"
-            name="oldPassword"
-            value={passwordData.oldPassword}
-            onChange={handlePasswordChange}
-            sx={{ mt: 2, mb: 2 }}
-          />
+          {!isSocialUser && (
+            <TextField
+              fullWidth
+              type="password"
+              label="현재 비밀번호"
+              name="oldPassword"
+              value={passwordData.oldPassword}
+              onChange={handlePasswordChange}
+              sx={{ mt: 2, mb: 2 }}
+            />
+          )}
+
+          {isSocialUser && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 2 }}>
+              비밀번호를 설정하면 이메일과 비밀번호로도 로그인할 수 있습니다.
+            </Typography>
+          )}
 
           <TextField
             fullWidth
