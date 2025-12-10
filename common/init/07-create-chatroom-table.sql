@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS `chat_rooms`(
     -- FK
     `ticket_id` BIGINT NOT NULL COMMENT '티켓 ID (FK)',
     `buyer_id` BIGINT NOT NULL COMMENT '구매자 ID (FK)',
-    `last_message_id` BIGINT NOT NULL COMMENT '마지막 메시지 ID (FK)',
+    `seller_id` BIGINT NOT NULL COMMENT '판매자 ID (FK)',
+    `last_message_id` BIGINT NULL COMMENT '마지막 메시지 ID (FK)',
 
     -- 시간 정보
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '채팅방 생성일',

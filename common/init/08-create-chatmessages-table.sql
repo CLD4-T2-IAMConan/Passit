@@ -10,7 +10,7 @@ CREATE TABLE chat_messages (
     `sender_id` BIGINT NOT NULL COMMENT '메시지 발신자 ID (FK: users.id)',
 
     -- 메시지 내용 및 타입
-    `type` ENUM('TEXT', 'SYSTEM') NOT NULL COMMENT '메시지 타입 (TEXT, SYSTEM)',
+    `type` ENUM('TEXT', 'SYSTEM_ACTION_MESSAGE', 'SYSTEM_INFO_MESSAGE') NOT NULL COMMENT '메시지 타입 (TEXT, SYSTEM_ACTION_MESSAGE, SYSTEM_INFO_MESSAGE)',
     `content` TEXT NOT NULL COMMENT '메시지 내용 (TEXT 타입으로 길게 저장)',
 
     -- 시간 및 시스템 정보
