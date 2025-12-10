@@ -29,4 +29,5 @@ CREATE TABLE IF NOT EXISTS `notifications` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_type` (`type`),
     INDEX `idx_is_read` (`is_read`)
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 알림 테이블';
