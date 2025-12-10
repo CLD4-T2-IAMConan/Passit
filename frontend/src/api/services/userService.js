@@ -42,6 +42,16 @@ export const userService = {
     const response = await apiClient.post(ENDPOINTS.USERS.CHANGE_PASSWORD, data);
     return response.data;
   },
+
+  /**
+   * 비밀번호 확인
+   * @param {string} password - 확인할 비밀번호
+   * @returns {Promise<void>}
+   */
+  verifyPassword: async (password) => {
+    const response = await apiClient.post("/users/me/verify-password", { password });
+    return response.data;
+  },
 };
 
 export default userService;

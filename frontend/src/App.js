@@ -17,6 +17,10 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
+// 마이페이지
+const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
+const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
+
 // 관리자 페이지
 const AdminDashboardPage = lazy(() =>
   import("./pages/admin/AdminDashboardPage")
@@ -173,6 +177,19 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                {/* 마이페이지 */}
+                <Route
+                  path="/mypage"
+                  element={
+                    <PrivateRoute>
+                      <MyPageLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/mypage/profile" replace />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                </Route>
 
                 {/* 관리자 페이지 */}
                 <Route
