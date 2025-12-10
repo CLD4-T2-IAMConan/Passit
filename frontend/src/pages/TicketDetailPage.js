@@ -6,6 +6,8 @@ import Typography from '@mui/material/Typography'; // 텍스트 제목 출력을
 import axios from 'axios';
 // import TicketInfo from '../components/Ticket/TicketInfo'; // 추후 분리할 컴포넌트
 import DealRequestModal from '../components/Ticket/DealRequestModal';
+import LoadingModal from '../components/Ticket/LoadingModal';
+import RequestSuccessModal from '../components/Ticket/RequestSuccessModal';
 
 // 백엔드 서버의 기본 URL (Java Spring Boot, 8083 포트 가정)
 const API_BASE_URL = 'http://localhost:8083';
@@ -21,6 +23,11 @@ const TicketDetailPage = () => {
 
   // 🌟 모달 열림/닫힘 상태 관리용 state 추가
   const [isDealRequestModalOpen, setIsDealRequestModalOpen] = useState(false);
+
+  // 🌟🌟🌟 누락된 상태 변수 3가지 추가 (이 부분이 오류의 원인입니다!) 🌟🌟🌟
+  const [isSubmitting, setIsSubmitting] = useState(false); // 로딩 모달 제어
+  const [submitError, setSubmitError] = useState(null);   // API 에러 메시지 저장
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 모달 제어
 
   // 2. 데이터 로딩 로직
   useEffect(() => {
@@ -93,12 +100,47 @@ const TicketDetailPage = () => {
       setIsDealRequestModalOpen(false);
     };
 
-    // 🌟 (선택) 최종 구매 확정 핸들러 추가
-    const handleConfirmPurchase = (ticketId, quantity) => {
-        console.log(`최종 구매 요청: ID ${ticketId}, 수량 ${quantity}`);
-        // TODO: 실제 결제 페이지로 이동하거나 결제 API 호출
-        navigate(`/deal/purchase/${ticketId}?quantity=${quantity}`);
-    }
+    // 🕵️‍♀️ API 호출을 위한 핵심 핸들러 수정
+    const handleConfirmPurchase = async (ticketId, quantity) => {
+
+        // 1. 📅 만료 시간 계산 (현재 시간 + 1일)
+        const expireAtDate = new Date();
+        expireAtDate.setDate(expireAtDate.getDate() + 1); // 현재 날짜에 1일 추가
+
+        // 💡 백엔드가 기대하는 ISO 8601 형식의 문자열로 변환
+        const expireAtISOString = expireAtDate.toISOString();
+
+        // 4단계: 로딩 시작
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            console.log(`📡 API 요청: ID=${ticketId}, 수량=${quantity}, 만료=${expireAtISOString}`);
+
+            // 2. 📡 백엔드 API 호출
+            const response = await axios.post(`${API_BASE_URL}/api/deals/request`, {
+                ticketId: ticketId,          // 백엔드 DTO 필드명과 일치
+                quantity: quantity,
+                expireAt: expireAtISOString, // 계산된 만료 시간 전송
+            });
+
+            if (response.status === 201) {
+                console.log("✅ 양도 요청 성공:", response.data);
+                setIsDealRequestModalOpen(false); // 모달 닫기
+                setIsSuccessModalOpen(true);    // 성공 팝업 열기
+            }
+
+        } catch (error) {
+            console.error('❌ 양도 요청 실패:', error);
+
+            // 백엔드에서 보낸 에러 메시지 추출
+            const errorMessage = error.response?.data || "요청 처리 중 알 수 없는 오류가 발생했습니다.";
+            setSubmitError(errorMessage);
+
+        } finally {
+            setIsSubmitting(false); // 4단계: 로딩 종료
+        }
+    };
 
   if (error) {
     return (
@@ -186,6 +228,11 @@ const TicketDetailPage = () => {
           onClose={handleCloseDealRequestModal}
           ticket={ticket}
           onConfirm={handleConfirmPurchase}
+        />
+        <LoadingModal open={isSubmitting} />
+        <RequestSuccessModal
+           open={isSuccessModalOpen}
+           onClose={() => setIsSuccessModalOpen(false)} // 팝업을 닫는 함수
         />
 
 

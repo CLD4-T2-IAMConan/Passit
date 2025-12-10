@@ -33,11 +33,13 @@ const DealRequestModal = ({ open, onClose, ticket, onConfirm }) => {
 
   // 구매 확정 버튼 클릭 시 호출될 함수
   const handleConfirmClick = () => {
-    // 여기서 최종 구매 로직을 처리하거나 부모에게 수량 정보를 전달합니다.
-    console.log(`구매 확정: 티켓 ID ${ticket.id}, 수량 ${quantity}`);
-    if (onConfirm) {
-        onConfirm(ticket.id, quantity); // 부모에게 전달
+    // 1. 수량 유효성 검사 (예시)
+    if (quantity <= 0) {
+       alert('수량을 1개 이상 입력해주세요.');
+       return;
     }
+    console.log(`구매 확정: 티켓 ID ${ticket.id}, 수량 ${quantity}`);
+    onConfirm(ticket.id, quantity);
     onClose(); // 모달 닫기
   };
 
