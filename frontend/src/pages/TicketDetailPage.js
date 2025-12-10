@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography'; // 텍스트 제목 출력을 위해 추가
 import axios from 'axios';
 // import TicketInfo from '../components/Ticket/TicketInfo'; // 추후 분리할 컴포넌트
+import DealRequestModal from '../components/Ticket/DealRequestModal';
 
 // 백엔드 서버의 기본 URL (Java Spring Boot, 8083 포트 가정)
 const API_BASE_URL = 'http://localhost:8083';
@@ -17,6 +18,9 @@ const TicketDetailPage = () => {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 🌟 모달 열림/닫힘 상태 관리용 state 추가
+  const [isDealRequestModalOpen, setIsDealRequestModalOpen] = useState(false);
 
   // 2. 데이터 로딩 로직
   useEffect(() => {
@@ -41,6 +45,7 @@ const TicketDetailPage = () => {
         // 예: data.image_url을 data.imageUrl로 변환
         setTicket({
           ...data,
+          id: data.ticketId,
           // DB에서 date 필드를 받아왔을 때, 시간 정보를 제거하고 날짜만 남기기
           date: data.date ? data.date.split('T')[0] : '날짜 미정',
           // DB가 image_url을 사용한다면:
@@ -68,22 +73,32 @@ const TicketDetailPage = () => {
     navigate(-1);
   };
 
-  const handlePurchase = () => {
-    // TODO: 구매 페이지 이동 로직
-    if (ticket && ticket.id) {
-      console.log('구매 프로세스 시작:', ticket.id);
-      navigate(`/deal/purchase/${ticket.id}`);
-    }
-  };
+// TicketDetailPage.js (수정할 부분)
+    const handlePurchaseClick = () => {
+        console.log("👉 [Page] 구매 버튼 클릭됨!");
+        // 🕵️‍♀️ 티켓 객체와 ID 값 확인
+        console.log("🕵️‍♀️ Current Ticket Object:", ticket);
+        console.log("🕵️‍♀️ Checking ticket.id:", ticket ? ticket.id : 'N/A');
 
-  // 4. 조건부 렌더링 (로딩 및 에러)
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg text-gray-600">
-        티켓 정보 로딩 중...
-      </div>
-    );
-  }
+        if (ticket && ticket.id) {
+        console.log("👉 [Page] 모달 열기 시도 (State 변경 -> true)");
+          setIsDealRequestModalOpen(true);
+        } else {
+        console.error("❌ [Page] 티켓 데이터가 없거나 ID 필드가 유효하지 않습니다.", ticket);
+        }
+    };
+
+    // 🌟 모달 닫기 핸들러 추가
+    const handleCloseDealRequestModal = () => {
+      setIsDealRequestModalOpen(false);
+    };
+
+    // 🌟 (선택) 최종 구매 확정 핸들러 추가
+    const handleConfirmPurchase = (ticketId, quantity) => {
+        console.log(`최종 구매 요청: ID ${ticketId}, 수량 ${quantity}`);
+        // TODO: 실제 결제 페이지로 이동하거나 결제 API 호출
+        navigate(`/deal/purchase/${ticketId}?quantity=${quantity}`);
+    }
 
   if (error) {
     return (
@@ -142,7 +157,7 @@ const TicketDetailPage = () => {
               variant="contained"
               color="primary" // primary 색상 사용
               disabled={ticket.status !== 'AVAILABLE'} // 거래 상태에 따라 비활성화 예시
-              onClick={handlePurchase}
+              onClick={handlePurchaseClick}
             >
               DEAL 상태: {ticket.status === 'AVAILABLE' ? '구매 가능' : '거래 불가'}
             </Button>
@@ -164,7 +179,14 @@ const TicketDetailPage = () => {
           <p>장소: {ticket.eventLocation || '장소 정보 없음'}</p>
 
         </section>
-
+        {/* 🌟 팝업(모달) 컴포넌트 추가 */}
+        {/* open 상태와 닫기 함수, 그리고 현재 티켓 정보를 전달합니다. */}
+        <DealRequestModal
+          open={isDealRequestModalOpen}
+          onClose={handleCloseDealRequestModal}
+          ticket={ticket}
+          onConfirm={handleConfirmPurchase}
+        />
 
 
       </div>
