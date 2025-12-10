@@ -17,6 +17,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
+const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
 
 // 커스텀 테마 생성
 const theme = createTheme({
@@ -164,6 +165,7 @@ function App() {
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
+                <Route path="/chat/ticket/:ticket_id" element={<DealAcceptPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>
