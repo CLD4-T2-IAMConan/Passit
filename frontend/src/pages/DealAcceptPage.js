@@ -7,7 +7,7 @@ import { Button, Stack, Typography, Box, Alert, Modal } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // 아이콘은 그대로 유지
 
 // ⚠️ 임시로 로그인된 사용자 ID 설정 (실제는 인증 시스템에서 가져와야 함)
-const currentUserId = 3;
+const currentUserId = 4;
 const API_BASE_URL = 'http://localhost:8083';
 
 const DealAcceptPage = () => {
