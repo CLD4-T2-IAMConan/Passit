@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS ticket (
 
     -- 외래 키 설정
     FOREIGN KEY (owner_id) REFERENCES users(user_id),
-    FOREIGN KEY (category_id) REFERENCES category(id),
+    FOREIGN KEY (category_id) REFERENCES categories(ticket_category_id),
 
     -- 인덱스
     INDEX idx_owner_id (owner_id),
