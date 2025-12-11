@@ -16,6 +16,22 @@ import "./App.css";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
+
+// 마이페이지
+const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
+const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
+
+// 관리자 페이지
+const AdminDashboardPage = lazy(() =>
+  import("./pages/admin/AdminDashboardPage")
+);
+const AdminUserManagementPage = lazy(() =>
+  import("./pages/admin/AdminUserManagementPage")
+);
+
+// Private Route
+const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
 
 // 커스텀 테마 생성
 const theme = createTheme({
@@ -161,7 +177,42 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route
+                  path="/auth/kakao/callback"
+                  element={<KakaoCallbackPage />}
+                />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                {/* 마이페이지 */}
+                <Route
+                  path="/mypage"
+                  element={
+                    <PrivateRoute>
+                      <MyPageLayout />
+                    </PrivateRoute>
+                  }
+                >
+                  <Route
+                    index
+                    element={<Navigate to="/mypage/profile" replace />}
+                  />
+                  <Route path="profile" element={<ProfilePage />} />
+                </Route>
+
+                {/* 관리자 페이지 */}
+                <Route
+                  path="/admin"
+                  element={<Navigate to="/admin/users" replace />}
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminUserManagementPage />
+                    </PrivateRoute>
+                  }
+                />
+
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>

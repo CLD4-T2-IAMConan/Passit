@@ -22,6 +22,24 @@ export const ENDPOINTS = {
     CHANGE_PASSWORD: "/users/me/password",
   },
 
+  // 관리자 - 회원 관리
+  ADMIN: {
+    USERS: {
+      LIST: "/users",
+      SEARCH: "/users/search",
+      CREATE: "/users",
+      DETAIL: (userId) => `/users/${userId}`,
+      UPDATE: (userId) => `/users/${userId}`,
+      DELETE: (userId) => `/users/${userId}`,
+      HARD_DELETE: (userId) => `/users/${userId}/hard`,
+      UPDATE_ROLE: (userId) => `/users/${userId}/role`,
+      SUSPEND: (userId) => `/users/${userId}/suspend`,
+      ACTIVATE: (userId) => `/users/${userId}/activate`,
+      BY_EMAIL: (email) => `/users/email/${email}`,
+      BY_STATUS: (status) => `/users/status/${status}`,
+    },
+  },
+
   // 이메일 인증 관련
   EMAIL: {
     SEND_VERIFICATION: "/email/verification/send",

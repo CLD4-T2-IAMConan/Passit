@@ -36,7 +36,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { user: currentUser, isAuthenticated, logout } = useAuth();
+  const { user: currentUser, isAuthenticated, isAdmin, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -488,6 +488,20 @@ const HomePage = () => {
               >
                 개인정보처리방침
               </Link>
+              {isAdmin && (
+                <Link
+                  onClick={() => navigate("/admin")}
+                  underline="hover"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: "0.813rem", sm: "0.875rem" },
+                    cursor: "pointer",
+                    "&:hover": { color: "primary.main" },
+                  }}
+                >
+                  관리자
+                </Link>
+              )}
               <Divider
                 orientation="vertical"
                 flexItem
