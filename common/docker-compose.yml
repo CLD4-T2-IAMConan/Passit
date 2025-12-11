@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -14,7 +14,17 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD:-rootpassword}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,12 +33,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   service-account:
-    build:
-      context: ../service-account
-      dockerfile: Dockerfile
-      platforms:
-        - linux/amd64
-    image: passit-service-account:local
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
     container_name: passit-service-account
     platform: linux/amd64
     ports:
