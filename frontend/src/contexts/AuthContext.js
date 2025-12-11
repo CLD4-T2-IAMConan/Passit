@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { userService } from "../services/userService";
 
 const AuthContext = createContext(null);
@@ -47,20 +53,29 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await userService.login({ email, password });
 
+      // LoginResponse에서 데이터 추출
+      const userData = {
+        userId: response.data.userId,
+        email: response.data.email,
+        name: response.data.name,
+        role: response.data.role,
+      };
+
       // 상태 업데이트
-      setUser(response.user);
-      setToken(response.token);
+      setUser(userData);
+      setToken(response.data.accessToken);
       setIsAuthenticated(true);
 
       // localStorage에 저장
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("token", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       if (rememberMe) {
         localStorage.setItem("rememberMe", "true");
       }
 
-      return { success: true, user: response.user };
+      return { success: true, user: userData };
     } catch (error) {
       return {
         success: false,
@@ -103,6 +118,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
 
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     localStorage.removeItem("rememberMe");
   };
@@ -126,16 +142,60 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", newToken);
   };
 
+  /**
+   * 카카오 로그인 콜백 처리
+   * @param {string} accessToken - 액세스 토큰
+   * @param {string} refreshToken - 리프레시 토큰
+   * @param {number} userId - 사용자 ID
+   * @param {string} email - 이메일
+   * @param {string} name - 이름
+   * @param {string} provider - 소셜 로그인 제공자 (KAKAO 등)
+   */
+  const handleKakaoCallback = useCallback(
+    (accessToken, refreshToken, userId, email, name, provider) => {
+      try {
+        const userData = {
+          userId: parseInt(userId),
+          email: email,
+          name: decodeURIComponent(name), // URL 디코딩
+          role: "USER", // 기본값, 필요시 서버에서 받아올 수 있음
+          provider: provider || "KAKAO", // provider 정보 저장
+        };
+
+        setUser(userData);
+        setToken(accessToken);
+        setIsAuthenticated(true);
+
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        return { success: true, user: userData };
+      } catch (error) {
+        console.error("Error in handleKakaoCallback:", error);
+        return { success: false, error: error.message };
+      }
+    },
+    []
+  );
+
+  /**
+   * 관리자 여부 확인
+   */
+  const isAdmin = user?.role === "ADMIN";
+
   const value = {
     user,
     token,
     isAuthenticated,
     loading,
+    isAdmin,
     login,
     register,
     logout,
     updateUser,
     updateToken,
+    handleKakaoCallback,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
