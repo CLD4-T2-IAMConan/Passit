@@ -25,15 +25,31 @@ CREATE TABLE IF NOT EXISTS ticket (
     seat_info VARCHAR(100) NULL COMMENT '좌석 정보',
     ticket_type VARCHAR(50) NULL COMMENT '티켓 종류',
 
+    -- 카테고리
+    category_id BIGINT NOT NULL COMMENT '카테고리 ID',
+
+    -- 이미지(선택 사항)
+    image1 VARCHAR(255) NULL COMMENT '이미지1 경로',
+    image2 VARCHAR(255) NULL COMMENT '이미지2 경로',
+
+    -- 상세 설명(선택 사항)
+    description TEXT NULL COMMENT '티켓 상세 설명',
+
+    -- 거래 방식 ENUM
+    trade_type ENUM('DELIVERY', 'ONSITE', 'OTHER') NOT NULL COMMENT '거래 방식',
+
+
     -- 타임스탬프
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- 외래 키 설정
     FOREIGN KEY (owner_id) REFERENCES users(user_id),
+    FOREIGN KEY (category_id) REFERENCES categories(ticket_category_id),
 
     -- 인덱스
     INDEX idx_owner_id (owner_id),
+    INDEX idx_category_id (category_id),
     INDEX idx_ticket_status (ticket_status),
     INDEX idx_event_date (event_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='티켓 정보 테이블';
