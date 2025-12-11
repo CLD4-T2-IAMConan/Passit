@@ -23,7 +23,12 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   service-account:
-    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
+    build:
+      context: ../service-account
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+    image: passit-service-account:local
     container_name: passit-service-account
     platform: linux/amd64
     ports:
