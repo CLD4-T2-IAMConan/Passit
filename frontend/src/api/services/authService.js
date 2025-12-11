@@ -47,7 +47,9 @@ export const authService = {
    * @returns {string} 카카오 로그인 URL
    */
   getKakaoLoginUrl: () => {
-    return `${process.env.REACT_APP_API_URL || "http://localhost:8000"}${ENDPOINTS.AUTH.KAKAO}`;
+    const { API_SERVICES } = require("../../config/apiConfig");
+    // API_SERVICES.ACCOUNT는 이미 /api를 포함하고 있으므로 직접 사용
+    return `${API_SERVICES.ACCOUNT}${ENDPOINTS.AUTH.KAKAO}`;
   },
 };
 
