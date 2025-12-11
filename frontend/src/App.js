@@ -32,6 +32,7 @@ const AdminUserManagementPage = lazy(() =>
 
 // Private Route
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
+const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
 
 // 커스텀 테마 생성
 const theme = createTheme({
@@ -213,6 +214,7 @@ function App() {
                   }
                 />
 
+                <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Suspense>
