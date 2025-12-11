@@ -3,14 +3,24 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import { AuthProvider } from '../contexts/AuthContext';
-import { resetMockDatabase, addMockUser } from '../mocks/handlers';
+
+// Mock userService
+jest.mock('../services/userService', () => ({
+  userService: {
+    login: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(),
+  },
+}));
+
+import { userService } from '../services/userService';
 
 /**
  * LoginPage 통합 테스트
  *
  * 테스트 범위:
  * - 페이지 전체 렌더링
- * - API 연동 (MSW 사용)
+ * - API 연동 (모킹)
  * - 라우팅
  * - 전역 상태 업데이트 (AuthContext)
  */
@@ -36,15 +46,8 @@ describe('LoginPage Integration Test', () => {
   };
 
   beforeEach(() => {
-    // 각 테스트 전에 Mock 데이터베이스 초기화
-    resetMockDatabase();
-
-    // 테스트용 사용자 추가
-    addMockUser({
-      email: 'test@example.com',
-      name: 'Test User',
-      password: 'password123',
-    });
+    // Mock 리셋
+    jest.clearAllMocks();
 
     // localStorage 초기화
     localStorage.clear();

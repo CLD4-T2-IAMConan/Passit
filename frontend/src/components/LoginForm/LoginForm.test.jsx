@@ -1,6 +1,31 @@
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { BrowserRouter } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
+import { AuthProvider } from '../../contexts/AuthContext';
+
+// Mock userService
+jest.mock('../../services/userService', () => ({
+  userService: {
+    login: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(),
+  },
+}));
+
+// Wrapper with all necessary providers
+const AllTheProviders = ({ children }) => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>{children}</AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+const renderWithProviders = (ui, options) => {
+  return render(ui, { wrapper: AllTheProviders, ...options });
+};
 
 /**
  * LoginForm 컴포넌트 단위 테스트
@@ -12,9 +37,13 @@ import { LoginForm } from './LoginForm';
  * - 로그인 성공/실패 처리
  */
 describe('LoginForm', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('로그인 폼이 올바르게 렌더링된다', () => {
     // Arrange & Act
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     // Assert
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -25,7 +54,7 @@ describe('LoginForm', () => {
   test('이메일과 비밀번호를 입력할 수 있다', async () => {
     // Arrange
     const user = userEvent.setup();
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
@@ -42,7 +71,7 @@ describe('LoginForm', () => {
   test('빈 폼 제출시 에러 메시지를 표시한다', async () => {
     // Arrange
     const user = userEvent.setup();
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     // Act
     const submitButton = screen.getByRole('button', { name: /login/i });
@@ -56,7 +85,7 @@ describe('LoginForm', () => {
   test('유효하지 않은 이메일 형식시 에러 메시지를 표시한다', async () => {
     // Arrange
     const user = userEvent.setup();
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     // Act
     await user.type(screen.getByLabelText(/email/i), 'invalid-email');
@@ -72,7 +101,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     const onSuccess = jest.fn();
 
-    render(<LoginForm onSuccess={onSuccess} />);
+    renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
     // Act
     await user.type(screen.getByLabelText(/email/i), 'test@example.com');
@@ -93,7 +122,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     const onError = jest.fn();
 
-    render(<LoginForm onError={onError} />);
+    renderWithProviders(<LoginForm onError={onError} />);
 
     // Act
     await user.type(screen.getByLabelText(/email/i), 'wrong@example.com');
@@ -110,7 +139,7 @@ describe('LoginForm', () => {
   test('로그인 중에는 버튼이 비활성화된다', async () => {
     // Arrange
     const user = userEvent.setup();
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     const submitButton = screen.getByRole('button', { name: /login/i });
 
@@ -129,7 +158,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     const onSuccess = jest.fn();
 
-    render(<LoginForm onSuccess={onSuccess} />);
+    renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
@@ -148,7 +177,7 @@ describe('LoginForm', () => {
   test('비밀번호 표시/숨김 토글이 작동한다', async () => {
     // Arrange
     const user = userEvent.setup();
-    render(<LoginForm />);
+    renderWithProviders(<LoginForm />);
 
     const passwordInput = screen.getByLabelText(/password/i);
     const toggleButton = screen.getByRole('button', { name: /show password/i });

@@ -21,7 +21,6 @@ import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useAuth } from "./useAuth";
 import { AuthProvider } from "../contexts/AuthContext";
-import { server } from "../mocks/server";
 import * as userServiceModule from "../services/userService";
 
 // Wrapper component to provide AuthContext
@@ -43,8 +42,6 @@ describe("useAuth", () => {
   beforeEach(() => {
     // 각 테스트 전에 localStorage 초기화
     localStorage.clear();
-    // MSW 핸들러 리셋
-    server.resetHandlers();
     // Mock 리셋
     jest.clearAllMocks();
   });
