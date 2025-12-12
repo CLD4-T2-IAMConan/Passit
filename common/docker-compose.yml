@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -14,13 +14,57 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD:-rootpassword}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - passit-network
     command: --default-authentication-plugin=mysql_native_password
+
+  service-account:
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
+    container_name: passit-service-account
+    platform: linux/amd64
+    ports:
+      - "${ACCOUNT_PORT:-8081}:8081"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8081/api/auth/kakao/callback}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@passit.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123!}
+      ADMIN_NAME: ${ADMIN_NAME:-관리자}
+      ADMIN_NICKNAME: ${ADMIN_NICKNAME:-admin}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mysql_data:

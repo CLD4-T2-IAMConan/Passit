@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     `provider` ENUM('KAKAO','NAVER','GOOGLE') NULL COMMENT '소셜 로그인 사용 시',
     `refresh_token` VARCHAR(255) NULL COMMENT '자동 로그인 가능하도록',
     `last_login_at` DATETIME NULL COMMENT '마지막 로그인 시간',
+    `email_verified` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '이메일 인증 여부',
+    `email_verified_at` DATETIME NULL COMMENT '이메일 인증 일시',
     PRIMARY KEY (`user_id`),
     UNIQUE KEY `unique_email` (`email`),
     UNIQUE KEY `unique_nickname` (`nickname`),
