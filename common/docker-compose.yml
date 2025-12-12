@@ -57,7 +57,7 @@ services:
       start_period: 40s
 
   service-account:
-    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-03f379e
     container_name: passit-service-account
     platform: linux/amd64
     ports:
@@ -140,11 +140,11 @@ services:
       start_period: 40s
 
   service-cs:
-    image: ghcr.io/cld4-t2-iamconan/service-cs:latest
+    image: ghcr.io/cld4-t2-iamconan/service-cs:sha-662714c
     container_name: passit-service-cs
     platform: linux/amd64
     ports:
-      - "${CS_PORT:-8080}:8080"
+      - "${CS_PORT:-8085}:8085"
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
