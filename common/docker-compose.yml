@@ -71,7 +71,7 @@ services:
     container_name: passit-service-chat
     platform: linux/amd64
     ports:
-      - "${ACCOUNT_PORT:-8084}:8084"
+      - "${CHAT_PORT:-8084}:8084"
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
