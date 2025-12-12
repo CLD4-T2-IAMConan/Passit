@@ -38,7 +38,7 @@ const ChatListPage = () => {
             console.log("📌 채팅방 생성 성공:", newRoom);
             // 생성 직후 채팅방으로 이동시키기
             navigate(`/chat/rooms/${newRoom.chatroomId}`, {
-                state: { isNewRoom: true }
+                state: { isNewRoom: true, buyerId: buyerId }
             });
         } catch (e) {
             console.error("채팅방 생성 실패", e);

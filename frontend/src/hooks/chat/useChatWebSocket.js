@@ -13,7 +13,7 @@ const useChatWebSocket = ({ roomId, onMessage }) => {
             // 채팅방 구독
             client.subscribe(`/topic/chat/${roomId}`, (message) => {
                 onMessage(JSON.parse(message.body));
-            })
+            });
             // 외부에서 전달된 onConnect 있으면 호출
             if (callbacks.onConnect) callbacks.onConnect();
         });

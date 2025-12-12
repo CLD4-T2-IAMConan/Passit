@@ -26,9 +26,10 @@ export const getChatRoomDetail = async (roomId) => {
 };
 
 /** 과거 메시지 조회 */
-export const getMessages = async (roomId, page = 0) => {
-    const res = await axiosInstance.get(`/rooms/${roomId}/messages`, {
-        params: { page },
+export const getMessages = async (chatroomId) => {
+    console.log('들어오니?')
+    const res = await axiosInstance.get(`chat/rooms/${chatroomId}/messages`, {
     });
+    console.log('여기는?', res.data.data)
     return res.data;
 };
