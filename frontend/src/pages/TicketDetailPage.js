@@ -91,6 +91,12 @@ const TicketDetailPage = () => {
     navigate(-1);
   };
 
+  // 🚨 [새로고침 로직] 확인 버튼 클릭 시 실행될 핸들러
+  const handleSuccessConfirm = () => {
+      setIsSuccessModalOpen(false); // 모달 닫기
+      window.location.reload();    // 🚨 강제 새로고침 실행
+  };
+
  // 사용자 정보 로딩 로직
    useEffect(() => {
      const fetchUserInfo = async () => {
