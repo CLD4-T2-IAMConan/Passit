@@ -129,56 +129,6 @@ services:
       retries: 3
       start_period: 40s
 
-  service-trade:
-    image: ghcr.io/cld4-t2-iamconan/service-trade:sha-b14ca52
-    container_name: passit-service-trade
-    platform: linux/amd64
-    ports:
-      - "${TRADE_PORT:-8083}:8083"
-    environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_NAME: ${DB_NAME:-passit_db}
-      DB_USER: ${MYSQL_USER:-passit_user}
-      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - passit-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  service-chat:
-    image: ghcr.io/cld4-t2-iamconan/service-chat:sha-cc0fd5b
-    container_name: passit-service-chat
-    platform: linux/amd64
-    ports:
-      - "${CHAT_PORT:-8084}:8084"
-    environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_NAME: ${DB_NAME:-passit_db}
-      DB_USER: ${MYSQL_USER:-passit_user}
-      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - passit-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
 volumes:
   mysql_data:
 
