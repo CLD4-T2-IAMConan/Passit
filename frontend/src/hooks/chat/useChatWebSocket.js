@@ -1,52 +1,47 @@
-// src/hooks/chat/useChatWebSocket.js
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { Stomp } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
-export default function useChatWebSocket(roomId, userId) {
-    const [messages, setMessages] = useState([]);
-    const wsRef = useRef(null);
-
-    useEffect(() => {
-        if (!roomId) return;
-
-        const WS_URL = `wss://your-api.com/chat/ws?roomId=${roomId}&userId=${userId}`;
-        const socket = new WebSocket(WS_URL);
-
-        wsRef.current = socket;
-
-        socket.onopen = () => {
-            console.log("WebSocket connected");
-        };
-
-        socket.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            setMessages((prev) => [...prev, msg]);
-        };
-
-        socket.onerror = (err) => {
-            console.error("WebSocket error:", err);
-        };
-
-        socket.onclose = () => {
-            console.log("WebSocket disconnected");
-        };
-
-        return () => {
-            socket.close();
-        };
-    }, [roomId]);
-
-    const sendMessage = (text) => {
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-
-        const message = {
-            roomId,
-            senderId: userId,
-            message: text,
-            type: "TALK",
-        };
-
-        wsRef.current.send(JSON.stringify(message));
+const useChatWebSocket = ({ roomId, onMessage }) => {
+    const stompClientRef = useRef(null);
+    const connect = (callbacks = {}) => {
+        const socket = new SockJS("http://localhost:8084/ws");
+        const client = Stomp.over(socket);
+        stompClientRef.current = client;
+        client.connect({}, () => {
+            console.log("🟢 STOMP connected");
+            // 채팅방 구독
+            client.subscribe(`/topic/chat/${roomId}`, (message) => {
+                onMessage(JSON.parse(message.body));
+            })
+            // 외부에서 전달된 onConnect 있으면 호출
+            if (callbacks.onConnect) callbacks.onConnect();
+        });
     };
 
-    return { messages, sendMessage };
-}
+    const disconnect = () => {
+        if (stompClientRef.current) {
+            stompClientRef.current.disconnect();
+            console.log("🔴 WebSocket disconnected");
+        }
+    };
+
+    const sendMessage = (payload) => {
+        if (!stompClientRef.current) return;
+
+        stompClientRef.current.send(
+            `/app/chat/${roomId}`,
+            {},
+            JSON.stringify(payload)
+        );
+    };
+
+    return {
+        sendMessage,
+        connect,
+        disconnect,
+        stompClient: stompClientRef, // ← 이렇게 반환해야 페이지에서 사용 가능!
+    };
+};
+
+export default useChatWebSocket;

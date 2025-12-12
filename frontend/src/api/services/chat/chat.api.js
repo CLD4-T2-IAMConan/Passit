@@ -1,15 +1,15 @@
 import { axiosInstance } from "../../axiosInstance";
 
-/** 채팅방 목록 조회 */ // 완료
+// 채팅방 목록 조회 // 완료
 export const getChatRooms = async (userId) => {
     const res = await axiosInstance.get(`/chat/rooms`, {
         params: { userId },
     });
-    console.log("📌 rooms API response:", res.data);
+    console.log("📌 채팅방 목록 조회 성공:", res.data);
     return res.data; // success, data, error 그대로
 };
 
-/** 채팅방 생성 */
+// 채팅방 생성 // 완료
 export const createChatRoom = async ({ ticketId, buyerId }) => {
     const body = { ticketId, buyerId };
     const res = await axiosInstance.post("/chat/rooms", body);

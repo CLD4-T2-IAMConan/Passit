@@ -3,8 +3,6 @@ import ChatRoomList from "../../components/chat/ChatRoomList";
 import { getChatRooms, createChatRoom } from "../../api/services/chat/chat.api";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
-
 const ChatListPage = () => {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,7 +14,8 @@ const ChatListPage = () => {
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
     const buyerId = location.state?.buyerId ?? 101;  // 로그인 사용자
-
+    
+    // 채팅방 목록 조회 // 완료
     const loadChatRooms = async () => {
         try {
             setLoading(true);
@@ -29,7 +28,7 @@ const ChatListPage = () => {
         }
     };
 
-    /** 채팅방 생성 */ // 완료
+    // 채팅방 생성 // 완료
     const handleCreateRoom = async () => {
         try {
             const newRoom = await createChatRoom({
@@ -38,7 +37,9 @@ const ChatListPage = () => {
             });
             console.log("📌 채팅방 생성 성공:", newRoom);
             // 생성 직후 채팅방으로 이동시키기
-            navigate(`/chat/rooms/${newRoom.chatroomId}`);
+            navigate(`/chat/rooms/${newRoom.chatroomId}`, {
+                state: { isNewRoom: true }
+            });
         } catch (e) {
             console.error("채팅방 생성 실패", e);
         }
