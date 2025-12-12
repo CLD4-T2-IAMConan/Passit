@@ -66,6 +66,38 @@ services:
       retries: 3
       start_period: 40s
 
+  service-ticket:
+    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-7e2d541
+    container_name: passit-service-ticket
+    platform: linux/amd64
+    ports:
+      - "${TICKET_PORT:-8082}:8082"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+
+      # 필요한 경우 추가 가능 (예: 이미지 업로드용 S3, JWT 등)
+      # S3_BUCKET: ${S3_BUCKET}
+      # JWT_SECRET: ${JWT_SECRET}
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+
+
 volumes:
   mysql_data:
     driver: local
