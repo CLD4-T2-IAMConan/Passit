@@ -5,6 +5,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography'; // 텍스트 제목 출력을 위해 추가
 import axios from 'axios';
 // import TicketInfo from '../components/Ticket/TicketInfo'; // 추후 분리할 컴포넌트
+import DealRequestModal from '../components/Ticket/DealRequestModal';
+import LoadingModal from '../components/Ticket/LoadingModal';
+import RequestSuccessModal from '../components/Ticket/RequestSuccessModal';
 
 // 백엔드 서버의 기본 URL (Java Spring Boot, 8083 포트 가정)
 const API_BASE_URL = 'http://localhost:8083';
@@ -17,6 +20,14 @@ const TicketDetailPage = () => {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 🌟 모달 열림/닫힘 상태 관리용 state 추가
+  const [isDealRequestModalOpen, setIsDealRequestModalOpen] = useState(false);
+
+  // 🌟🌟🌟 누락된 상태 변수 3가지 추가 (이 부분이 오류의 원인입니다!) 🌟🌟🌟
+  const [isSubmitting, setIsSubmitting] = useState(false); // 로딩 모달 제어
+  const [submitError, setSubmitError] = useState(null);   // API 에러 메시지 저장
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // 성공 모달 제어
 
   // 2. 데이터 로딩 로직
   useEffect(() => {
@@ -41,6 +52,7 @@ const TicketDetailPage = () => {
         // 예: data.image_url을 data.imageUrl로 변환
         setTicket({
           ...data,
+          id: data.ticketId,
           // DB에서 date 필드를 받아왔을 때, 시간 정보를 제거하고 날짜만 남기기
           date: data.date ? data.date.split('T')[0] : '날짜 미정',
           // DB가 image_url을 사용한다면:
@@ -68,22 +80,67 @@ const TicketDetailPage = () => {
     navigate(-1);
   };
 
-  const handlePurchase = () => {
-    // TODO: 구매 페이지 이동 로직
-    if (ticket && ticket.id) {
-      console.log('구매 프로세스 시작:', ticket.id);
-      navigate(`/deal/purchase/${ticket.id}`);
-    }
-  };
+// TicketDetailPage.js (수정할 부분)
+    const handlePurchaseClick = () => {
+        console.log("👉 [Page] 구매 버튼 클릭됨!");
+        // 🕵️‍♀️ 티켓 객체와 ID 값 확인
+        console.log("🕵️‍♀️ Current Ticket Object:", ticket);
+        console.log("🕵️‍♀️ Checking ticket.id:", ticket ? ticket.id : 'N/A');
 
-  // 4. 조건부 렌더링 (로딩 및 에러)
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg text-gray-600">
-        티켓 정보 로딩 중...
-      </div>
-    );
-  }
+        if (ticket && ticket.id) {
+        console.log("👉 [Page] 모달 열기 시도 (State 변경 -> true)");
+          setIsDealRequestModalOpen(true);
+        } else {
+        console.error("❌ [Page] 티켓 데이터가 없거나 ID 필드가 유효하지 않습니다.", ticket);
+        }
+    };
+
+    // 🌟 모달 닫기 핸들러 추가
+    const handleCloseDealRequestModal = () => {
+      setIsDealRequestModalOpen(false);
+    };
+
+    // 🕵️‍♀️ API 호출을 위한 핵심 핸들러 수정
+    const handleConfirmPurchase = async (ticketId, quantity) => {
+
+        // 1. 📅 만료 시간 계산 (현재 시간 + 1일)
+        const expireAtDate = new Date();
+        expireAtDate.setDate(expireAtDate.getDate() + 1); // 현재 날짜에 1일 추가
+
+        // 💡 백엔드가 기대하는 ISO 8601 형식의 문자열로 변환
+        const expireAtISOString = expireAtDate.toISOString();
+
+        // 4단계: 로딩 시작
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+            console.log(`📡 API 요청: ID=${ticketId}, 수량=${quantity}, 만료=${expireAtISOString}`);
+
+            // 2. 📡 백엔드 API 호출
+            const response = await axios.post(`${API_BASE_URL}/api/deals/request`, {
+                ticketId: ticketId,          // 백엔드 DTO 필드명과 일치
+                quantity: quantity,
+                expireAt: expireAtISOString, // 계산된 만료 시간 전송
+            });
+
+            if (response.status === 201) {
+                console.log("✅ 양도 요청 성공:", response.data);
+                setIsDealRequestModalOpen(false); // 모달 닫기
+                setIsSuccessModalOpen(true);    // 성공 팝업 열기
+            }
+
+        } catch (error) {
+            console.error('❌ 양도 요청 실패:', error);
+
+            // 백엔드에서 보낸 에러 메시지 추출
+            const errorMessage = error.response?.data || "요청 처리 중 알 수 없는 오류가 발생했습니다.";
+            setSubmitError(errorMessage);
+
+        } finally {
+            setIsSubmitting(false); // 4단계: 로딩 종료
+        }
+    };
 
   if (error) {
     return (
@@ -142,7 +199,7 @@ const TicketDetailPage = () => {
               variant="contained"
               color="primary" // primary 색상 사용
               disabled={ticket.status !== 'AVAILABLE'} // 거래 상태에 따라 비활성화 예시
-              onClick={handlePurchase}
+              onClick={handlePurchaseClick}
             >
               DEAL 상태: {ticket.status === 'AVAILABLE' ? '구매 가능' : '거래 불가'}
             </Button>
@@ -164,7 +221,19 @@ const TicketDetailPage = () => {
           <p>장소: {ticket.eventLocation || '장소 정보 없음'}</p>
 
         </section>
-
+        {/* 🌟 팝업(모달) 컴포넌트 추가 */}
+        {/* open 상태와 닫기 함수, 그리고 현재 티켓 정보를 전달합니다. */}
+        <DealRequestModal
+          open={isDealRequestModalOpen}
+          onClose={handleCloseDealRequestModal}
+          ticket={ticket}
+          onConfirm={handleConfirmPurchase}
+        />
+        <LoadingModal open={isSubmitting} />
+        <RequestSuccessModal
+           open={isSuccessModalOpen}
+           onClose={() => setIsSuccessModalOpen(false)} // 팝업을 닫는 함수
+        />
 
 
       </div>
