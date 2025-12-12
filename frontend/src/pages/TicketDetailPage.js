@@ -315,10 +315,11 @@ const TicketDetailPage = () => {
         />
         <LoadingModal open={isSubmitting} />
         <RequestSuccessModal
-           open={isSuccessModalOpen}
-           onClose={() => setIsSuccessModalOpen(false)}
-        />
-
+                   open={isSuccessModalOpen}
+                   onClose={() => setIsSuccessModalOpen(false)}
+                   // 🚨 [핵심 수정] 새로고침 핸들러를 연결합니다.
+                   onConfirmReload={handleSuccessConfirm}
+                />
 
       </div>
     );
