@@ -18,7 +18,6 @@ CREATE TABLE payments (
     payment_status VARCHAR(50) NOT NULL COMMENT '(WAIT_PAY, PAID, CANCELLED)',
     payment_date DATETIME NOT NULL,
 
-    transaction_status VARCHAR(50) NOT NULL COMMENT '(IN_PROGRESS, COMPLETED, REFUNDED)',
     completion_date DATETIME NULL,
 
     payment_method VARCHAR(50) NOT NULL,
