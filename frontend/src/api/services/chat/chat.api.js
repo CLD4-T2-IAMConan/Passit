@@ -19,17 +19,17 @@ export const createChatRoom = async ({ ticketId, buyerId }) => {
     return res.data.data;
 };
 
-/** 특정 채팅방 기본 정보 조회 */
-export const getChatRoomDetail = async (roomId) => {
-    const res = await axiosInstance.get(`/rooms/${roomId}`);
-    return res.data;
-};
-
-/** 과거 메시지 조회 */
+// 과거 메시지 조회 // 완료
 export const getMessages = async (chatroomId) => {
-    console.log('들어오니?')
+    console.log('여기는 들어오니?')
     const res = await axiosInstance.get(`chat/rooms/${chatroomId}/messages`, {
     });
     console.log('여기는?', res.data.data)
+    return res.data;
+};
+
+/** 특정 채팅방 기본 정보 조회 */
+export const getChatRoomDetail = async (roomId) => {
+    const res = await axiosInstance.get(`/rooms/${roomId}`);
     return res.data;
 };
