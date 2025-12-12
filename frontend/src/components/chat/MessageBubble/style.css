@@ -1,0 +1,32 @@
+.bubble-wrapper {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.bubble-wrapper.mine {
+    justify-content: flex-end;
+}
+
+.bubble-wrapper.other {
+    justify-content: flex-start;
+}
+
+.bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+/* 내가 보낸 메시지 */
+.bubble.mine {
+    background: #4f8cff;
+    color: white;
+}
+
+/* 상대방 메시지 */
+.bubble.other {
+    background: #e6e6e6;
+    color: black;
+}

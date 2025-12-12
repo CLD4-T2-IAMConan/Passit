@@ -11,6 +11,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
+import ChatListPage from "./pages/chat/ChatListPage";
+import ChatRoomPage from "./pages/chat/ChatRoomPage";
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -216,6 +218,8 @@ function App() {
 
                 <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/chat" element={<ChatListPage />} />
+                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
               </Routes>
             </Suspense>
           </Router>
