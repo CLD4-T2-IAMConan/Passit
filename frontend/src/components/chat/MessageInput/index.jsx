@@ -1,5 +1,6 @@
 // src/components/chat/MessageInput/index.jsx
 import React, { useState } from "react";
+import "./style.css";
 
 const MessageInput = ({ onSend }) => {
     const [text, setText] = useState("");
@@ -12,37 +13,15 @@ const MessageInput = ({ onSend }) => {
     };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            style={{
-                display: "flex",
-                gap: "8px",
-                marginTop: "16px",
-            }}
-        >
+        <form className="message-input-form" onSubmit={handleSubmit}>
             <input
                 type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="메시지를 입력하세요..."
-                style={{
-                    flex: 1,
-                    padding: "12px",
-                    borderRadius: "8px",
-                    border: "1px solid #ccc",
-                }}
+                className="message-input-field"
             />
-            <button
-                type="submit"
-                style={{
-                    padding: "12px 18px",
-                    borderRadius: "8px",
-                    background: "#4f8cff",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                }}
-            >
+            <button type="submit" className="message-input-button">
                 전송
             </button>
         </form>
