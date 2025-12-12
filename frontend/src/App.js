@@ -37,7 +37,6 @@ const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
 const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
 const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
 const BuyerPaymentPage = lazy(() => import("./pages/BuyerPaymentPage"));
-//const PaymentProcessingPage = lazy(() => import("./pages/PaymentProcessingPage"));
 const PaymentResultPage = lazy(() => import("./pages/PaymentResultPage"));
 
 // 커스텀 테마 생성
@@ -220,7 +219,7 @@ function App() {
                   }
                 />
 
-                <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
+                <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
                 <Route path="/chat/ticket/:ticket_id" element={<DealAcceptPage />} />
                 <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
                 <Route path="/buyer/payment/:payment_id/result" element={<PaymentResultPage />} />
