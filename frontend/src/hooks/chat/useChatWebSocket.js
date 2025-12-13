@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const useChatWebSocket = ({ roomId, onMessage }) => {
+const useChatWebSocket = ({ chatroomId, onMessage }) => {
     const stompClientRef = useRef(null); // STOMP 클라이언트 객체를 보관하는 참조
     
     const connect = (callbacks = {}) => {
@@ -12,7 +12,7 @@ const useChatWebSocket = ({ roomId, onMessage }) => {
         client.connect({}, () => {
             console.log("🟢 STOMP connected");
             // 채팅방 구독
-            client.subscribe(`/topic/chatrooms/${roomId}`, (message) => {
+            client.subscribe(`/topic/chatrooms/${chatroomId}`, (message) => {
                 onMessage(JSON.parse(message.body));
             });
             // 외부에서 전달된 onConnect 있으면 호출
@@ -28,11 +28,13 @@ const useChatWebSocket = ({ roomId, onMessage }) => {
         }
     };
     
-    // 클라이언트 -> 서버
     const sendMessage = (payload) => {
-        if (!stompClientRef.current) return;
-
-        stompClientRef.current.send(
+        const client = stompClientRef.current;
+        if (!client || !client.connected) {
+            console.warn("⚠️ STOMP 아직 연결 안 됨");
+            return;
+        }
+        client.send(
             `/app/chat/message`,
             {},
             JSON.stringify(payload)

@@ -8,11 +8,10 @@ import { getMessages } from "../../api/services/chat/chat.api";
 const ChatRoomPage = () => {
     const { chatroomId } = useParams();
     const location = useLocation();
-
     const [messages, setMessages] = useState([]);
 
     // ⚠️ 실제로는 auth에서 가져와야 함
-    const currentUserId = 99;
+    const currentUserId = 101;
     const isNewRoom = location.state?.isNewRoom === true;
 
     // WebSocket
@@ -67,14 +66,14 @@ const ChatRoomPage = () => {
 
     // 일반 메시지 전송
     const handleSend = (text) => {
-        if (!text.trim()) return;
-
-        sendMessage({
+        const newMessage = {
             chatroomId: Number(chatroomId),
             senderId: currentUserId,
             type: "TEXT",
             content: text,
-        });
+        };
+        setMessages(prev => [...prev, newMessage]); // 1. 먼저 UI에 반영
+        sendMessage(newMessage);// 2. 서버로 전송
     };
 
     return (
