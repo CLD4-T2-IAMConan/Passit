@@ -14,7 +14,17 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD:-rootpassword}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,32 +32,32 @@ services:
       - passit-network
 
   service-trade:
-      image: ghcr.io/cld4-t2-iamconan/service-trade:sha-b14ca52
-      container_name: passit-service-trade
-      platform: linux/amd64
-      ports:
-        - "${TRADE_PORT:-8083}:8083"
-      environment:
-        DB_HOST: mysql
-        DB_PORT: 3306
-        DB_NAME: ${DB_NAME:-passit_db}
-        DB_USER: ${MYSQL_USER:-passit_user}
-        DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
-        FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      depends_on:
-        mysql:
-          condition: service_healthy
-      networks:
-        - passit-network
-      healthcheck:
-        test: [ "CMD", "curl", "-f", "http://localhost:8083/api/health" ]
-        interval: 30s
-        timeout: 10s
-        retries: 3
-        start_period: 40s
+    image: ghcr.io/cld4-t2-iamconan/service-trade:sha-b14ca52
+    container_name: passit-service-trade
+    platform: linux/amd64
+    ports:
+      - "${TRADE_PORT:-8083}:8083"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   service-account:
-    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-03f379e
     container_name: passit-service-account
     platform: linux/amd64
     ports:
@@ -74,7 +84,7 @@ services:
     networks:
       - passit-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8081/api/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -106,7 +116,7 @@ services:
       start_period: 40s
 
   service-ticket:
-    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-540eb9f
+    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-9046348
     container_name: passit-service-ticket
     platform: linux/amd64
     ports:
@@ -124,6 +134,30 @@ services:
       - passit-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  service-cs:
+    image: ghcr.io/cld4-t2-iamconan/service-cs:sha-662714c
+    container_name: passit-service-cs
+    platform: linux/amd64
+    ports:
+      - "${CS_PORT:-8085}:8085"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
