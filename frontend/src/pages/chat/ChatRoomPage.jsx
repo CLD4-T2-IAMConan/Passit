@@ -20,7 +20,11 @@ const ChatRoomPage = () => {
             chatroomId,
             onMessage: (msg) => {
                 console.log("📨 WS 메시지:", msg);
-                setMessages((prev) => [...prev, msg]);
+                setMessages(prev => {
+                    const exists = prev.some(m => m.messageId === msg.messageId);
+                    if (exists) return prev; // 이미 있으면 추가 X
+                    return [...prev, msg]; // 새 메시지만 추가 O
+                });    
             },
         });
 
@@ -72,8 +76,8 @@ const ChatRoomPage = () => {
             type: "TEXT",
             content: text,
         };
-        setMessages(prev => [...prev, newMessage]); // 1. 먼저 UI에 반영
-        sendMessage(newMessage);// 2. 서버로 전송
+        setMessages(prev => [...prev, newMessage]); // 먼저 UI에 반영하고
+        sendMessage(newMessage);// 서버로 전송
     };
 
     return (
