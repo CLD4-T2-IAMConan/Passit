@@ -9,7 +9,7 @@ const ChatListPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const userId = 1;
+    const userId = 101;
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
@@ -21,6 +21,7 @@ const ChatListPage = () => {
             setLoading(true);
             const response = await getChatRooms(userId);
             setRooms(response.data);
+            console.log(response.data);
         } catch (err) {
             console.error("채팅방 목록 조회 실패:", err);
         } finally {

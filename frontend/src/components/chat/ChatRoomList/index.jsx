@@ -12,9 +12,9 @@ const ChatRoomList = ({ rooms, onSelectRoom }) => {
         <div className="chatroom-list">
             {rooms.map((room) => (
                 <ChatRoomItem
-                    key={room.id}
+                    key={room.chatroomId}
                     room={room}
-                    onClick={() => onSelectRoom(room.id)}
+                    onClick={() => onSelectRoom(room.chatroomId)}
                 />
             ))}
         </div>
