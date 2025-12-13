@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ChatRoomList from "../../components/chat/ChatRoomList";
-import { getChatRooms, createChatRoom } from "../../api/services/chat/chat.api";
+import { getChatRooms, createChatRoom, deleteChatRoom  } from "../../api/services/chat/chat.api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const ChatListPage = () => {
@@ -9,7 +9,7 @@ const ChatListPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const userId = 101;
+    const userId = 101; // buyerId=101, sellerId=99 왔다갔다 하면서 테스트
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
@@ -46,6 +46,20 @@ const ChatListPage = () => {
         }
     };
 
+    const handleDeleteRoom = async (chatroomId) => {
+    const confirmed = window.confirm("채팅방을 삭제하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+        await deleteChatRoom(chatroomId, userId);
+        setRooms(prev => prev.filter(room => room.chatroomId !== chatroomId));
+    } catch (e) {
+        console.error("채팅방 삭제 실패", e);
+        alert("채팅방 삭제에 실패했습니다.");
+    }
+};
+
+
     useEffect(() => {
         loadChatRooms();
     }, [userId]); // userId가 바뀌면 다시 호출
@@ -60,7 +74,11 @@ const ChatListPage = () => {
             {loading ? (
                 <div>로딩 중...</div>
             ) : (
-            <ChatRoomList rooms={rooms} onSelectRoom={handleSelectRoom} />
+            <ChatRoomList 
+                rooms={rooms} 
+                onSelectRoom={handleSelectRoom} 
+                onDeleteRoom={handleDeleteRoom}
+            />
             )}
             {/* 개발용: 채팅방 수동 생성 버튼 */}
             <button onClick={handleCreateRoom} style={{ marginBottom: "12px" }}>
