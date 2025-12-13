@@ -46,10 +46,10 @@ const ChatListPage = () => {
         }
     };
 
+    // 채팅방 삭제 // 완료
     const handleDeleteRoom = async (chatroomId) => {
     const confirmed = window.confirm("채팅방을 삭제하시겠습니까?");
     if (!confirmed) return;
-
     try {
         await deleteChatRoom(chatroomId, userId);
         setRooms(prev => prev.filter(room => room.chatroomId !== chatroomId));
@@ -58,7 +58,6 @@ const ChatListPage = () => {
         alert("채팅방 삭제에 실패했습니다.");
     }
 };
-
 
     useEffect(() => {
         loadChatRooms();

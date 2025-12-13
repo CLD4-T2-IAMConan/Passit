@@ -28,13 +28,13 @@ export const getMessages = async (chatroomId) => {
     return res.data;
 };
 
-// 채팅방 삭제
+// 채팅방 삭제 // 완료
 export const deleteChatRoom = (chatroomId, userId) => {
     const res = axiosInstance.delete(`/chat/rooms/${chatroomId}`, {
         params: { userId },
     }
     );
-    console.log('채팅방 삭제 완료');
+    console.log('채팅방 삭제 완료', res.data);
     return res.data
 };
 
