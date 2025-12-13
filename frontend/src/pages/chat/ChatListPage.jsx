@@ -51,7 +51,7 @@ const ChatListPage = () => {
     }, [userId]); // userId가 바뀌면 다시 호출
 
     const handleSelectRoom = (roomId) => {
-        window.location.href = `/chat/${roomId}`; // 라우팅 방식에 따라 변경 가능
+        window.location.href = `/chat/rooms/${roomId}`; // 라우팅 방식에 따라 변경 가능
     };
 
     return (
