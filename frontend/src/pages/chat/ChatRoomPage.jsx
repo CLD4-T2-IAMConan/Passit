@@ -46,11 +46,9 @@ const ChatRoomPage = () => {
     // WebSocket 연결 + 새 방 시스템 메시지
     useEffect(() => {
         if (!chatroomId) return;
-
         connect({
             onConnect: () => {
                 console.log("📡 WebSocket 연결됨");
-
                 if (isNewRoom) {
                     stompClient.current.send(
                         `/app/chat/${chatroomId}/system`,
@@ -62,9 +60,8 @@ const ChatRoomPage = () => {
                         })
                     );
                 }
-            },
+            }
         });
-
         return () => disconnect();
     }, [chatroomId, isNewRoom]);
 
