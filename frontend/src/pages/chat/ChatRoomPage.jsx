@@ -24,7 +24,7 @@ const ChatRoomPage = () => {
                     const exists = prev.some(m => m.messageId === msg.messageId);
                     if (exists) return prev; // 이미 있으면 추가 X
                     return [...prev, msg]; // 새 메시지만 추가 O
-                });    
+                });  
             },
         });
 
@@ -65,7 +65,7 @@ const ChatRoomPage = () => {
         return () => disconnect();
     }, [chatroomId, isNewRoom]);
 
-    // 일반 메시지 전송
+    // 일반 메시지 전송, messageId, sentAt은 서버에서 처리하는 값들
     const handleSend = (text) => {
         const newMessage = {
             chatroomId: Number(chatroomId),

@@ -28,6 +28,7 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
         }
     };
     
+    // 서버로 전송
     const sendMessage = (payload) => {
         const client = stompClientRef.current;
         if (!client || !client.connected) {
@@ -39,6 +40,7 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
             {},
             JSON.stringify(payload)
         );
+        console.log('이거 확인', JSON.stringify(payload));
     };
 
     return {
