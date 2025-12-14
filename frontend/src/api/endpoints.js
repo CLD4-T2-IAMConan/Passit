@@ -82,11 +82,26 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/support/tickets/${id}`,
   },
 
-  // 공지 (Notice)
-  NOTICE: {
-    USER_LIST: "/api/notices",
-    DETAIL: (noticeId) => `/api/notices/${noticeId}`,
-    ADMIN_CREATE: "/api/admin/notices",
+// 공지 (Notice)
+NOTICE: {
+  USER_LIST: "/cs/notices",
+  DETAIL: (noticeId) => `/cs/notices/${noticeId}`,
+
+  // 관리자 (너희 백엔드가 /admin/notices 인지 /cs/admin/notices 인지에 따라 조정)
+  ADMIN_CREATE: "/admin/notices",
+},
+
+  // 신고 (Reports)
+  REPORTS: {
+    // 사용자
+    CREATE: "/cs/reports",
+    MY_LIST: (userId) => "/cs/reports/" + userId,
+    MY_DETAIL: (reportId) => "/reports/" + reportId,
+
+    // 관리자
+    ADMIN_LIST: "/admin/reports",
+    ADMIN_DETAIL: (reportId) => "/admin/reports/" + reportId,
+    UPDATE_STATUS: (reportId) => "/admin/reports/" + reportId + "/status",
   },
 };
 

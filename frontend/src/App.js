@@ -18,6 +18,12 @@ import ChatRoomPage from "./pages/chat/ChatRoomPage";
 import NoticePage from "./pages/cs/NoticePage";
 import NoticeListPage from "./pages/cs/NoticeListPage";
 
+import ReportCreatePage from "./pages/cs/ReportCreatePage";
+import ReportListPage from "./pages/cs/ReportListPage";
+import ReportDetailPage from "./pages/cs/ReportDetailPage";
+import AdminReportListPage from "./pages/admin/AdminReportListPage";
+import AdminReportDetailPage from "./pages/admin/AdminReportDetailPage";
+
 //  관리자 공지
 import AdminNoticeListPage from "./pages/admin/AdminNoticeListPage";
 import AdminNoticeCreatePage from "./pages/admin/AdminNoticeCreatePage";
@@ -186,6 +192,59 @@ function App() {
                   element={
                     <PrivateRoute adminOnly={true}>
                       <AdminNoticeEditPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* CS - 공지 (유저용) */}
+                <Route path="/cs/notices" element={<NoticeListPage />} />
+                <Route path="/cs/notices/:noticeId" element={<NoticePage />} />
+
+                {/* CS - 신고 (유저용) */}
+                <Route
+                  path="/cs/reports/new"
+                  element={
+                    <PrivateRoute>
+                      <ReportCreatePage />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  path="/cs/reports"
+                  element={
+                    <PrivateRoute>
+                      <ReportListPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* CS - 신고 상세 (유저용) */}
+                <Route
+                  path="/cs/reports/:reportId"
+                  element={
+                    <PrivateRoute>
+                      <ReportDetailPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* 관리자 - 신고 관리 */}
+                <Route
+                  path="/admin/reports"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminReportListPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* 관리자 - 신고 상세 */}
+                <Route
+                  path="/admin/reports/:reportId"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminReportDetailPage />
                     </PrivateRoute>
                   }
                 />

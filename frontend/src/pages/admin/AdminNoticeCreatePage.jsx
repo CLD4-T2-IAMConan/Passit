@@ -38,7 +38,6 @@ export default function AdminNoticeCreatePage() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    //  API 붙이면 여기서 create 호출하면 됨
     console.log("[ADMIN NOTICE CREATE] payload =", form);
     alert("등록 버튼 동작 확인 OK (현재는 console.log만)");
     navigate("/admin/notices");
@@ -95,21 +94,14 @@ export default function AdminNoticeCreatePage() {
 
                 <FormControlLabel
                   control={
-                    <Switch
-                      checked={form.is_pinned}
-                      onChange={onToggle("is_pinned")}
-                    />
+                    <Switch checked={form.is_pinned} onChange={onToggle("is_pinned")} />
                   }
                   label={form.is_pinned ? "상단고정" : "상단고정 해제"}
                 />
               </Stack>
 
               <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button
-                  variant="outlined"
-                  type="button"
-                  onClick={() => setForm(initial)}
-                >
+                <Button variant="outlined" type="button" onClick={() => setForm(initial)}>
                   초기화
                 </Button>
                 <Button variant="contained" type="submit">

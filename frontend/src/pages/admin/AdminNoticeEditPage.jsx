@@ -24,9 +24,8 @@ export default function AdminNoticeEditPage() {
     is_pinned: false,
   });
 
-  //  더미 데이터로 "기존 값 채워진 폼" 구현
   useEffect(() => {
-    //  API 붙이면 여기서 상세 조회 호출해서 setForm 하면 됨
+    // ✅ 더미 데이터로 기존값 세팅
     const dummy = {
       title: `공지사항 제목 ${id}`,
       content: `공지사항 내용입니다. (더미)\nID = ${id}`,
@@ -46,14 +45,12 @@ export default function AdminNoticeEditPage() {
 
   const onSave = (e) => {
     e.preventDefault();
-    //  API 붙이면 여기서 update 호출
     console.log("[ADMIN NOTICE UPDATE] id =", id, "payload =", form);
     alert("수정 버튼 동작 확인 OK (현재는 console.log만)");
     navigate("/admin/notices");
   };
 
   const onDelete = () => {
-    //  API 붙이면 여기서 delete 호출
     console.log("[ADMIN NOTICE DELETE] id =", id);
     alert("삭제 버튼 동작 확인 OK (현재는 console.log만)");
     navigate("/admin/notices");
@@ -108,21 +105,14 @@ export default function AdminNoticeEditPage() {
 
                 <FormControlLabel
                   control={
-                    <Switch
-                      checked={form.is_pinned}
-                      onChange={onToggle("is_pinned")}
-                    />
+                    <Switch checked={form.is_pinned} onChange={onToggle("is_pinned")} />
                   }
                   label={form.is_pinned ? "상단고정" : "상단고정 해제"}
                 />
               </Stack>
 
               <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button
-                  variant="outlined"
-                  type="button"
-                  onClick={() => navigate("/admin/notices")}
-                >
+                <Button variant="outlined" type="button" onClick={() => navigate("/admin/notices")}>
                   취소
                 </Button>
 

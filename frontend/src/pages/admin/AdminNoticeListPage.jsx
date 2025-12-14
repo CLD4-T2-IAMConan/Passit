@@ -14,7 +14,7 @@ import {
 export default function AdminNoticeListPage() {
   const navigate = useNavigate();
 
-  // ✅ 더미 데이터 (내일 API 붙일 때 여기만 교체)
+  //  더미 데이터 (API 붙일 때 이 배열만 교체)
   const notices = useMemo(
     () => [
       {
@@ -49,16 +49,13 @@ export default function AdminNoticeListPage() {
           관리자 · 공지 관리
         </Typography>
 
-        <Button
-          variant="contained"
-          onClick={() => navigate("/admin/notices/new")}
-        >
+        <Button variant="contained" onClick={() => navigate("/admin/notices/new")}>
           공지 등록
         </Button>
       </Stack>
 
       <Typography sx={{ mt: 1, color: "text.secondary" }}>
-        * 현재는 UI 확인용 더미 데이터입니다. (API 연결은 내일)
+        * 현재는 UI 확인용 더미 데이터입니다. (API 연결은 추후)
       </Typography>
 
       <Divider sx={{ my: 2 }} />
