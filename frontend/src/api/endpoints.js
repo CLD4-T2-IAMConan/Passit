@@ -81,6 +81,14 @@ export const ENDPOINTS = {
     CREATE: "/support/tickets",
     DETAIL: (id) => `/support/tickets/${id}`,
   },
+
+  // 활동 내역 관련
+  ACTIVITIES: {
+    CREATE: "/activities",
+    MY: "/activities/me",
+    RECENT: "/activities/me/recent",
+    STATS: "/activities/me/stats",
+  },
 };
 
 export default ENDPOINTS;
