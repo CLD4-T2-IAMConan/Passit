@@ -48,7 +48,7 @@ const TicketDetailPage = () => {
           setLoading(true);
           setError(null);
 
-          const response = await axios.get(`${TICKET_API_BASE_URL}/tickets/${ticket_id}`);
+          const response = await axios.get(`${TICKET_API_BASE_URL}/api/tickets/${ticket_id}`);
           const apiResponse = response.data;
           if (apiResponse.data === null) {
               throw new Error('API 응답에 티켓 상세 정보가 포함되어 있지 않습니다.');

@@ -7,10 +7,8 @@ import { Button, Stack, Typography, Box, Alert } from '@mui/material'; // Modal 
 import { userService } from "../api/services/userService";
 import DealRejectModal from '../components/Ticket/DealRejectModal';
 import DealAcceptModal from '../components/Ticket/DealAcceptModal';
-import DealCancelModal from '../components/Ticket/DealCancelModal'; // 🚨 외부 컴포넌트 사용
-
-// 🚨 인라인 스타일 제거 (DealCancelModal 내부에서 사용하도록 이전됨)
-// const modalStyle = { ... };
+import DealCancelModal from '../components/Ticket/DealCancelModal';
+import DealConfirmModal from '../components/Ticket/DealConfirmModal';
 
 const API_BASE_URL = 'http://localhost:8083';
 
@@ -29,6 +27,7 @@ const DealAcceptPage = () => {
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false); // 수락 모달 상태
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false); // 거절 모달 상태
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // 취소 모달 상태
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // 🚨 [추가] 구매 확정 모달 상태
     const [isProcessing, setIsProcessing] = useState(false); // API 처리 중 로딩 상태
     const [actionMessage, setActionMessage] = useState(null); // 처리 결과 메시지 (성공/실패)
 
@@ -97,6 +96,12 @@ const DealAcceptPage = () => {
 
     // 구매자는 PENDING 상태일 때만 취소 가능
     const isCancelableByBuyer = isBuyer && isPending;
+
+    // 티켓: SOLD, Deal: PAID, Payments: PAID (paymentsStatus는 dealDetail에 포함되어 있다고 가정)
+        const isReadyForCompletion = isBuyer &&
+                                     deal &&
+                                     deal.dealStatus === 'PAID';
+
 
 
     // ====================================================================
@@ -198,6 +203,37 @@ const DealAcceptPage = () => {
         }
     }, [deal, currentUserId, navigate]);
 
+    // 🚨 5-4. 구매 확정 API 호출 및 처리 핸들러 (수정: 모달 닫기 추가)
+        const handleConfirmCompletion = useCallback(async () => {
+            const dealId = deal?.dealId;
+
+            setIsConfirmModalOpen(false); // 🚨 [수정] 모달을 닫습니다.
+
+            if (!dealId) return;
+
+            setIsProcessing(true);
+            setActionMessage(null);
+
+            try {
+                // PUT /api/deals/{id}/complete 호출
+                await axios.put(`${API_BASE_URL}/api/deals/${dealId}/confirm`, {
+                    currentUserId: currentUserId,
+                });
+
+                setActionMessage('✅ 구매가 최종 확정되었습니다. 거래가 완료 상태로 변경되었습니다.');
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
+            } catch (err) {
+                console.error('❌ 구매 확정 실패:', err);
+                const errorMessage = err.response?.data?.error || "구매 확정 처리 중 오류가 발생했습니다.";
+                setActionMessage(`❌ 처리 실패: ${errorMessage}`);
+                setIsProcessing(false);
+            }
+        }, [deal, currentUserId]);
+
 
     // 6. 렌더링
     if (loading || currentUser === undefined) return <Box sx={{ p: 4 }}>거래 정보를 불러오는 중입니다...</Box>;
@@ -297,6 +333,18 @@ const DealAcceptPage = () => {
                         거래 요청 취소
                     </Button>
                 )}
+
+                {/* 🚨 [구매 확정] 조건 충족 시 구매 확정 버튼 표시 */}
+                                {isReadyForCompletion && (
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => setIsConfirmModalOpen(true)} // 🚨 [수정] 모달 열기
+                                        disabled={isProcessing}
+                                    >
+                                        구매 확정 (거래 완료)
+                                    </Button>
+                                )}
             </Stack>
 
             {/* 8. 모달 영역 */}
@@ -315,12 +363,20 @@ const DealAcceptPage = () => {
                 onConfirmReject={handleConfirmReject}
             />
 
+
+
             {/* 8-3. Deal Cancel Modal (구매자 전용) */}
             <DealCancelModal
                 open={isCancelModalOpen}
                 onClose={() => setIsCancelModalOpen(false)}
                 onConfirmCancel={handleConfirmCancel} // 🚨 구매자 취소 로직 연결
             />
+
+            <DealConfirmModal
+                            open={isConfirmModalOpen}
+                            onClose={() => setIsConfirmModalOpen(false)}
+                            onConfirmCompletion={handleConfirmCompletion} // 확정 API 핸들러 전달
+                        />
         </Box>
     );
 };
