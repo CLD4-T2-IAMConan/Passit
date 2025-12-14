@@ -15,19 +15,30 @@ import "./App.css";
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
 
+// 공지
 import NoticePage from "./pages/cs/NoticePage";
 import NoticeListPage from "./pages/cs/NoticeListPage";
 
+//  관리자 공지
+import AdminNoticeListPage from "./pages/admin/AdminNoticeListPage";
+import AdminNoticeCreatePage from "./pages/admin/AdminNoticeCreatePage";
+import AdminNoticeEditPage from "./pages/admin/AdminNoticeEditPage";
+
+// 신고
 import ReportCreatePage from "./pages/cs/ReportCreatePage";
 import ReportListPage from "./pages/cs/ReportListPage";
 import ReportDetailPage from "./pages/cs/ReportDetailPage";
 import AdminReportListPage from "./pages/admin/AdminReportListPage";
 import AdminReportDetailPage from "./pages/admin/AdminReportDetailPage";
 
-//  관리자 공지
-import AdminNoticeListPage from "./pages/admin/AdminNoticeListPage";
-import AdminNoticeCreatePage from "./pages/admin/AdminNoticeCreatePage";
-import AdminNoticeEditPage from "./pages/admin/AdminNoticeEditPage";
+// 문의 (유저)
+import InquiryListPage from "./pages/cs/InquiryListPage";
+import InquiryDetailPage from "./pages/cs/InquiryDetailPage";
+import InquiryCreatePage from "./pages/cs/InquiryCreatePage";
+
+// 문의 (관리자)
+import AdminInquiryListPage from "./pages/admin/AdminInquiryListPage";
+import AdminInquiryDetailPage from "./pages/admin/AdminInquiryDetailPage";
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -245,6 +256,53 @@ function App() {
                   element={
                     <PrivateRoute adminOnly={true}>
                       <AdminReportDetailPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* CS - 문의 (유저용) */}
+                <Route
+                  path="/cs/inquiries"
+                  element={
+                    <PrivateRoute>
+                      <InquiryListPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  path="/cs/inquiries/new"
+                  element={
+                    <PrivateRoute>
+                      <InquiryCreatePage />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  path="/cs/inquiries/:inquiryId"
+                  element={
+                    <PrivateRoute>
+                      <InquiryDetailPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* CS - 문의 (관리자) */}
+                <Route
+                  path="/admin/inquiries"
+                  element={
+                    <PrivateRoute>
+                      <AdminInquiryListPage />
+                    </PrivateRoute>
+                  }
+                />
+
+                <Route
+                  path="/admin/inquiries/:inquiryId"
+                  element={
+                    <PrivateRoute>
+                      <AdminInquiryDetailPage />
                     </PrivateRoute>
                   }
                 />

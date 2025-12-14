@@ -103,6 +103,19 @@ NOTICE: {
     ADMIN_DETAIL: (reportId) => "/admin/reports/" + reportId,
     UPDATE_STATUS: (reportId) => "/admin/reports/" + reportId + "/status",
   },
+  // 문의 (Inquiries)
+  INQUIRIES: {
+    // 유저
+    CREATE: "/cs/inquiries",
+    LIST: "/cs/inquiries",
+    DETAIL: (inquiryId) => `/cs/inquiries/${inquiryId}`,
+
+    // 관리자
+    ADMIN_LIST: "/admin/cs/inquiries",
+    ADMIN_DETAIL: (inquiryId) => `/admin/cs/inquiries/${inquiryId}`,
+    ADMIN_ANSWER: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/answer`,
+  },
+
 };
 
 export default ENDPOINTS;
