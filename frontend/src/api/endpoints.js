@@ -49,7 +49,7 @@ export const ENDPOINTS = {
     RESET_PASSWORD: "/users/reset-password",
   },
 
-  // 티켓 관련 (추후 구현)
+  // 티켓 관련
   TICKETS: {
     LIST: "/tickets",
     DETAIL: (id) => `/tickets/${id}`,
@@ -59,7 +59,7 @@ export const ENDPOINTS = {
     MY_TICKETS: "/tickets/my",
   },
 
-  // 거래 관련 (추후 구현)
+  // 거래 관련
   TRADES: {
     LIST: "/trades",
     DETAIL: (id) => `/trades/${id}`,
@@ -68,18 +68,25 @@ export const ENDPOINTS = {
     CANCEL: (id) => `/trades/${id}/cancel`,
   },
 
-  // 채팅 관련 (추후 구현)
+  // 채팅 관련
   CHAT: {
     ROOMS: "/chat/rooms",
     MESSAGES: (roomId) => `/chat/rooms/${roomId}/messages`,
     SEND: (roomId) => `/chat/rooms/${roomId}/messages`,
   },
 
-  // 고객 지원 관련 (추후 구현)
+  // 고객 지원 관련
   SUPPORT: {
     TICKETS: "/support/tickets",
     CREATE: "/support/tickets",
     DETAIL: (id) => `/support/tickets/${id}`,
+  },
+
+  // 공지 (Notice)
+  NOTICE: {
+    USER_LIST: "/api/notices",
+    DETAIL: (noticeId) => `/api/notices/${noticeId}`,
+    ADMIN_CREATE: "/api/admin/notices",
   },
 };
 

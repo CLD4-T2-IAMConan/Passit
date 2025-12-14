@@ -3,7 +3,7 @@ service-cs:
   container_name: passit-service-cs
   platform: linux/amd64
   ports:
-    - "${CS_PORT:-8080}:8080"
+    - "${CS_PORT:-8085}:8085"
   environment:
     DB_HOST: mysql
     DB_PORT: 3306
@@ -16,7 +16,7 @@ service-cs:
   networks:
     - passit-network
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+    test: ["CMD", "curl", "-f", "http://localhost:8085/api/health"]
     interval: 30s
     timeout: 10s
     retries: 3
