@@ -220,7 +220,7 @@ function App() {
                 />
 
                 <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
-                <Route path="/chat/ticket/:ticket_id" element={<DealAcceptPage />} />
+                <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
                 <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
                 <Route path="/buyer/payment/:payment_id/result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" />} />

@@ -42,7 +42,7 @@ const modalStyle = {
 const BuyerPaymentPage = () => {
     // URL에서 payment_id를 가져옴 (라우팅: /buyer/payment/:payment_id)
     const { payment_id } = useParams();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // navigate는 결제 성공/실패 후 리다이렉트를 위해 유지
 
     // 상태 관리
     const [payments, setPayments] = useState(null);
@@ -52,7 +52,7 @@ const BuyerPaymentPage = () => {
     const [error, setError] = useState(null);
 
     // 🌟 모달 상태
-    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    // 🚨 isCancelModalOpen 상태 제거
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     // ----------------------------------------------------
@@ -67,7 +67,6 @@ const BuyerPaymentPage = () => {
 
         try {
             setLoading(true);
-            // 프론트에서 payment_id로, 백엔드에서 paymentId로 받음
             const response = await axios.get(`${API_BASE_URL}/api/payments/${payment_id}/details`);
 
             const data = response.data;
@@ -97,38 +96,10 @@ const BuyerPaymentPage = () => {
 
 
     // ----------------------------------------------------
-    // 2. 버튼 핸들러 (취소 로직)
+    // 2. 버튼 핸들러 (결제 로직만 남음)
     // ----------------------------------------------------
 
-    // 💡 1. '양도 취소하기' 버튼 클릭 시: 모달 열기
-    const handleCancelClick = () => {
-        setIsCancelModalOpen(true);
-    };
-
-    // 💡 2. 모달 내부 '확인' 버튼 클릭 시: API 호출 (PUT /api/deals/{id}/cancel)
-    const handleConfirmCancel = useCallback(async () => {
-        setIsCancelModalOpen(false); // 모달 닫기
-
-        if (!deal || !deal.dealId) {
-            alert('거래 정보를 찾을 수 없습니다.');
-            return;
-        }
-
-        const endpoint = `${API_BASE_URL}/api/deals/${deal.dealId}/cancel`;
-
-        try {
-            await axios.put(endpoint, {});
-
-            alert("거래가 성공적으로 취소되었습니다.");
-            // 성공 후 구매자 거래 목록 페이지로 이동 가정
-            navigate('/mypage/buyer/deals');
-
-        } catch (err) {
-            const errorMessage = err.response?.data?.message || err.response?.data || '서버 오류가 발생했습니다.';
-            alert(`취소 실패: ${errorMessage}`);
-            fetchPaymentData(); // 실패 시 데이터 새로고침
-        }
-    }, [deal, navigate, fetchPaymentData]);
+    // 🚨 handleCancelClick, handleConfirmCancel 함수 제거
 
     // 💡 1. '결제하기' 버튼 클릭 시: 결제 확인 모달 열기
         const handlePayClick = () => {
@@ -146,7 +117,6 @@ const BuyerPaymentPage = () => {
 
             try {
                 // 1. 백엔드에서 결제 준비 데이터 가져오기 (GET /api/payments/{id}/prepare)
-                // 백엔드에서 NicepayPrepareResponse DTO를 받아옴
                 const prepareResponse = await axios.get(
                     `${API_BASE_URL}/api/payments/${payment_id}/prepare`
                 );
@@ -166,8 +136,7 @@ const BuyerPaymentPage = () => {
                     goodsName: data.goodsName,
 
                     // 🚨 returnUrl: NICEPAY 인증 성공 후 돌아올 URL을 백엔드에서 지정한 URL을 그대로 사용합니다.
-                    // 이 URL은 최종 승인 처리 및 상태 업데이트를 담당하는 페이지여야 합니다.
-                    returnUrl: data.returnUrl, // 예: http://localhost:3000/buyer/payment/결제ID/result
+                    returnUrl: data.returnUrl,
 
                     fnError: function (result) {
                         // 결제 실패 또는 취소 시 NICEPAY가 호출하는 함수
@@ -236,16 +205,9 @@ const BuyerPaymentPage = () => {
             </Card>
 
 
-            {/* 버튼 섹션 */}
+            {/* 버튼 섹션 (결제 버튼만 남음) */}
             <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 5 }}>
-                <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={handleCancelClick}
-                    disabled={!isPaymentPending}
-                >
-                    양도 취소하기
-                </Button>
+                {/* 🚨 양도 취소하기 버튼 제거 */}
                 <Button
                     variant="contained"
                     color="primary"
@@ -256,123 +218,95 @@ const BuyerPaymentPage = () => {
                 </Button>
             </Stack>
 
-            {/* 🌟 커스텀 취소 확인 모달 (파일 내부에 직접 포함) 🌟 */}
+            {/* 🚨 커스텀 취소 확인 모달 전체 제거 */}
+
+            {/* 🌟🌟 결제 정보 확인 모달 (유지) 🌟🌟 */}
             <Modal
-                open={isCancelModalOpen}
-                onClose={() => setIsCancelModalOpen(false)}
-                aria-labelledby="cancel-modal-title"
-                aria-describedby="cancel-modal-description"
+                open={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                aria-labelledby="payment-modal-title"
+                aria-describedby="payment-modal-description"
             >
                 <Box sx={modalStyle}>
-                    <Typography id="cancel-modal-title" variant="h6" component="h2" gutterBottom>
-                        양도 취소 확인
-                    </Typography>
-                    <Typography id="cancel-modal-description" sx={{ mt: 2, mb: 3 }}>
-                        정말로 이 거래를 취소하시겠습니까? 거래가 종료되고 티켓은 재고로 돌아갑니다.
-                    </Typography>
+                    <DialogTitle sx={{ fontWeight: 'bold' }}>결제 정보 확인</DialogTitle>
 
-                    <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3 }}>
-                        <Button variant="outlined" onClick={() => setIsCancelModalOpen(false)}>
+                    <DialogContent dividers sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+                            {/* 🖼️ 좌측: 티켓 이미지 */}
+                            <Box
+                                sx={{
+                                    width: { xs: '100%', sm: '40%' },
+                                    height: '150px',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    border: '1px solid #e0e0e0',
+                                }}
+                            >
+                                <img
+                                    src={ticket.imageUrl || '기본_이미지_URL'}
+                                    alt={ticket.eventName}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            </Box>
+
+                            {/* 📝 우측: 티켓 정보 및 금액 */}
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <Stack spacing={1}>
+                                    <Typography variant="h6" fontWeight="bold">
+                                        {ticket.eventName}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        공연일자: {ticket.eventDate}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        좌석정보: {ticket.seatInfo || '정보 없음'}
+                                    </Typography>
+
+                                    {/* 💰 단위 가격 (payments table의 price 사용을 위해 totalPrice를 역산) */}
+                                    <Typography variant="h6" color="primary" fontWeight="bold" sx={{ mt: 2 }}>
+                                        {(totalPrice / deal.quantity).toLocaleString()}원 / 개
+                                    </Typography>
+
+                                    {/* 🌟 수량 표시 (수량 선택 기능은 제거) */}
+                                    <Typography fontWeight="bold" sx={{ mt: 1 }}>
+                                        수량: {deal.quantity}개
+                                    </Typography>
+                                </Stack>
+                            </Box>
+                        </Box>
+
+                        {/* 💰 총 결제 금액 */}
+                        <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mt: 3, borderTop: '1px solid #eee', pt: 2 }}>
+                            <Typography variant="body1" sx={{ mr: 2 }}>총 결제 금액:</Typography>
+                            <Typography variant="h5" color="error" fontWeight="bold">
+                                {totalPrice.toLocaleString()}원
+                            </Typography>
+                        </Stack>
+                    </DialogContent>
+
+                    {/* 하단 버튼 액션 */}
+                    <DialogActions sx={{ p: 2.5, justifyContent: 'center' }}>
+                        <Button
+                            onClick={() => setIsPaymentModalOpen(false)}
+                            color="inherit"
+                            variant="outlined"
+                            sx={{ borderRadius: '8px' }}
+                        >
                             취소
                         </Button>
                         <Button
+                            onClick={handleConfirmPayment}
                             variant="contained"
-                            color="error"
-                            onClick={handleConfirmCancel} // API 호출 함수 연결
+                            color="primary"
+                            sx={{ borderRadius: '8px', px: 4 }}
                         >
-                            확인 (취소)
+                            결제하기
                         </Button>
-                    </Stack>
+                    </DialogActions>
+
                 </Box>
             </Modal>
-
-            {/* 🌟🌟 2. 결제 정보 확인 모달 (새로 추가) 🌟🌟 */}
-                        <Modal
-                            open={isPaymentModalOpen}
-                            onClose={() => setIsPaymentModalOpen(false)}
-                            aria-labelledby="payment-modal-title"
-                            aria-describedby="payment-modal-description"
-                        >
-                            <Box sx={modalStyle}>
-                                <DialogTitle sx={{ fontWeight: 'bold' }}>결제 정보 확인</DialogTitle>
-
-                                <DialogContent dividers sx={{ p: 2 }}>
-                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
-
-                                        {/* 🖼️ 좌측: 티켓 이미지 */}
-                                        <Box
-                                            sx={{
-                                                width: { xs: '100%', sm: '40%' },
-                                                height: '150px',
-                                                borderRadius: '12px',
-                                                overflow: 'hidden',
-                                                border: '1px solid #e0e0e0',
-                                            }}
-                                        >
-                                            <img
-                                                src={ticket.imageUrl || '기본_이미지_URL'}
-                                                alt={ticket.eventName}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            />
-                                        </Box>
-
-                                        {/* 📝 우측: 티켓 정보 및 금액 */}
-                                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                            <Stack spacing={1}>
-                                                <Typography variant="h6" fontWeight="bold">
-                                                    {ticket.eventName}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    공연일자: {ticket.eventDate}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    좌석정보: {ticket.seatInfo || '정보 없음'}
-                                                </Typography>
-
-                                                {/* 💰 단위 가격 (payments table의 price 사용을 위해 totalPrice를 역산) */}
-                                                <Typography variant="h6" color="primary" fontWeight="bold" sx={{ mt: 2 }}>
-                                                    {(totalPrice / deal.quantity).toLocaleString()}원 / 개
-                                                </Typography>
-
-                                                {/* 🌟 수량 표시 (수량 선택 기능은 제거) */}
-                                                <Typography fontWeight="bold" sx={{ mt: 1 }}>
-                                                    수량: {deal.quantity}개
-                                                </Typography>
-                                            </Stack>
-                                        </Box>
-                                    </Box>
-
-                                    {/* 💰 총 결제 금액 */}
-                                    <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mt: 3, borderTop: '1px solid #eee', pt: 2 }}>
-                                        <Typography variant="body1" sx={{ mr: 2 }}>총 결제 금액:</Typography>
-                                        <Typography variant="h5" color="error" fontWeight="bold">
-                                            {totalPrice.toLocaleString()}원
-                                        </Typography>
-                                    </Stack>
-                                </DialogContent>
-
-                                {/* 하단 버튼 액션 */}
-                                <DialogActions sx={{ p: 2.5, justifyContent: 'center' }}>
-                                    <Button
-                                        onClick={() => setIsPaymentModalOpen(false)}
-                                        color="inherit"
-                                        variant="outlined"
-                                        sx={{ borderRadius: '8px' }}
-                                    >
-                                        취소
-                                    </Button>
-                                    <Button
-                                        onClick={handleConfirmPayment}
-                                        variant="contained"
-                                        color="primary"
-                                        sx={{ borderRadius: '8px', px: 4 }}
-                                    >
-                                        결제하기
-                                    </Button>
-                                </DialogActions>
-
-                            </Box>
-                        </Modal>
         </Box>
     );
 };
