@@ -1,13 +1,13 @@
-version: "3.8"
-
 services:
   mysql:
     image: mysql:8.0
     container_name: passit-mysql
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_USER: ${MYSQL_USER:-passit_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+      MYSQL_DATABASE: ${DB_NAME:-passit_db}
     ports:
       - "${MYSQL_PORT:-3307}:3306"
     volumes:
@@ -30,10 +30,34 @@ services:
       retries: 5
     networks:
       - passit-network
-    command: --default-authentication-plugin=mysql_native_password
+
+  service-trade:
+    image: ghcr.io/cld4-t2-iamconan/service-trade:sha-b14ca52
+    container_name: passit-service-trade
+    platform: linux/amd64
+    ports:
+      - "${TRADE_PORT:-8083}:8083"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   service-account:
-    image: ghcr.io/cld4-t2-iamconan/service-account:sha-ab4a899
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-03f379e
     container_name: passit-service-account
     platform: linux/amd64
     ports:
@@ -66,8 +90,33 @@ services:
       retries: 3
       start_period: 40s
 
+  service-chat:
+    image: ghcr.io/cld4-t2-iamconan/service-chat:sha-cc0fd5b
+    container_name: passit-service-chat
+    platform: linux/amd64
+    ports:
+      - "${CHAT_PORT:-8084}:8084"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   service-ticket:
-    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-7e2d541
+    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-9046348
     container_name: passit-service-ticket
     platform: linux/amd64
     ports:
@@ -78,29 +127,44 @@ services:
       DB_NAME: ${DB_NAME:-passit_db}
       DB_USER: ${MYSQL_USER:-passit_user}
       DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
-
-      # 필요한 경우 추가 가능 (예: 이미지 업로드용 S3, JWT 등)
-      # S3_BUCKET: ${S3_BUCKET}
-      # JWT_SECRET: ${JWT_SECRET}
-
     depends_on:
       mysql:
         condition: service_healthy
     networks:
       - passit-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082/api/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-
-
+  service-cs:
+    image: ghcr.io/cld4-t2-iamconan/service-cs:sha-662714c
+    container_name: passit-service-cs
+    platform: linux/amd64
+    ports:
+      - "${CS_PORT:-8085}:8085"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-passit_db}
+      DB_USER: ${MYSQL_USER:-passit_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - passit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   mysql_data:
-    driver: local
 
 networks:
   passit-network:
