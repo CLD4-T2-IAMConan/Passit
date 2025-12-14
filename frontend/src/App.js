@@ -15,6 +15,8 @@ import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
 import TicketCreatePage from "./pages/TicketCreatePage";
 import TicketListPage from "./pages/TicketListPage";
+import MyTicketListPage from "./pages/MyTicketListPage";
+
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -231,6 +233,9 @@ function App() {
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
                 <Route path="/sell" element={<TicketCreatePage />} />
                 <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/my" element={<MyTicketListPage />} />
+
+
               </Routes>
             </Suspense>
           </Router>
