@@ -221,8 +221,8 @@ function App() {
 
                 <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
                 <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
-                <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
-                <Route path="/buyer/payment/:payment_id/result" element={<PaymentResultPage />} />
+                <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
+                <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/chat" element={<ChatListPage />} />
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
