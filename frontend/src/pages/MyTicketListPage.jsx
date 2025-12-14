@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Container,
@@ -16,6 +17,7 @@ import {
 import ticketService from "../api/services/ticketService";
 
 const MyTicketListPage = () => {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [error, setError] = useState("");
 
@@ -90,9 +92,14 @@ const MyTicketListPage = () => {
                   {/* UI만 */}
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button size="small" variant="outlined" disabled>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => navigate(`/my/tickets/${ticket.ticketId}/edit`)}
+                      >
                         수정
                       </Button>
+
                       <Button
                         size="small"
                         variant="outlined"
