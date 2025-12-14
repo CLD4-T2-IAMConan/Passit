@@ -58,6 +58,7 @@ const HomePage = () => {
   const menuItems = [
     { label: "마이페이지", path: "/mypage" },
     { label: "판매등록", path: "/sell" },
+    { label: "티켓", path: "/tickets" },
     { label: "안내", path: "/guide" },
     { label: "고객센터", path: "/support" },
   ];
