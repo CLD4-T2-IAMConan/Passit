@@ -14,7 +14,7 @@ CREATE TABLE deal (
     deal_at DATETIME NOT NULL,
 
     -- ENUM 값은 예시입니다. 실제 사용하시는 값으로 수정해야 합니다.
-    deal_status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELED', 'EXPIRED') NOT NULL,
+    deal_status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'PAID', 'CANCELED', 'EXPIRED') NOT NULL,
 
     quantity INT NOT NULL,
     expire_at DATETIME NOT NULL,
