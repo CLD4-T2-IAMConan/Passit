@@ -116,7 +116,7 @@ services:
       start_period: 40s
 
   service-ticket:
-    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-9046348
+    image: ghcr.io/cld4-t2-iamconan/service-ticket:sha-c469e60
     container_name: passit-service-ticket
     platform: linux/amd64
     ports:

@@ -13,6 +13,10 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
+import TicketCreatePage from "./pages/TicketCreatePage";
+import TicketListPage from "./pages/TicketListPage";
+import MyTicketListPage from "./pages/MyTicketListPage";
+import TicketEditPage from "./pages/TicketEditPage";
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -23,6 +27,7 @@ const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
 // 마이페이지
 const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
 const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
+const ActivityPage = lazy(() => import("./pages/mypage/ActivityPage"));
 
 // 관리자 페이지
 const AdminDashboardPage = lazy(() =>
@@ -204,6 +209,7 @@ function App() {
                     element={<Navigate to="/mypage/profile" replace />}
                   />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="activities" element={<ActivityPage />} />
                 </Route>
 
                 {/* 관리자 페이지 */}
@@ -227,6 +233,13 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/chat/rooms" element={<ChatListPage />} />
                 <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/chat" element={<ChatListPage />} />
+                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/sell" element={<TicketCreatePage />} />
+                <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/my" element={<MyTicketListPage />} />
+                <Route path="/my/tickets/:ticketId/edit" element={<TicketEditPage />} />
+
               </Routes>
             </Suspense>
           </Router>
