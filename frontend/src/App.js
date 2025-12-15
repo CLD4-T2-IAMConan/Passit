@@ -14,6 +14,10 @@ import "./App.css";
 
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
+import TicketCreatePage from "./pages/TicketCreatePage";
+import TicketListPage from "./pages/TicketListPage";
+import MyTicketListPage from "./pages/MyTicketListPage";
+import TicketEditPage from "./pages/TicketEditPage";
 
 // 네비게이션
 import NavBar from "./components/NavBar";
@@ -59,6 +63,7 @@ const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
 // 마이페이지
 const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
 const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
+const ActivityPage = lazy(() => import("./pages/mypage/ActivityPage"));
 
 // 관리자
 const AdminUserManagementPage = lazy(() =>
@@ -119,6 +124,7 @@ function App() {
                 >
                   <Route index element={<Navigate to="/mypage/profile" replace />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="activities" element={<ActivityPage />} />
                 </Route>
 
                 {/* 관리자 */}
@@ -285,6 +291,20 @@ function App() {
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
 
                 <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
+                <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
+                <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
+                <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/chat/rooms" element={<ChatListPage />} />
+                <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/chat" element={<ChatListPage />} />
+                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/sell" element={<TicketCreatePage />} />
+                <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/my" element={<MyTicketListPage />} />
+                <Route path="/my/tickets/:ticketId/edit" element={<TicketEditPage />} />
+
               </Routes>
             </Suspense>
           </Router>

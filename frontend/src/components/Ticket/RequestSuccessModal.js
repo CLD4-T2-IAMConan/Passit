@@ -1,10 +1,11 @@
-// src/components/Ticket/RequestSuccessModal.js (새로 생성)
+// src/components/Ticket/RequestSuccessModal.js
 
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Button, DialogActions, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-const RequestSuccessModal = ({ open, onClose }) => {
+// 🚨 onConfirmReload prop을 추가합니다.
+const RequestSuccessModal = ({ open, onClose, onConfirmReload }) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', color: 'green' }}>
@@ -19,7 +20,11 @@ const RequestSuccessModal = ({ open, onClose }) => {
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="contained" color="primary">
+        <Button
+          onClick={onConfirmReload} // 이 함수가 새로고침을 담당
+          variant="contained"
+          color="primary"
+        >
           확인
         </Button>
       </DialogActions>

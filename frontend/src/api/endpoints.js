@@ -53,10 +53,10 @@ export const ENDPOINTS = {
   TICKETS: {
     LIST: "/tickets",
     DETAIL: (id) => `/tickets/${id}`,
-    CREATE: "/tickets",
-    UPDATE: (id) => `/tickets/${id}`,
-    DELETE: (id) => `/tickets/${id}`,
-    MY_TICKETS: "/tickets/my",
+    MY: "/sellers/tickets",
+    CREATE: "/sellers/tickets",
+    UPDATE: (id) => `/sellers/tickets/${id}`,
+    DELETE: (id) => `/sellers/tickets/${id}`,
   },
 
   // 거래 관련
@@ -128,6 +128,13 @@ NOTICE: {
       ADMIN_DELETE: (faqId) => `/api/admin/faqs/${faqId}`,
     },
 
+  // 활동 내역 관련
+  ACTIVITIES: {
+    CREATE: "/activities",
+    MY: "/activities/me",
+    RECENT: "/activities/me/recent",
+    STATS: "/activities/me/stats",
+  },
 };
 
 export default ENDPOINTS;
