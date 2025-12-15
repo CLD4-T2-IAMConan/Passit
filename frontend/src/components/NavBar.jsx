@@ -50,7 +50,6 @@ export default function NavBar() {
     { label: "마이페이지", path: "/mypage" },
     { label: "판매등록", path: "/sell" },
     { label: "티켓", path: "/tickets" },
-    { label: "My티켓", path: "/my" },
     { label: "안내", path: "/guide" },
   ];
 
