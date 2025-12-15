@@ -2,67 +2,28 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Container,
   TextField,
   InputAdornment,
-  Grid,
   Link,
   Divider,
-  Card,
-  CardContent,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import SecurityIcon from "@mui/icons-material/Security";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { useAuth } from "../contexts/AuthContext";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { user: currentUser, isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     // TODO: 검색 기능 구현
     console.log("검색:", searchQuery);
   };
-
-  const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const menuItems = [
-    { label: "마이페이지", path: "/mypage" },
-    { label: "판매등록", path: "/sell" },
-    { label: "티켓", path: "/tickets" },
-    { label: "My티켓", path: "/my" },
-    { label: "안내", path: "/guide" },
-    { label: "고객센터", path: "/support" },
-  ];
 
   return (
     <Box
@@ -73,172 +34,6 @@ const HomePage = () => {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          bgcolor: "white",
-          color: "text.primary",
-          borderBottom: "1px solid",
-          borderColor: "grey.200",
-          zIndex: 1000,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar
-            sx={{
-              px: { xs: 2, sm: 3 },
-              justifyContent: "space-between",
-            }}
-          >
-            {/* Logo */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                cursor: "pointer",
-              }}
-              onClick={() => navigate("/")}
-            >
-              <Typography
-                variant="h5"
-                component="h1"
-                sx={{
-                  fontWeight: 700,
-                  color: "primary.main",
-                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                }}
-              >
-                Passit
-              </Typography>
-            </Box>
-
-            {/* Menu */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                gap: { md: 2, lg: 3 },
-                flex: 1,
-                justifyContent: "center",
-              }}
-            >
-              {menuItems.map((item) => (
-                <Button
-                  key={item.label}
-                  color="inherit"
-                  onClick={() => navigate(item.path)}
-                  sx={{
-                    fontSize: "0.938rem",
-                    fontWeight: 500,
-                    color: "text.primary",
-                    "&:hover": { color: "primary.main" },
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </Box>
-
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <IconButton
-                edge="end"
-                color="inherit"
-                aria-label="menu"
-                onClick={handleMobileMenuToggle}
-                sx={{ ml: 1 }}
-              >
-                {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-              </IconButton>
-            )}
-
-            {/* Login/Logout Button */}
-            {!isMobile && (
-              <Box>
-                {isAuthenticated ? (
-                  <Button
-                    onClick={handleLogout}
-                    variant="outlined"
-                    color="primary"
-                    size="small"
-                    sx={{
-                      fontSize: { xs: "0.813rem", sm: "0.875rem" },
-                      px: { xs: 2, sm: 3 },
-                    }}
-                  >
-                    로그아웃
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => navigate("/auth")}
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    sx={{
-                      fontSize: { xs: "0.813rem", sm: "0.875rem" },
-                      px: { xs: 2, sm: 3 },
-                    }}
-                  >
-                    로그인
-                  </Button>
-                )}
-              </Box>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
-
-      {/* Mobile Menu Drawer */}
-      <Drawer
-        anchor="right"
-        open={mobileMenuOpen}
-        onClose={handleMobileMenuToggle}
-        sx={{
-          display: { md: "none" },
-        }}
-      >
-        <Box sx={{ width: 250, pt: 2 }}>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.label} disablePadding>
-                <ListItemButton
-                  onClick={() => {
-                    navigate(item.path);
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  if (isAuthenticated) {
-                    handleLogout();
-                  } else {
-                    navigate("/auth");
-                  }
-                  setMobileMenuOpen(false);
-                }}
-                sx={{ mt: 2 }}
-              >
-                <ListItemText
-                  primary={isAuthenticated ? "로그아웃" : "로그인"}
-                  primaryTypographyProps={{
-                    color: "primary",
-                    fontWeight: 600,
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </Box>
-      </Drawer>
-
       {/* Main Content - Hero Section */}
       <Box
         sx={{
