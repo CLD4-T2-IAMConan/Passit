@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  Container,
+  Box,
   Typography,
   Table,
   TableBody,
@@ -32,10 +32,7 @@ const MyTicketListPage = () => {
       console.error("My 티켓 조회 실패:", err);
 
       if (err.response) {
-        setError(
-          err.response.data?.error ||
-            `요청 실패 (status: ${err.response.status})`
-        );
+        setError(err.response.data?.error || `요청 실패 (status: ${err.response.status})`);
       } else {
         setError("서버와 통신할 수 없습니다.");
       }
@@ -47,7 +44,7 @@ const MyTicketListPage = () => {
   }, []);
 
   return (
-    <Container sx={{ mt: 10 }}>
+    <Box>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
         My 티켓
       </Typography>
@@ -85,9 +82,7 @@ const MyTicketListPage = () => {
                   <TableCell>{ticket.ticketStatus}</TableCell>
                   <TableCell>{ticket.eventName}</TableCell>
                   <TableCell>{ticket.eventDate}</TableCell>
-                  <TableCell>
-                    {ticket.sellingPrice?.toLocaleString()}원
-                  </TableCell>
+                  <TableCell>{ticket.sellingPrice?.toLocaleString()}원</TableCell>
 
                   {/* UI만 */}
                   <TableCell align="right">
@@ -95,17 +90,12 @@ const MyTicketListPage = () => {
                       <Button
                         size="small"
                         variant="outlined"
-                        onClick={() => navigate(`/my/tickets/${ticket.ticketId}/edit`)}
+                        onClick={() => navigate(`/mypage/my-tickets/${ticket.ticketId}/edit`)}
                       >
                         수정
                       </Button>
 
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        disabled
-                      >
+                      <Button size="small" variant="outlined" color="error" disabled>
                         삭제
                       </Button>
                     </Stack>
@@ -116,7 +106,7 @@ const MyTicketListPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </Box>
   );
 };
 

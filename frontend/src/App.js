@@ -1,10 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -66,12 +61,8 @@ const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
 const ActivityPage = lazy(() => import("./pages/mypage/ActivityPage"));
 
 // 관리자
-const AdminUserManagementPage = lazy(() =>
-  import("./pages/admin/AdminUserManagementPage")
-);
-const AdminCategoryManagementPage = lazy(() =>
-  import("./pages/admin/AdminCategoryManagementPage")
-);
+const AdminUserManagementPage = lazy(() => import("./pages/admin/AdminUserManagementPage"));
+const AdminCategoryManagementPage = lazy(() => import("./pages/admin/AdminCategoryManagementPage"));
 
 // PrivateRoute
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
@@ -102,11 +93,7 @@ function App() {
         <CssBaseline />
         <AuthProvider>
           <Router>
-            <Suspense
-              fallback={
-                <LoadingSpinner fullPage message="페이지를 불러오는 중..." />
-              }
-            >
+            <Suspense fallback={<LoadingSpinner fullPage message="페이지를 불러오는 중..." />}>
               {/* 네비게이션 */}
               <NavBar />
 
@@ -128,6 +115,8 @@ function App() {
                   <Route index element={<Navigate to="/mypage/profile" replace />} />
                   <Route path="profile" element={<ProfilePage />} />
                   <Route path="activities" element={<ActivityPage />} />
+                  <Route path="my-tickets" element={<MyTicketListPage />} />
+                  <Route path="my-tickets/:ticketId/edit" element={<TicketEditPage />} />
                 </Route>
 
                 {/* 관리자 */}
@@ -313,9 +302,6 @@ function App() {
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
                 <Route path="/sell" element={<TicketCreatePage />} />
                 <Route path="/tickets" element={<TicketListPage />} />
-                <Route path="/my" element={<MyTicketListPage />} />
-                <Route path="/my/tickets/:ticketId/edit" element={<TicketEditPage />} />
-
               </Routes>
             </Suspense>
           </Router>

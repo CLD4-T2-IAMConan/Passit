@@ -32,7 +32,7 @@ services:
       - passit-network
 
   service-trade:
-    image: ghcr.io/cld4-t2-iamconan/service-trade:sha-b14ca52
+    image: ghcr.io/cld4-t2-iamconan/service-trade:sha-6b1f19a
     container_name: passit-service-trade
     platform: linux/amd64
     ports:
@@ -57,7 +57,7 @@ services:
       start_period: 40s
 
   service-account:
-    image: ghcr.io/cld4-t2-iamconan/service-account:sha-03f379e
+    image: ghcr.io/cld4-t2-iamconan/service-account:sha-54917a6
     container_name: passit-service-account
     platform: linux/amd64
     ports:
@@ -91,7 +91,7 @@ services:
       start_period: 40s
 
   service-chat:
-    image: ghcr.io/cld4-t2-iamconan/service-chat:sha-cc0fd5b
+    image: ghcr.io/cld4-t2-iamconan/service-chat:sha-187a9c8
     container_name: passit-service-chat
     platform: linux/amd64
     ports:
@@ -138,7 +138,7 @@ services:
     networks:
       - passit-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082/api/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3

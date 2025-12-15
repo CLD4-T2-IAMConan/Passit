@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  Alert,
-} from "@mui/material";
+import { Box, Typography, TextField, Button, Stack, Alert } from "@mui/material";
 import ticketService from "../api/services/ticketService";
 
 const TicketEditPage = () => {
@@ -81,14 +74,14 @@ const TicketEditPage = () => {
       }
 
       await ticketService.updateTicket(ticketId, formData);
-      navigate("/my");
+      navigate("/mypage/my-tickets");
     } catch (err) {
       setError("티켓 수정 중 오류가 발생했습니다.");
     }
   };
 
   return (
-    <Container sx={{ mt: 10 }}>
+    <Box>
       <Typography variant="h5" sx={{ mb: 3 }}>
         티켓 수정
       </Typography>
@@ -96,12 +89,7 @@ const TicketEditPage = () => {
       {error && <Alert severity="error">{error}</Alert>}
 
       <Stack spacing={2}>
-        <TextField
-          label="공연명"
-          name="eventName"
-          value={form.eventName}
-          onChange={handleChange}
-        />
+        <TextField label="공연명" name="eventName" value={form.eventName} onChange={handleChange} />
 
         <TextField
           label="공연 날짜"
@@ -130,11 +118,7 @@ const TicketEditPage = () => {
 
         {/* 이미지 */}
         {imagePreview && (
-          <img
-            src={imagePreview}
-            alt="미리보기"
-            style={{ width: 200, borderRadius: 8 }}
-          />
+          <img src={imagePreview} alt="미리보기" style={{ width: 200, borderRadius: 8 }} />
         )}
 
         <Button variant="outlined" component="label">
@@ -146,7 +130,7 @@ const TicketEditPage = () => {
           수정 완료
         </Button>
       </Stack>
-    </Container>
+    </Box>
   );
 };
 
