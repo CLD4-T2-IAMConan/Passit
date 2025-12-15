@@ -15,11 +15,14 @@ import "./App.css";
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
 
+// 네비게이션
+import NavBar from "./components/NavBar";
+
 // 공지
 import NoticePage from "./pages/cs/NoticePage";
 import NoticeListPage from "./pages/cs/NoticeListPage";
 
-//  관리자 공지
+// 관리자 공지
 import AdminNoticeListPage from "./pages/admin/AdminNoticeListPage";
 import AdminNoticeCreatePage from "./pages/admin/AdminNoticeCreatePage";
 import AdminNoticeEditPage from "./pages/admin/AdminNoticeEditPage";
@@ -40,7 +43,14 @@ import InquiryCreatePage from "./pages/cs/InquiryCreatePage";
 import AdminInquiryListPage from "./pages/admin/AdminInquiryListPage";
 import AdminInquiryDetailPage from "./pages/admin/AdminInquiryDetailPage";
 
-// 코드 스플리팅 - 페이지별 lazy loading
+// FAQ
+import FaqListPage from "./pages/cs/FaqListPage";
+import FaqPage from "./pages/cs/FaqPage";
+import AdminFaqListPage from "./pages/admin/AdminFaqListPage";
+import AdminFaqCreatePage from "./pages/admin/AdminFaqCreatePage";
+import AdminFaqEditPage from "./pages/admin/AdminFaqEditPage";
+
+// lazy pages
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -50,19 +60,19 @@ const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
 const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
 const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
 
-// 관리자 페이지
+// 관리자
 const AdminUserManagementPage = lazy(() =>
   import("./pages/admin/AdminUserManagementPage")
 );
 
-// Private Route
+// PrivateRoute
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
 const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
 const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
 const BuyerPaymentPage = lazy(() => import("./pages/BuyerPaymentPage"));
 const PaymentResultPage = lazy(() => import("./pages/PaymentResultPage"));
 
-// 커스텀 테마 생성
+// 테마
 const theme = createTheme({
   typography: {
     fontFamily: [
@@ -75,67 +85,9 @@ const theme = createTheme({
       "sans-serif",
     ].join(","),
   },
-  palette: {
-    primary: { main: "#4A90E2" },
-    background: { default: "#F7F8FA", paper: "#FFFFFF" },
-    grey: { 50: "#F7F8FA", 100: "#EFF1F5", 200: "#E5E8EB", 300: "#D1D6DB" },
-  },
-  shape: { borderRadius: 12 },
-  shadows: Array(25).fill("none"),
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          textTransform: "none",
-          fontWeight: 600,
-          boxShadow: "none",
-          "&:hover": { boxShadow: "none" },
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 12,
-            backgroundColor: "#F7F8FA",
-            "& fieldset": { borderColor: "#E5E8EB" },
-            "&:hover fieldset": { borderColor: "#D1D6DB" },
-            "&.Mui-focused fieldset": {
-              borderColor: "#4A90E2",
-              borderWidth: "1px",
-            },
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: { boxShadow: "none", border: "1px solid #E5E8EB" },
-        elevation1: { boxShadow: "none" },
-        elevation2: { boxShadow: "none" },
-        elevation3: { boxShadow: "none" },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          boxShadow: "none",
-          border: "1px solid #E5E8EB",
-          borderRadius: 16,
-        },
-      },
-    },
-    MuiAlert: {
-      styleOverrides: { root: { borderRadius: 12, boxShadow: "none" } },
-    },
-  },
 });
 
 function App() {
-  console.log("API BASE URL:", process.env.REACT_APP_API_BASE_URL);
-
   return (
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
@@ -147,13 +99,13 @@ function App() {
                 <LoadingSpinner fullPage message="페이지를 불러오는 중..." />
               }
             >
+              {/* 네비게이션 */}
+              <NavBar />
+
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
-                <Route
-                  path="/auth/kakao/callback"
-                  element={<KakaoCallbackPage />}
-                />
+                <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* 마이페이지 */}
@@ -169,9 +121,8 @@ function App() {
                   <Route path="profile" element={<ProfilePage />} />
                 </Route>
 
-                {/* 관리자 페이지 */}
+                {/* 관리자 */}
                 <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
-
                 <Route
                   path="/admin/users"
                   element={
@@ -181,7 +132,7 @@ function App() {
                   }
                 />
 
-                {/*  관리자 - 공지 관리 (UI 껍데기) */}
+                {/* 관리자 공지 */}
                 <Route
                   path="/admin/notices"
                   element={
@@ -207,20 +158,11 @@ function App() {
                   }
                 />
 
-                {/* CS - 공지 (유저용) */}
+                {/* CS 공지 */}
                 <Route path="/cs/notices" element={<NoticeListPage />} />
                 <Route path="/cs/notices/:noticeId" element={<NoticePage />} />
 
-                {/* CS - 신고 (유저용) */}
-                <Route
-                  path="/cs/reports/new"
-                  element={
-                    <PrivateRoute>
-                      <ReportCreatePage />
-                    </PrivateRoute>
-                  }
-                />
-
+                {/* 신고 */}
                 <Route
                   path="/cs/reports"
                   element={
@@ -229,8 +171,14 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-
-                {/* CS - 신고 상세 (유저용) */}
+                <Route
+                  path="/cs/reports/new"
+                  element={
+                    <PrivateRoute>
+                      <ReportCreatePage />
+                    </PrivateRoute>
+                  }
+                />
                 <Route
                   path="/cs/reports/:reportId"
                   element={
@@ -240,7 +188,7 @@ function App() {
                   }
                 />
 
-                {/* 관리자 - 신고 관리 */}
+                {/* 관리자 신고 */}
                 <Route
                   path="/admin/reports"
                   element={
@@ -249,8 +197,6 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-
-                {/* 관리자 - 신고 상세 */}
                 <Route
                   path="/admin/reports/:reportId"
                   element={
@@ -260,7 +206,7 @@ function App() {
                   }
                 />
 
-                {/* CS - 문의 (유저용) */}
+                {/* 문의 */}
                 <Route
                   path="/cs/inquiries"
                   element={
@@ -269,7 +215,6 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-
                 <Route
                   path="/cs/inquiries/new"
                   element={
@@ -278,7 +223,6 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-
                 <Route
                   path="/cs/inquiries/:inquiryId"
                   element={
@@ -288,37 +232,53 @@ function App() {
                   }
                 />
 
-                {/* CS - 문의 (관리자) */}
+                {/* 관리자 문의 */}
                 <Route
                   path="/admin/inquiries"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute adminOnly={true}>
                       <AdminInquiryListPage />
                     </PrivateRoute>
                   }
                 />
-
                 <Route
                   path="/admin/inquiries/:inquiryId"
                   element={
-                    <PrivateRoute>
+                    <PrivateRoute adminOnly={true}>
                       <AdminInquiryDetailPage />
                     </PrivateRoute>
                   }
                 />
 
-                {/* 거래/결제 */}
-                <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
-                <Route path="/chat/ticket/:ticket_id" element={<DealAcceptPage />} />
-                <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
-                <Route
-                  path="/buyer/payment/:payment_id/result"
-                  element={<PaymentResultPage />}
-                />
+                {/* FAQ */}
+                <Route path="/cs/faqs" element={<FaqListPage />} />
+                <Route path="/cs/faqs/:faqId" element={<FaqPage />} />
 
-                {/* CS - 공지 (유저용) */}
-                <Route path="/cs/notices" element={<NoticeListPage />} />
-                <Route path="/cs/notices/:noticeId" element={<NoticePage />} />
+                {/* 관리자 FAQ */}
+                <Route
+                  path="/admin/faqs"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminFaqListPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/admin/faqs/new"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminFaqCreatePage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/admin/faqs/:faqId/edit"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminFaqEditPage />
+                    </PrivateRoute>
+                  }
+                />
 
                 {/* 채팅 */}
                 <Route path="/chat" element={<ChatListPage />} />

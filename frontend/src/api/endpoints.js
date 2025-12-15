@@ -116,6 +116,18 @@ NOTICE: {
     ADMIN_ANSWER: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/answer`,
   },
 
+  // FAQ
+    FAQ: {
+      USER_LIST: "/api/faqs",
+      DETAIL: (faqId) => `/api/faqs/${faqId}`,
+
+      ADMIN_LIST: "/api/admin/faqs",
+      ADMIN_CREATE: "/api/admin/faqs",
+      ADMIN_DETAIL: (faqId) => `/api/admin/faqs/${faqId}`,
+      ADMIN_UPDATE: (faqId) => `/api/admin/faqs/${faqId}`,
+      ADMIN_DELETE: (faqId) => `/api/admin/faqs/${faqId}`,
+    },
+
 };
 
 export default ENDPOINTS;
