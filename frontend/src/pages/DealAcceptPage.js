@@ -1,264 +1,382 @@
 // src/pages/DealAcceptPage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Stack, Typography, Box, Alert, Modal } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // 아이콘은 그대로 유지
+import { Button, Stack, Typography, Box, Alert } from '@mui/material'; // Modal 제거
+import { userService } from "../api/services/userService";
+import DealRejectModal from '../components/Ticket/DealRejectModal';
+import DealAcceptModal from '../components/Ticket/DealAcceptModal';
+import DealCancelModal from '../components/Ticket/DealCancelModal';
+import DealConfirmModal from '../components/Ticket/DealConfirmModal';
 
-// ⚠️ 임시로 로그인된 사용자 ID 설정 (실제는 인증 시스템에서 가져와야 함)
-const currentUserId = 4;
 const API_BASE_URL = 'http://localhost:8083';
 
 const DealAcceptPage = () => {
-    const { ticket_id } = useParams();
+    // URL에서 deal_id를 가져옵니다.
+    const { deal_id } = useParams();
     const navigate = useNavigate();
 
-    const [ticket, setTicket] = useState(null);
-    const [dealRequest, setDealRequest] = useState(null); // PENDING 거래 요청 정보
+    // 1. 상태 관리
+    const [dealDetail, setDealDetail] = useState(null); // DealDetailResponse 정보를 저장
+    const [currentUser, setCurrentUser] = useState(undefined); // undefined: 로딩 중, null: 로딩 실패/미로그인
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // const [dealData, setDealData] = useState(null); // 기존 코드에서 중복된 dealData 상태 제거
 
-    // 💡 1. 모달 상태 추가 및 핸들러 정의
-    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false); // 🌟 수락 모달 상태 추가
+    // 모달 및 액션 상태
+    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false); // 수락 모달 상태
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false); // 거절 모달 상태
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false); // 취소 모달 상태
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // 🚨 [추가] 구매 확정 모달 상태
+    const [isProcessing, setIsProcessing] = useState(false); // API 처리 중 로딩 상태
+    const [actionMessage, setActionMessage] = useState(null); // 처리 결과 메시지 (성공/실패)
 
-    // 현재 처리 중인 액션을 저장 (accept 또는 reject)
-    const [currentAction, setCurrentAction] = useState(null);
-
-    // 모달 핸들러
-    const handleOpenRejectModal = () => setIsRejectModalOpen(true);
-    const handleCloseRejectModal = () => setIsRejectModalOpen(false);
-    const handleOpenAcceptModal = () => setIsAcceptModalOpen(true); // 🌟 수락 모달 핸들러
-    const handleCloseAcceptModal = () => setIsAcceptModalOpen(false); // 🌟 수락 모달 핸들러
-
-    // 1. 데이터 로딩 (기존 로직 유지)
+    // 2. 사용자 정보 로딩 (인증 시스템 연동)
     useEffect(() => {
-        const fetchDealData = async () => {
-            if (!ticket_id) {
-                setError("티켓 ID가 유효하지 않습니다.");
-                setLoading(false);
-                return;
+        const fetchUserInfo = async () => {
+            try {
+                const response = await userService.getMe();
+                setCurrentUser(response.data); // 예: { userId: 4, username: 'seller1' }
+            } catch (error) {
+                console.error("Failed to fetch user info:", error);
+                setCurrentUser(null); // 로딩 실패 또는 미로그인
             }
+        };
+        fetchUserInfo();
+    }, []);
 
+    // 3. Deal 상세 정보 로딩 (새로운 API 호출)
+    useEffect(() => {
+        if (currentUser === undefined) return;
+
+        if (!deal_id) {
+            setError("거래 ID가 유효하지 않습니다.");
+            setLoading(false);
+            return;
+        }
+
+        const fetchDealDetail = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${API_BASE_URL}/api/deals/ticket/${ticket_id}/request`);
+                setError(null);
 
-                const data = response.data;
-                setTicket(data.ticket);
-                setDealRequest(data.deal);
+                const response = await axios.get(`${API_BASE_URL}/api/deals/${deal_id}/detail`);
+                const apiResponse = response.data;
+
+                if (!apiResponse.success || !apiResponse.data) {
+                    throw new Error(apiResponse.error || '거래 상세 정보를 불러오지 못했습니다.');
+                }
+
+                setDealDetail(apiResponse.data);
 
             } catch (err) {
-                console.error('Failed to fetch deal data:', err);
-                setError('요청 정보를 불러오는 데 실패했습니다. (500)');
+                console.error('❌ Failed to fetch deal detail:', err);
+                const errorMessage = err.response?.data?.error || err.message || '거래 상세 정보를 불러오는 데 실패했습니다.';
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchDealData();
-    }, [ticket_id]);
+        fetchDealDetail();
 
-
-    // 2. 버튼 활성화 및 접근 권한 검증 (기존 로직 유지)
-    const isOwner = ticket && ticket.ownerId === currentUserId;
-    const isPending = dealRequest && dealRequest.dealStatus === 'PENDING';
-    const isButtonActive = isOwner && isPending && ticket && ticket.status === 'RESERVED'; // ticket.status -> ticket.ticketStatus로 수정했을 가능성 고려
+    }, [deal_id, currentUser]);
 
     const handleGoBack = () => navigate(-1);
 
-    // 3. 거래 수락/거절 버튼 클릭 핸들러 (모달 열기)
-    const handleAction = async (action) => {
-        if (!dealRequest || !dealRequest.dealId) {
-            alert('유효한 거래 요청이 없습니다.');
+    // 4. 상태 기반 변수 정의
+    const currentUserId = currentUser?.userId; // 로그인된 사용자 ID
+    const deal = dealDetail;
+    const isOwner = deal && currentUserId && (currentUserId === deal.sellerId); // 판매자(소유자) 여부
+    const isBuyer = deal && currentUserId && (currentUserId === deal.buyerId);   // 구매자(요청자) 여부
+
+    // [핵심] 버튼 활성화 조건: DealStatus가 'PENDING'일 때만 수락/거절 가능
+    const isPending = deal && deal.dealStatus === 'PENDING';
+    const isButtonActive = isOwner && isPending;
+
+    // 구매자는 PENDING 상태일 때만 취소 가능
+    const isCancelableByBuyer = isBuyer && isPending;
+
+    // 티켓: SOLD, Deal: PAID, Payments: PAID (paymentsStatus는 dealDetail에 포함되어 있다고 가정)
+        const isReadyForCompletion = isBuyer &&
+                                     deal &&
+                                     deal.dealStatus === 'PAID';
+
+
+
+    // ====================================================================
+    // 5. 액션 핸들러 (useCallback 사용하여 의존성 관리 및 안정화)
+    // ====================================================================
+
+    // 🚨 5-1. 수락 API 호출 및 처리 핸들러
+    const handleConfirmAccept = useCallback(async () => {
+        const dealId = deal?.dealId;
+
+        setIsAcceptModalOpen(false);
+        if (!dealId) return;
+
+        setIsProcessing(true);
+        setActionMessage(null);
+
+        try {
+            await axios.put(`${API_BASE_URL}/api/deals/${dealId}/accept`, {
+                currentUserId: currentUserId,
+            });
+
+            setActionMessage('✅ 양도 요청이 성공적으로 수락되었습니다. 결제 요청이 전송되었습니다.');
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+
+        } catch (err) {
+            console.error('❌ 양도 수락 실패:', err);
+            const errorMessage = err.response?.data?.error || "수락 처리 중 오류가 발생했습니다.";
+            setActionMessage(`❌ 처리 실패: ${errorMessage}`);
+            setIsProcessing(false);
+        }
+    }, [deal, currentUserId]);
+
+
+    // 🚨 5-2. 거절 API 호출 및 처리 핸들러
+    const handleConfirmReject = useCallback(async (reason) => {
+        const dealId = deal?.dealId;
+
+        setIsRejectModalOpen(false);
+        if (!dealId) return;
+
+        setIsProcessing(true);
+        setActionMessage(null);
+
+        try {
+            await axios.put(`${API_BASE_URL}/api/deals/${dealId}/reject`, {
+                cancelReason: reason,
+                currentUserId: currentUserId,
+            });
+
+            setActionMessage('✅ 양도 요청이 성공적으로 거절되었습니다.');
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+
+        } catch (err) {
+            console.error('❌ 양도 거절 실패:', err);
+            const errorMessage = err.response?.data?.error || "거절 처리 중 오류가 발생했습니다.";
+            setActionMessage(`❌ 처리 실패: ${errorMessage}`);
+            setIsProcessing(false);
+        }
+    }, [deal, currentUserId]);
+
+
+    // 🚨 5-3. 취소 API 호출 및 처리 핸들러 (구매자 요청)
+    const handleConfirmCancel = useCallback(async () => {
+        const dealId = deal?.dealId;
+
+        setIsCancelModalOpen(false);
+        if (!dealId) {
+            setActionMessage('거래 정보를 찾을 수 없습니다.');
+            setIsProcessing(false);
             return;
         }
 
-        // 현재 진행할 액션을 저장
-        setCurrentAction(action);
+        setIsProcessing(true);
+        setActionMessage(null);
 
-        if (action === 'accept') {
-            handleOpenAcceptModal(); // 수락 모달 열기
-        } else if (action === 'reject') {
-            handleOpenRejectModal(); // 거절 모달 열기
-        }
-    };
-
-    // 4. 모달에서 '확인'을 눌렀을 때 실행되는 실제 API 호출 로직
-    const confirmAction = async () => {
-        if (!currentAction) return;
-
-        const action = currentAction;
-        const endpoint = `${API_BASE_URL}/api/deals/${dealRequest.dealId}/${action}`;
-
-        // 모달 닫기
-        if (action === 'accept') {
-            handleCloseAcceptModal();
-        } else if (action === 'reject') {
-            handleCloseRejectModal();
-        }
+        const endpoint = `${API_BASE_URL}/api/deals/${dealId}/cancel`;
 
         try {
-            // 💡 백엔드에 PUT 요청 (수락 또는 거절)
-            await axios.put(endpoint, {});
+            // PUT /api/deals/{id}/cancel 호출 (BuyerId 전달)
+            await axios.put(endpoint, { currentUserId: currentUserId });
 
-            alert(`양도 요청이 성공적으로 ${action === 'accept' ? '수락' : '거절'}되었습니다.`);
-            // 처리 후 페이지를 리로드하거나 상태를 업데이트
-            navigate('/mypage/deals'); // 처리 후 이동할 경로 (예시)
+            setActionMessage('✅ 거래 요청이 성공적으로 취소되었습니다. 티켓은 AVAILABLE 상태로 돌아갔습니다.');
+
+            setTimeout(() => {
+                navigate('/mypage/buyer/deals'); // 구매자 거래 목록 페이지로 이동
+            }, 3000);
 
         } catch (err) {
-            alert(`처리 실패: ${err.response?.data?.message || '서버 오류가 발생했습니다.'}`);
-            // 실패했을 경우 다시 모달 상태를 초기화할 필요는 없지만, 사용자 경험에 따라 처리 가능
-        } finally {
-            setCurrentAction(null); // 액션 상태 초기화
+            console.error('❌ 거래 취소 실패:', err);
+            const errorMessage = err.response?.data?.message || err.response?.data || "취소 처리 중 오류가 발생했습니다.";
+            setActionMessage(`❌ 취소 실패: ${errorMessage}`);
+            setIsProcessing(false);
         }
-    };
+    }, [deal, currentUserId, navigate]);
+
+    // 🚨 5-4. 구매 확정 API 호출 및 처리 핸들러 (수정: 모달 닫기 추가)
+        const handleConfirmCompletion = useCallback(async () => {
+            const dealId = deal?.dealId;
+
+            setIsConfirmModalOpen(false); // 🚨 [수정] 모달을 닫습니다.
+
+            if (!dealId) return;
+
+            setIsProcessing(true);
+            setActionMessage(null);
+
+            try {
+                // PUT /api/deals/{id}/complete 호출
+                await axios.put(`${API_BASE_URL}/api/deals/${dealId}/confirm`, {
+                    currentUserId: currentUserId,
+                });
+
+                setActionMessage('✅ 구매가 최종 확정되었습니다. 거래가 완료 상태로 변경되었습니다.');
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+
+            } catch (err) {
+                console.error('❌ 구매 확정 실패:', err);
+                const errorMessage = err.response?.data?.error || "구매 확정 처리 중 오류가 발생했습니다.";
+                setActionMessage(`❌ 처리 실패: ${errorMessage}`);
+                setIsProcessing(false);
+            }
+        }, [deal, currentUserId]);
 
 
-    // 5. UI 렌더링 (기존 로직 유지)
-    if (loading) return <Box sx={{ p: 4 }}>로딩 중...</Box>;
-    if (error) return <Alert severity="error" sx={{ m: 4 }}>{error}</Alert>;
-    if (!ticket) return <Alert severity="warning" sx={{ m: 4 }}>티켓 정보를 찾을 수 없습니다.</Alert>;
-
-    if (!isOwner) {
-         return <Alert severity="error" sx={{ m: 4 }}>해당 요청에 대한 처리 권한이 없습니다.</Alert>;
+    // 6. 렌더링
+    if (loading || currentUser === undefined) return <Box sx={{ p: 4 }}>거래 정보를 불러오는 중입니다...</Box>;
+    if (!currentUser) return <Alert severity="error" sx={{ m: 4 }}>로그인이 필요하거나 사용자 정보를 불러올 수 없습니다.</Alert>;
+    if (error) {
+      return <Alert severity="error" sx={{ m: 4 }}>{error}</Alert>;
     }
+    if (!deal) return <Alert severity="warning" sx={{ m: 4 }}>거래 정보를 찾을 수 없습니다.</Alert>;
 
-    // MUI 모달 스타일
-    const modalStyle = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 400,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        borderRadius: 2,
-    };
 
     return (
         <Box className="container mx-auto px-4 py-6 max-w-2xl">
-             <nav className="mb-8"><button onClick={handleGoBack}>&larr; 목록으로</button></nav>
+            <nav className="mb-8"><button onClick={handleGoBack}>&larr; 목록으로</button></nav>
 
-            {/* ... (기존 티켓 및 DEAL 정보 표시 섹션 유지) ... */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
                 <Typography variant="h4" component="h1" fontWeight="bold">
-                    {ticket.eventName || '티켓 이름 없음'}
+                    거래 상세: {deal.eventName || '이벤트 이름 없음'}
                 </Typography>
 
                 <Stack direction="row" spacing={3} sx={{ my: 2 }}>
-                    <Button variant="contained" sx={{ backgroundColor: ticket.status === 'RESERVED' ? '#FF9800' : '#4CAF50' }}>
-                        티켓 상태: {ticket.status || '미확인'}
-                    </Button>
-                    <Button variant="contained" color={isPending ? 'warning' : 'primary'}>
-                        DEAL 상태: {dealRequest ? dealRequest.dealStatus : 'N/A'}
-                    </Button>
+                    <Typography variant="h6" color={isPending ? 'warning.main' : 'text.primary'}>
+                        거래 상태: **{deal.dealStatus}**
+                    </Typography>
                 </Stack>
 
-                {dealRequest && (
-                    <Box sx={{ mt: 3, p: 3, border: '1px solid #ccc', borderRadius: '8px', width: '100%' }}>
-                        <Typography variant="h6" gutterBottom>거래 요청 정보</Typography>
-                        <Typography>요청 수량: {dealRequest.quantity}개</Typography>
-                        <Typography>구매자 ID: {dealRequest.buyerId}</Typography>
-                        <Typography>만료 일시: {new Date(dealRequest.expireAt).toLocaleString()}</Typography>
-                    </Box>
+                {/* 처리 메시지 표시 */}
+                {actionMessage && (
+                    <Alert
+                        severity={actionMessage.startsWith('✅') ? "success" : "error"}
+                        sx={{ my: 2, width: '100%' }}
+                    >
+                        {actionMessage}
+                    </Alert>
                 )}
+
+                {/* 1. 거래 요약 정보 */}
+                <Box sx={{ mt: 3, p: 3, border: '1px solid #ccc', borderRadius: '8px', width: '100%', textAlign: 'left' }}>
+                    <Typography variant="h6" gutterBottom>거래 요약</Typography>
+                    <Typography>거래 ID: {deal.dealId}</Typography>
+                    <Typography>판매자: {deal.sellerId} {isOwner ? '(나)' : ''}</Typography>
+                    <Typography>구매자: {deal.buyerId} {isBuyer ? '(나)' : ''}</Typography>
+                    <Typography>요청 수량: {deal.quantity}개</Typography>
+                    <Typography>거래 생성일: {new Date(deal.dealAt).toLocaleString()}</Typography>
+                    <Typography>만료일: {deal.expireAt ? new Date(deal.expireAt).toLocaleString() : 'N/A'}</Typography>
+                </Box>
+
+                {/* 2. 티켓 상세 정보 */}
+                <Box sx={{ mt: 3, p: 3, border: '1px solid #ccc', borderRadius: '8px', width: '100%', textAlign: 'left' }}>
+                    <Typography variant="h6" gutterBottom>티켓 상세</Typography>
+                    <Typography>티켓 ID: {deal.ticketId}</Typography>
+                    <Typography>이벤트 날짜: {deal.eventDate ? new Date(deal.eventDate).toLocaleDateString() : 'N/A'}</Typography>
+                    <Typography>장소: {deal.eventLocation || 'N/A'}</Typography>
+                    <Typography>좌석 정보: {deal.seatInfo || 'N/A'}</Typography>
+                    <Typography>판매 가격: {deal.sellingPrice ? `${deal.sellingPrice.toLocaleString()}원` : 'N/A'}</Typography>
+                    <Typography>티켓 상태: {deal.ticketStatus}</Typography>
+                </Box>
             </Box>
 
-            <section className="space-y-4 mb-8">
-                 {/* 이하 상세 정보 섹션은 기존 UI와 동일하게 유지 */}
-                 <header className="mt-8 border-b pb-4">
-                    <Typography variant="h5" component="h2" fontWeight="bold">티켓 상세</Typography>
-                 </header>
-
-                 <p>가격 문의: {ticket.sellingPrice ? `${ticket.sellingPrice.toLocaleString()}원` : '가격 정보 없음'}</p>
-                 <p>날짜: {ticket.eventDate || '날짜 미정'}</p>
-                 <p>장소: {ticket.eventLocation || '장소 정보 없음'}</p>
-                 <p>좌석 정보: {ticket.seatInfo || '정보 없음'}</p>
-            </section>
-
-            {/* 🌟 5. 양도 수락/거절 버튼 */}
+            {/* 7. 버튼 섹션 */}
             <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 5 }}>
-                <Button
-                    variant="contained"
-                    color="success"
-                    disabled={!isButtonActive}
-                    onClick={() => handleAction('accept')} // 모달 열기
-                >
-                    양도 수락
-                </Button>
-                <Button
-                    variant="contained"
-                    color="error"
-                    disabled={!isButtonActive}
-                    onClick={() => handleAction('reject')} // 모달 열기
-                >
-                    양도 거절
-                </Button>
-                {!isButtonActive && isOwner && (
-                    <Typography color="error" sx={{ ml: 2, alignSelf: 'center' }}>
-                        (현재 거래 상태에서는 수락/거절할 수 없습니다.)
-                    </Typography>
+
+                {/* 7-1. 판매자 액션: 수락/거절 */}
+                {isOwner && (
+                    <>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            disabled={!isButtonActive || isProcessing} // PENDING 상태에서만 활성화
+                            onClick={() => setIsAcceptModalOpen(true)}
+                        >
+                            양도 수락
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            disabled={!isButtonActive || isProcessing}
+                            onClick={() => setIsRejectModalOpen(true)}
+                        >
+                            양도 거절
+                        </Button>
+                        {!isButtonActive && (
+                            <Typography color="error" sx={{ ml: 2, alignSelf: 'center' }}>
+                                (현재 상태({deal.dealStatus})에서는 처리할 수 없습니다.)
+                            </Typography>
+                        )}
+                    </>
                 )}
+
+                {/* 7-2. 구매자 액션: 취소 */}
+                {isCancelableByBuyer && (
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => setIsCancelModalOpen(true)}
+                        disabled={isProcessing}
+                    >
+                        거래 요청 취소
+                    </Button>
+                )}
+
+                {/* 🚨 [구매 확정] 조건 충족 시 구매 확정 버튼 표시 */}
+                                {isReadyForCompletion && (
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => setIsConfirmModalOpen(true)} // 🚨 [수정] 모달 열기
+                                        disabled={isProcessing}
+                                    >
+                                        구매 확정 (거래 완료)
+                                    </Button>
+                                )}
             </Stack>
 
-            {/* ======================================================= */}
-            {/* 🌟🌟🌟 모달 컴포넌트 섹션 🌟🌟🌟 */}
-            {/* ======================================================= */}
+            {/* 8. 모달 영역 */}
 
-            {/* 💡 6. 양도 거절 확인 모달 */}
-            <Modal
+            {/* 8-1. Deal Accept Modal */}
+            <DealAcceptModal
+                 open={isAcceptModalOpen}
+                 onClose={() => setIsAcceptModalOpen(false)}
+                 onConfirmAccept={handleConfirmAccept}
+            />
+
+            {/* 8-2. Deal Reject Modal */}
+            <DealRejectModal
                 open={isRejectModalOpen}
-                onClose={handleCloseRejectModal}
-                aria-labelledby="reject-modal-title"
-                aria-describedby="reject-modal-description"
-            >
-                <Box sx={modalStyle}>
-                    <Typography id="reject-modal-title" variant="h6" component="h2" gutterBottom>
-                        양도 거절 확인
-                    </Typography>
-                    <Typography id="reject-modal-description" sx={{ mt: 2, mb: 3 }}>
-                        정말로 이 양도 요청을 거절하시겠습니까? 거래가 취소됩니다.
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                        <Button variant="outlined" onClick={handleCloseRejectModal}>
-                            취소
-                        </Button>
-                        <Button variant="contained" color="error" onClick={confirmAction}>
-                            확인 (거절)
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+                onClose={() => setIsRejectModalOpen(false)}
+                onConfirmReject={handleConfirmReject}
+            />
 
-            {/* 💡 7. 양도 수락 확인 모달 */}
-            <Modal
-                open={isAcceptModalOpen}
-                onClose={handleCloseAcceptModal}
-                aria-labelledby="accept-modal-title"
-                aria-describedby="accept-modal-description"
-            >
-                <Box sx={modalStyle}>
-                    <Typography id="accept-modal-title" variant="h6" component="h2" gutterBottom>
-                        양도 수락 확인
-                    </Typography>
-                    <Typography id="accept-modal-description" sx={{ mt: 2, mb: 3 }}>
-                        정말로 이 양도 요청을 수락하시겠습니까? 티켓 상태가 **판매 완료(SOLD)**로 변경됩니다.
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                        <Button variant="outlined" onClick={handleCloseAcceptModal}>
-                            취소
-                        </Button>
-                        <Button variant="contained" color="success" onClick={confirmAction}>
-                            확인 (수락)
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+
+
+            {/* 8-3. Deal Cancel Modal (구매자 전용) */}
+            <DealCancelModal
+                open={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirmCancel={handleConfirmCancel} // 🚨 구매자 취소 로직 연결
+            />
+
+            <DealConfirmModal
+                            open={isConfirmModalOpen}
+                            onClose={() => setIsConfirmModalOpen(false)}
+                            onConfirmCompletion={handleConfirmCompletion} // 확정 API 핸들러 전달
+                        />
         </Box>
     );
 };

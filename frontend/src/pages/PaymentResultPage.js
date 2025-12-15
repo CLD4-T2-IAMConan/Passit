@@ -4,16 +4,18 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = 'http://localhost:8083';
+
 function PaymentResultPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const [status, setStatus] = useState('PROCESSING'); // PROCESSING, SUCCESS, FAILED
-    const [message, setMessage] = useState('결제 승인 정보를 처리 중입니다. 잠시만 기다려 주세요. (Payment ID: 7)');
+    const [message, setMessage] = useState('결제 승인 정보를 처리 중입니다. 잠시만 기다려 주세요.');
 
     // ... (URL 파라미터 추출 로직은 이전과 동일하게 유지)
     const queryParams = new URLSearchParams(location.search);
     const pathSegments = location.pathname.split('/');
-    const paymentId = pathSegments[3] || queryParams.get('paymentId');
+    const paymentId = pathSegments[2] || queryParams.get('paymentId');
     const tid = queryParams.get('tid');
     const authToken = queryParams.get('authToken');
     const authResultCode = queryParams.get('authResultCode');
@@ -28,12 +30,12 @@ function PaymentResultPage() {
         const completePayment = async () => {
             try {
                 // 404가 나더라도 화면만은 볼 수 있도록 임시적으로 try/catch 밖으로 SUCCESS 로직을 옮깁니다.
-                const response = await axios.post(`/api/payments/${paymentId}/complete`, {
-                    tid: tid,
-                    authToken: authToken
-                });
+                const response = await axios.post(
+                            `${API_BASE_URL}/api/payments/${paymentId}/complete?tid=${tid}&authToken=${authToken}`,
+                            {} // POST 요청이므로 Body는 비워둡니다.
+                );
 
-                if (response.data === "SUCCESS") {
+                if (response.data === "PAYMENT_APPROVAL_SUCCESS") {
                     setStatus('SUCCESS');
                     setMessage('결제가 성공적으로 완료되었습니다.');
                 } else {
