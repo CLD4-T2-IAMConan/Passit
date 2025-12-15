@@ -1,0 +1,23 @@
+.chatroom-item {
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.2s;
+}
+
+.chatroom-item:hover {
+    background: #f8f8f8;
+}
+
+.chatroom-item-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.chatroom-item-last {
+    color: #666;
+    font-size: 14px;
+    margin-top: 4px;
+}

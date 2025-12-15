@@ -49,14 +49,14 @@ export const ENDPOINTS = {
     RESET_PASSWORD: "/users/reset-password",
   },
 
-  // 티켓 관련 (추후 구현)
+  // 티켓 관련
   TICKETS: {
     LIST: "/tickets",
     DETAIL: (id) => `/tickets/${id}`,
-    CREATE: "/tickets",
-    UPDATE: (id) => `/tickets/${id}`,
-    DELETE: (id) => `/tickets/${id}`,
-    MY_TICKETS: "/tickets/my",
+    MY: "/sellers/tickets",
+    CREATE: "/sellers/tickets",
+    UPDATE: (id) => `/sellers/tickets/${id}`,
+    DELETE: (id) => `/sellers/tickets/${id}`,
   },
 
   // 거래 관련 (추후 구현)

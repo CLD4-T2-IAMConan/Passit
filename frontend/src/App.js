@@ -11,11 +11,18 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
+import ChatListPage from "./pages/chat/ChatListPage";
+import ChatRoomPage from "./pages/chat/ChatRoomPage";
+import TicketCreatePage from "./pages/TicketCreatePage";
+import TicketListPage from "./pages/TicketListPage";
+import MyTicketListPage from "./pages/MyTicketListPage";
+import TicketEditPage from "./pages/TicketEditPage";
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const KakaoCallbackPage = lazy(() => import("./pages/KakaoCallbackPage"));
 
 // 마이페이지
 const MyPageLayout = lazy(() => import("./layouts/MyPageLayout"));
@@ -32,6 +39,11 @@ const AdminUserManagementPage = lazy(() =>
 
 // Private Route
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
+const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
+const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
+const BuyerPaymentPage = lazy(() => import("./pages/BuyerPaymentPage"));
+//const PaymentProcessingPage = lazy(() => import("./pages/PaymentProcessingPage"));
+const PaymentResultPage = lazy(() => import("./pages/PaymentResultPage"));
 
 // 커스텀 테마 생성
 const theme = createTheme({
@@ -177,6 +189,10 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route
+                  path="/auth/kakao/callback"
+                  element={<KakaoCallbackPage />}
+                />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                 {/* 마이페이지 */}
@@ -210,7 +226,18 @@ function App() {
                   }
                 />
 
+                <Route path="/deal/ticket/:ticket_id" element={<TicketDetailPage />} />
+                <Route path="/chat/ticket/:ticket_id" element={<DealAcceptPage />} />
+                <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
+                <Route path="/buyer/payment/:payment_id/result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/chat" element={<ChatListPage />} />
+                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/sell" element={<TicketCreatePage />} />
+                <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/my" element={<MyTicketListPage />} />
+                <Route path="/my/tickets/:ticketId/edit" element={<TicketEditPage />} />
+
               </Routes>
             </Suspense>
           </Router>
