@@ -13,6 +13,10 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
+import TicketCreatePage from "./pages/TicketCreatePage";
+import TicketListPage from "./pages/TicketListPage";
+import MyTicketListPage from "./pages/MyTicketListPage";
+import TicketEditPage from "./pages/TicketEditPage";
 
 // 코드 스플리팅 - 페이지별 lazy loading
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -227,6 +231,11 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/chat" element={<ChatListPage />} />
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/sell" element={<TicketCreatePage />} />
+                <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/my" element={<MyTicketListPage />} />
+                <Route path="/my/tickets/:ticketId/edit" element={<TicketEditPage />} />
+
               </Routes>
             </Suspense>
           </Router>
