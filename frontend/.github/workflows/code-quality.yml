@@ -1,0 +1,61 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting with Prettier
+        run: |
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+
+      - name: Run ESLint
+        run: |
+          npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings 0
+
+      - name: Type check (if TypeScript)
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          else
+            echo "No TypeScript configuration found, skipping type check"
+          fi
+
+      - name: Comment code quality results on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const emoji = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const status = '${{ job.status }}' === 'success' ? 'Passed' : 'Failed';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ${emoji} Code Quality Check ${status}
+
+            - Prettier formatting: ${emoji}
+            - ESLint: ${emoji}
+            - TypeScript type check: ${emoji}
+
+            Please check the workflow logs for details if any checks failed.`
+            });

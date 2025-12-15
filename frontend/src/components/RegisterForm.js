@@ -19,6 +19,8 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
+import { API_SERVICES } from "../config/apiConfig";
+import { ENDPOINTS } from "../api/endpoints";
 
 const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
   const { register } = useAuth();
@@ -151,9 +153,8 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
     setSignupMethod(method);
     if (method === "kakao") {
       // 카카오 로그인으로 리다이렉트
-      window.location.href = `${
-        process.env.REACT_APP_API_URL || "http://localhost:8000"
-      }/api/auth/kakao`;
+      // API_SERVICES.ACCOUNT는 이미 /api를 포함하고 있으므로 직접 사용
+      window.location.href = `${API_SERVICES.ACCOUNT}${ENDPOINTS.AUTH.KAKAO}`;
     } else {
       // 이메일 가입 플로우 시작
       setCurrentStep(1);
