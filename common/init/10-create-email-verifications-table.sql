@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS `email_verifications` (
     INDEX `idx_email` (`email`),
     INDEX `idx_verification_code` (`verification_code`),
     INDEX `idx_expires_at` (`expires_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='이메일 인증 코드';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
