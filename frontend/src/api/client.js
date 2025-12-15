@@ -94,6 +94,7 @@ const createApiClient = (baseURL) => {
  * 각 서비스별 API 클라이언트
  */
 export const accountApiClient = createApiClient(API_SERVICES.ACCOUNT);
+export const csApiClient = createApiClient(API_SERVICES.CS);
 // export const service2ApiClient = createApiClient(API_SERVICES.SERVICE2);
 // export const service3ApiClient = createApiClient(API_SERVICES.SERVICE3);
 
