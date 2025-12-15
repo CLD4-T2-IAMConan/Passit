@@ -231,6 +231,8 @@ function App() {
                 <Route path="/buyer/payment/:payment_id" element={<BuyerPaymentPage />} />
                 <Route path="/buyer/payment/:payment_id/result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/chat/rooms" element={<ChatListPage />} />
+                <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage />} />
                 <Route path="/chat" element={<ChatListPage />} />
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
                 <Route path="/sell" element={<TicketCreatePage />} />
