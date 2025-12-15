@@ -69,6 +69,9 @@ const ActivityPage = lazy(() => import("./pages/mypage/ActivityPage"));
 const AdminUserManagementPage = lazy(() =>
   import("./pages/admin/AdminUserManagementPage")
 );
+const AdminCategoryManagementPage = lazy(() =>
+  import("./pages/admin/AdminCategoryManagementPage")
+);
 
 // PrivateRoute
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
@@ -134,6 +137,14 @@ function App() {
                   element={
                     <PrivateRoute adminOnly={true}>
                       <AdminUserManagementPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/admin/categories"
+                  element={
+                    <PrivateRoute adminOnly={true}>
+                      <AdminCategoryManagementPage />
                     </PrivateRoute>
                   }
                 />

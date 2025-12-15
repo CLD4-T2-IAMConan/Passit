@@ -38,6 +38,13 @@ export const ENDPOINTS = {
       BY_EMAIL: (email) => `/users/email/${email}`,
       BY_STATUS: (status) => `/users/status/${status}`,
     },
+    CATEGORIES: {
+      LIST: "/admin/categories",
+      DETAIL: (id) => `/admin/categories/${id}`,
+      CREATE: "/admin/categories",
+      UPDATE: (id) => `/admin/categories/${id}`,
+      DELETE: (id) => `/admin/categories/${id}`,
+    },
   },
 
   // 이메일 인증 관련
