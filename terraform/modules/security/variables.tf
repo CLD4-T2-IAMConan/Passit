@@ -44,3 +44,9 @@ variable "elasticache_security_group_id" {
   type        = string
   default     = ""
 }
+
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for ALB access (for dev environment)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

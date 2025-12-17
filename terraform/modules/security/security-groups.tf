@@ -5,7 +5,7 @@
 # ============================================
 
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-alb-${var.environment}"
+  name        = "${var.project_name}-${var.environment}-alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = var.vpc_id
 
@@ -14,7 +14,7 @@ resource "aws_security_group" "alb" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_cidr_blocks
   }
 
   ingress {
@@ -22,7 +22,7 @@ resource "aws_security_group" "alb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_cidr_blocks
   }
 
   egress {
@@ -34,7 +34,7 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name        = "${var.project_name}-alb-${var.environment}"
+    Name        = "${var.project_name}-${var.environment}-alb-sg"
     Project     = var.project_name
     Environment = var.environment
     Purpose     = "ALB security"
@@ -46,14 +46,14 @@ resource "aws_security_group" "alb" {
 # ============================================
 
 resource "aws_security_group" "eks_worker" {
-  name        = "${var.project_name}-eks-worker-${var.environment}"
+  name        = "${var.project_name}-${var.environment}-eks-sg"
   description = "Security group for EKS worker nodes"
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Allow traffic from ALB"
-    from_port       = 0
-    to_port         = 65535
+    description     = "MSA service ports from ALB"
+    from_port       = 8081
+    to_port         = 8085
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
@@ -75,7 +75,7 @@ resource "aws_security_group" "eks_worker" {
   }
 
   tags = {
-    Name        = "${var.project_name}-eks-worker-${var.environment}"
+    Name        = "${var.project_name}-${var.environment}-eks-sg"
     Project     = var.project_name
     Environment = var.environment
     Purpose     = "EKS worker node security"
@@ -83,18 +83,18 @@ resource "aws_security_group" "eks_worker" {
 }
 
 # ============================================
-# RDS용 Security Group
+# RDS용 Security Group (Aurora MySQL)
 # ============================================
 
 resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-${var.environment}"
-  description = "Security group for RDS database"
+  name        = "${var.project_name}-${var.environment}-rds-sg"
+  description = "Security group for Aurora MySQL database"
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "PostgreSQL from EKS worker nodes"
-    from_port       = 5432
-    to_port         = 5432
+    description     = "MySQL from EKS worker nodes"
+    from_port       = 3306
+    to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.eks_worker.id]
   }
@@ -108,24 +108,24 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name        = "${var.project_name}-rds-${var.environment}"
+    Name        = "${var.project_name}-${var.environment}-rds-sg"
     Project     = var.project_name
     Environment = var.environment
-    Purpose     = "RDS security"
+    Purpose     = "Aurora MySQL security"
   }
 }
 
 # ============================================
-# ElastiCache용 Security Group
+# ElastiCache용 Security Group (Valkey)
 # ============================================
 
 resource "aws_security_group" "elasticache" {
-  name        = "${var.project_name}-elasticache-${var.environment}"
-  description = "Security group for ElastiCache"
+  name        = "${var.project_name}-${var.environment}-elasticache-sg"
+  description = "Security group for ElastiCache Valkey"
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Redis from EKS worker nodes"
+    description     = "Valkey from EKS worker nodes"
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
@@ -141,9 +141,9 @@ resource "aws_security_group" "elasticache" {
   }
 
   tags = {
-    Name        = "${var.project_name}-elasticache-${var.environment}"
+    Name        = "${var.project_name}-${var.environment}-elasticache-sg"
     Project     = var.project_name
     Environment = var.environment
-    Purpose     = "ElastiCache security"
+    Purpose     = "ElastiCache Valkey security"
   }
 }
