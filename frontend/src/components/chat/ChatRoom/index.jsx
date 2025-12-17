@@ -1,8 +1,9 @@
+// src/components/chat/ChatRoom/index.jsx
 import React, { useEffect, useRef } from "react";
 import MessageBubble from "../MessageBubble";
 import "./style.css";
 
-const ChatRoom = ({ messages }) => {
+const ChatRoom = ({ messages, currentUserId }) => {
     const scrollRef = useRef(null);
 
     // 새로운 메시지가 오면 맨 아래로 스크롤
@@ -15,7 +16,7 @@ const ChatRoom = ({ messages }) => {
     return (
         <div ref={scrollRef} className="chatroom-container">
             {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} />
+                <MessageBubble key={idx} message={msg} userId={currentUserId} />
             ))}
         </div>
     );

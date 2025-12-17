@@ -26,6 +26,7 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
+  Category as CategoryIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -64,6 +65,11 @@ const AdminLayout = ({ children }) => {
       text: "회원 관리",
       icon: <PeopleIcon />,
       path: "/admin/users",
+    },
+    {
+      text: "카테고리 관리",
+      icon: <CategoryIcon />,
+      path: "/admin/categories",
     },
   ];
 
@@ -126,9 +132,7 @@ const AdminLayout = ({ children }) => {
                   backgroundColor: isActive ? "primary.main" : "transparent",
                   color: isActive ? "white" : "text.primary",
                   "&:hover": {
-                    backgroundColor: isActive
-                      ? "primary.dark"
-                      : "action.hover",
+                    backgroundColor: isActive ? "primary.dark" : "action.hover",
                   },
                   "& .MuiListItemIcon-root": {
                     color: isActive ? "white" : "text.secondary",

@@ -49,7 +49,7 @@ const AdminUserManagementPage = () => {
 
   // 페이지네이션
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
 
   // 정렬

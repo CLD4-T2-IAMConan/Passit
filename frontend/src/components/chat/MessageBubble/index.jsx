@@ -1,17 +1,24 @@
-// src/components/chat/MessageBubble/index.jsx
 import React from "react";
-import "./style.css";
+import TextMessage from "./TextMessage";
+import SystemInfoMessage from "./SystemInfoMessage";
+import SystemActionMessage from "./SystemActionMessage";
 
-const MessageBubble = ({ message }) => {
-    const isMine = message.sender === "ME"; // 임시 구분
+const MessageBubble = ({ message, userId }) => {
+    const isMine = message.senderId === userId;
 
-    return (
-        <div className={`bubble-wrapper ${isMine ? "mine" : "other"}`}>
-            <div className={`bubble ${isMine ? "mine" : "other"}`}>
-                {message.message}
-            </div>
-        </div>
-    );
+    switch (message.type) {
+        case "TEXT":
+            return <TextMessage message={message} isMine={isMine} />;
+
+        case "SYSTEM_MESSAGE":
+            return <SystemInfoMessage message={message} />;
+
+        case "SYSTEM_ACTION_MESSAGE":
+            return <SystemActionMessage message={message} />;
+
+        default:
+            return null; // 처리하지 않는 메시지는 표시 X
+    }
 };
 
 export default MessageBubble;

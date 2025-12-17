@@ -1,0 +1,56 @@
+# Terraform State Files
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# Terraform Variables (민감한 정보 포함)
+*.tfvars
+*.tfvars.*
+*.tfvars.local
+*.tfvars.backup
+
+# Terraform 디렉토리
+.terraform/
+.terraform.lock.hcl
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude example tfvars (예제는 포함 가능)
+!*.tfvars.example
+!*.tfvars.sample
+
+# AWS 자격 증명
+.aws/
+credentials
+config
+*.pem
+*.key
+
+# 환경 변수
+.env
+.env.local
+*.env
+
+# 백업 및 임시 파일
+*.backup
+*.bak
+*.old
+*.orig
+*.tmp
+*.temp
+
+# 로그 파일
+*.log
+logs/
+
+# 스크립트 실행 결과
+*.sh.log
+*-policy.json
