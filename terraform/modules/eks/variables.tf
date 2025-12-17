@@ -12,7 +12,6 @@ variable "environment" {
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
-  default     = "passit-dev-ekscluster"
 }
 
 variable "cluster_version" {
