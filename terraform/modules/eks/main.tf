@@ -15,6 +15,14 @@ module "eks" {
 
   enable_irsa = true
 
+  # Disable CloudWatch Logs (권한 문제)
+  create_cloudwatch_log_group = false
+  cluster_enabled_log_types   = []
+
+  # Disable KMS encryption (권한 문제)
+  create_kms_key            = false
+  cluster_encryption_config = {}
+
   tags = {
     Project     = var.project_name
     Environment = var.environment

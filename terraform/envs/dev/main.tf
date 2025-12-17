@@ -1,13 +1,5 @@
 # Dev Environment - Module Calls
 
-terraform {
-  required_version = ">= 1.5.0"
-}
-
-provider "aws" {
-  region = var.region
-}
-
 # Security Module
 module "security" {
   source = "../../modules/security"

@@ -5,16 +5,30 @@
 account_id   = "YOUR_ACCOUNT_ID"
 region       = "ap-northeast-2"
 project_name = "passit"
+environment  = "prod"
 
-# Network 모듈이 생성되면 아래 값들을 업데이트하세요
-vpc_id = ""
+# Team & Owner
+team  = "IAMConan"
+owner = "Platform Team"
 
-# EKS 모듈이 생성되면 아래 값들을 업데이트하세요
-eks_cluster_name = ""
+# Network
+vpc_id = "vpc-XXXXXXXXXXXXXXXXX"
+private_subnet_ids = [
+  "subnet-XXXXXXXXXXXXXXXXX", # ap-northeast-2a
+  "subnet-XXXXXXXXXXXXXXXXX", # ap-northeast-2c
+]
+
+# EKS Cluster
+cluster_name    = "passit-prod-eks"
+cluster_version = "1.31"
+eks_cluster_name = "" # Security 모듈용 (EKS 생성 후 업데이트)
+
+# EKS Node Group
+node_instance_types = ["t3.medium"]
+capacity_type       = "ON_DEMAND"
+node_min_size       = 2
+node_desired_size   = 3
+node_max_size       = 5
 
 # 보안 그룹 설정: Prod 환경은 전체 인터넷 허용
 allowed_cidr_blocks = ["0.0.0.0/0"]
-
-# 선택적 변수
-rds_security_group_id       = ""
-elasticache_security_group_id = ""
