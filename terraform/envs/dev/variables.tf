@@ -2,77 +2,108 @@
 
 # AWS
 variable "account_id" {
-  type = string
+  description = "AWS Account ID"
+  type        = string
 }
 
 variable "region" {
-  type = string
+  description = "AWS Region"
+  type        = string
+  default     = "ap-northeast-2"
 }
 
 # Common (Project / Tag)
 variable "project_name" {
-  type = string
+  description = "Project name for tagging"
+  type        = string
+  default     = "passit"
 }
 
 variable "environment" {
-  type    = string
-  default = "dev"
+  description = "Environment name"
+  type        = string
+  default     = "dev"
 }
 
 variable "team" {
-  type = string
+  description = "Team name"
+  type        = string
 }
 
 variable "owner" {
-  type = string
+  description = "Owner name"
+  type        = string
 }
 
 # Network
 variable "vpc_id" {
-  type = string
+  description = "VPC ID for Security Groups and EKS"
+  type        = string
 }
 
 variable "private_subnet_ids" {
-  type = list(string)
+  description = "Private subnet IDs for EKS"
+  type        = list(string)
 }
 
 # EKS Cluster
 variable "cluster_name" {
-  type = string
+  description = "EKS cluster name"
+  type        = string
 }
 
 variable "cluster_version" {
-  type = string
+  description = "EKS cluster version"
+  type        = string
+}
+
+variable "eks_cluster_name" {
+  description = "EKS Cluster name for IRSA (Security 모듈용)"
+  type        = string
+  default     = ""
 }
 
 # EKS Node Group
 variable "node_instance_types" {
-  type = list(string)
+  description = "EC2 instance types for node group"
+  type        = list(string)
 }
 
 variable "capacity_type" {
-  type = string
+  description = "Capacity type (ON_DEMAND or SPOT)"
+  type        = string
 }
 
 variable "node_min_size" {
-  type = number
+  description = "Minimum number of nodes"
+  type        = number
 }
 
 variable "node_desired_size" {
-  type = number
+  description = "Desired number of nodes"
+  type        = number
 }
 
 variable "node_max_size" {
-  type = number
+  description = "Maximum number of nodes"
+  type        = number
 }
 
-# Optional
+# Security Groups (Optional)
 variable "rds_security_group_id" {
-  type    = string
-  default = ""
+  description = "RDS Security Group ID (optional)"
+  type        = string
+  default     = ""
 }
 
 variable "elasticache_security_group_id" {
-  type    = string
-  default = ""
+  description = "ElastiCache Security Group ID (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for ALB access (dev environment)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # Dev 기본값, tfvars에서 특정 IP로 제한 권장
 }
