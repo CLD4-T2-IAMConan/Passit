@@ -19,27 +19,16 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = var.region
-}
-
-# EKS 인증 토큰
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
-
-# Kubernetes Provider
-provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
-  token                  = data.aws_eks_cluster_auth.this.token
-}
-
-# Helm Provider
-provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.eks.cluster_ca_certificate)
-    token                  = data.aws_eks_cluster_auth.this.token
-  }
-}
+# provider "aws" {
+#   region = var.region
+#
+#   # KMS 키 생성 시 kms:TagResource 권한이 필요한 경우를 위해
+#   # default_tags를 제거하고 필요한 리소스에만 개별적으로 태그를 추가합니다
+#   # default_tags {
+#   #   tags = {
+#   #     Project     = var.project_name
+#   #     Environment = "dev"
+#   #     ManagedBy   = "Terraform"
+#   #   }
+#   # }
+# }
