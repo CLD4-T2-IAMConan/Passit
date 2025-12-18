@@ -1,27 +1,23 @@
-output "prod_vpc_id" {
-  value = data.aws_vpc.prod.id
+# ============================================
+# Network Information
+# ============================================
+
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = module.network.vpc_id
 }
 
-output "prod_public_a_subnet_id" {
-  value = aws_subnet.prod_public_a.id
+output "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  value       = module.network.public_subnet_ids
 }
 
-output "prod_public_c_subnet_id" {
-  value = aws_subnet.prod_public_c.id
+output "private_app_subnet_ids" {
+  description = "List of private application subnet IDs"
+  value       = module.network.private_subnet_ids
 }
 
-output "prod_private_app_a_subnet_id" {
-  value = aws_subnet.prod_private_app_a.id
-}
-
-output "prod_private_app_c_subnet_id" {
-  value = aws_subnet.prod_private_app_c.id
-}
-
-output "prod_private_db_a_subnet_id" {
-  value = aws_subnet.prod_private_db_a.id
-}
-
-output "prod_private_db_c_subnet_id" {
-  value = aws_subnet.prod_private_db_c.id
+output "private_db_subnet_ids" {
+  description = "List of private database subnet IDs"
+  value       = module.network.private_db_subnet_ids
 }
