@@ -1,5 +1,3 @@
-# Prod Environment - Module Calls
-
 # ============================================
 # Network Module (VPC, Subnets, NAT Gateway)
 # ============================================
@@ -83,6 +81,20 @@ module "eks" {
   node_min_size     = var.node_min_size
   node_desired_size = var.node_desired_size
   node_max_size     = var.node_max_size
+}
+
+module "autoscaling" {
+  source = "../../modules/autoscaling"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  region       = var.region
+
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_provider_url
 }
 
 resource "aws_subnet" "prod_public_a" {

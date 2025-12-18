@@ -14,6 +14,11 @@ variable "region" {
   default     = "ap-northeast-2"
 }
 
+variable "team" {
+  description = "Owning team name"
+  type        = string
+}
+
 variable "owner" {
   description = "Owner name"
   type        = string
@@ -80,7 +85,6 @@ variable "single_nat_gateway" {
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
-  description = "Dev subnet AZ (e.g. ap-northeast-2c)"
 }
 
 variable "dev_public_cidr" {
@@ -96,4 +100,51 @@ variable "dev_private_app_cidr" {
 variable "dev_private_db_cidr" {
   type        = string
   description = "Dev private db subnet CIDR (e.g. 10.1.21.0/24)"
+}
+
+variable "account_id" { 
+  type = string 
+}
+
+variable "cluster_version" { 
+  type = string 
+}
+
+variable "eks_cluster_name" { 
+  type = string 
+}
+
+variable "node_instance_types" { 
+  type = list(string)
+}
+
+variable "capacity_type" { 
+  type = string 
+}
+
+variable "node_min_size" { 
+  type = number 
+}
+
+variable "node_desired_size" { 
+  type = number 
+}
+
+variable "node_max_size" { 
+  type = number 
+}
+
+variable "allowed_cidr_blocks" { 
+  type = list(string) 
+}
+
+# Optional
+variable "rds_security_group_id" {
+  type    = string
+  default = ""
+}
+
+variable "elasticache_security_group_id" {
+  type    = string
+  default = ""
 }
