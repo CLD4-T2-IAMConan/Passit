@@ -1,5 +1,57 @@
 # IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.*
+*.tfvars.local
+*.tfvars.backup
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# AWS 자격 증명
+.aws/
+*.pem
+*.key
+credentials
+config
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+*.env
+common/.env
+
+# 백업 파일
+*.backup
+*.bak
+*.old
+*.orig
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.temp
+tmp/
+temp/
