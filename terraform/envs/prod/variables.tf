@@ -108,3 +108,51 @@ variable "prod_private_db_c_cidr" {
 variable "prod_vpc_id" {
   type = string
 }
+
+
+variable "account_id" { 
+  type = string 
+}
+
+variable "cluster_version" { 
+  type = string 
+}
+
+variable "eks_cluster_name" { 
+  type = string 
+}
+
+variable "node_instance_types" { 
+  type = list(string)
+}
+
+variable "capacity_type" { 
+  type = string 
+}
+
+variable "node_min_size" { 
+  type = number 
+}
+
+variable "node_desired_size" { 
+  type = number 
+}
+
+variable "node_max_size" { 
+  type = number 
+}
+
+variable "allowed_cidr_blocks" { 
+  type = list(string) 
+}
+
+# Optional
+variable "rds_security_group_id" {
+  type    = string
+  default = ""
+}
+
+variable "elasticache_security_group_id" {
+  type    = string
+  default = ""
+}
