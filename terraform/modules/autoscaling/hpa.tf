@@ -1,1 +1,0 @@
-# autoscaling - hpa.tf

@@ -10,6 +10,16 @@ variable "region" {
   type = string
 }
 
+variable "team" {
+  description = "Owning team name"
+  type        = string
+}
+
+variable "owner" {
+  description = "Owner name"
+  type        = string
+}
+
 variable "prod_vpc_cidr" {
   type = string
 }

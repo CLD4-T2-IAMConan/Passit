@@ -83,6 +83,20 @@ module "eks" {
   node_max_size     = var.node_max_size
 }
 
+module "autoscaling" {
+  source = "../../modules/autoscaling"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  region       = var.region
+
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_provider_url
+}
+
 resource "aws_subnet" "prod_public_a" {
   vpc_id                  = data.aws_vpc.prod.id
   cidr_block              = var.prod_public_a_cidr

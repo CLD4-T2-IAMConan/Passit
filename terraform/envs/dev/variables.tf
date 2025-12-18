@@ -14,6 +14,11 @@ variable "region" {
   default     = "ap-northeast-2"
 }
 
+variable "team" {
+  description = "Owning team name"
+  type        = string
+}
+
 variable "owner" {
   description = "Owner name"
   type        = string
@@ -80,7 +85,6 @@ variable "single_nat_gateway" {
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
-  description = "Dev subnet AZ (e.g. ap-northeast-2c)"
 }
 
 variable "dev_public_cidr" {
