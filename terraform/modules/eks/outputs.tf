@@ -53,13 +53,13 @@ output "oidc_provider_url" {
 # Managed Node Group Outputs
 output "managed_node_group_names" {
   description = "Names of EKS managed node groups"
-  value       = keys(module.eks.managed_node_groups)
+  value       = keys(module.eks.eks_managed_node_groups)
 }
 
 output "managed_node_group_arns" {
   description = "ARNs of EKS managed node groups"
   value       = {
-    for k, v in module.eks.managed_node_groups : k => v.node_group_arn
+    for k, v in module.eks.eks_managed_node_groups : k => v.node_group_arn
   }
 }
 
