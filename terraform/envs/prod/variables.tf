@@ -38,7 +38,7 @@ variable "private_subnet_ids" {
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
-  default     = "10.1.0.0/16"  # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
+  default     = "10.1.0.0/16" # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
 }
 
 variable "availability_zones" {
@@ -74,12 +74,12 @@ variable "enable_nat_gateway" {
 variable "single_nat_gateway" {
   description = "Use single NAT Gateway for cost optimization (prod는 false 권장)"
   type        = bool
-  default     = false  # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
+  default     = false # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
 }
 
 variable "account_id" {
   description = "AWS Account ID"
-  type = string
+  type        = string
 }
 
 variable "cluster_name" {
@@ -89,38 +89,38 @@ variable "cluster_name" {
 
 variable "cluster_version" {
   description = "Kubernetes version for EKS cluster"
-  type = string
-  default = "1.34"
+  type        = string
+  default     = "1.34"
 }
 
 variable "eks_cluster_name" {
   description = "EKS cluster name for security module"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
 
-variable "node_instance_types" { 
+variable "node_instance_types" {
   type = list(string)
 }
 
-variable "capacity_type" { 
-  type = string 
+variable "capacity_type" {
+  type = string
 }
 
-variable "node_min_size" { 
-  type = number 
+variable "node_min_size" {
+  type = number
 }
 
-variable "node_desired_size" { 
-  type = number 
+variable "node_desired_size" {
+  type = number
 }
 
-variable "node_max_size" { 
-  type = number 
+variable "node_max_size" {
+  type = number
 }
 
-variable "allowed_cidr_blocks" { 
-  type = list(string) 
+variable "allowed_cidr_blocks" {
+  type = list(string)
 }
 
 # Optional

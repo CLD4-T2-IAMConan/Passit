@@ -45,10 +45,10 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = length(var.public_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-public" : "${var.project_name}-${var.environment}-public${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
-    Project     = var.project_name
-    Environment = var.environment
-    Type        = "public"
+    Name                     = length(var.public_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-public" : "${var.project_name}-${var.environment}-public${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
+    Project                  = var.project_name
+    Environment              = var.environment
+    Type                     = "public"
     "kubernetes.io/role/elb" = "1"
   }
 }
@@ -65,10 +65,10 @@ resource "aws_subnet" "private_app" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name                            = length(var.private_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-private-app" : "${var.project_name}-${var.environment}-private-app${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
-    Project                         = var.project_name
-    Environment                     = var.environment
-    Type                            = "private-app"
+    Name                              = length(var.private_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-private-app" : "${var.project_name}-${var.environment}-private-app${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
+    Project                           = var.project_name
+    Environment                       = var.environment
+    Type                              = "private-app"
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
@@ -99,7 +99,7 @@ resource "aws_subnet" "private_db" {
 resource "aws_eip" "nat" {
   count = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0
 
-  domain = "vpc"
+  domain     = "vpc"
   depends_on = [aws_internet_gateway.main]
 
   tags = {
