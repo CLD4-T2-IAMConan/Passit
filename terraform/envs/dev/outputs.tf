@@ -1,15 +1,23 @@
+# ============================================
+# Network Information
+# ============================================
+
 output "vpc_id" {
-  value = data.aws_vpc.this.id
+  description = "The ID of the VPC"
+  value       = module.network.vpc_id
 }
 
-output "dev_public_subnet_id" {
-  value = aws_subnet.dev_public_c.id
+output "public_subnet_ids" {
+  description = "List of IDs of public subnets"
+  value       = module.network.public_subnet_ids
 }
 
-output "dev_private_app_subnet_id" {
-  value = aws_subnet.dev_private_app_c.id
+output "private_app_subnet_ids" {
+  description = "List of IDs of private app subnets"
+  value       = module.network.private_subnet_ids
 }
 
-output "dev_private_db_subnet_id" {
-  value = aws_subnet.dev_private_db_c.id
+output "nat_gateway_ips" {
+  description = "The public IP addresses of the NAT Gateways"
+  value       = module.network.nat_public_ips
 }

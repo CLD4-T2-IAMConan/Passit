@@ -1,17 +1,28 @@
-variable "project_name" {
+# Network Module Variables
+variable "account_id" {
+  description = "AWS Account ID"
   type        = string
-  description = "Project name (e.g. passit)"
+}
+
+variable "project_name" {
+  description = "Project name for tagging"
+  type        = string
 }
 
 variable "environment" {
+  description = "Environment name (dev, prod, dr)"
   type        = string
-  description = "Environment (dev, prod)"
 }
 
 variable "region" {
+  description = "AWS Region"
   type        = string
-  description = "AWS region"
   default     = "ap-northeast-2"
+}
+
+variable "team" {
+  description = "Team name"
+  type        = string
 }
 
 variable "owner" {
@@ -19,49 +30,33 @@ variable "owner" {
   type        = string
 }
 
-# Network
-# Network 모듈을 사용하는 경우 아래 변수들은 사용하지 않음 (모듈에서 자동 생성)
-variable "vpc_id" {
-  description = "VPC ID for Security Groups and EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = string
-  default     = ""
-}
-
-variable "private_subnet_ids" {
-  description = "Private subnet IDs for EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = list(string)
-  default     = []
-}
-
+# ============================================
 # Network Module Variables
+# ============================================
+
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
-  default     = "10.0.0.0/16"
 }
 
 variable "availability_zones" {
   description = "Availability zones for subnets"
   type        = list(string)
-  default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
 
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets"
   type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
 variable "private_subnet_cidrs" {
   description = "CIDR blocks for private app subnets (EKS용)"
   type        = list(string)
-  default     = ["10.1.11.0/24"]
 }
 
 variable "private_db_subnet_cidrs" {
   description = "CIDR blocks for private db subnets (RDS, ElastiCache용)"
   type        = list(string)
-  default     = ["10.1.21.0/24"]
 }
 
 variable "enable_nat_gateway" {
@@ -73,27 +68,73 @@ variable "enable_nat_gateway" {
 variable "single_nat_gateway" {
   description = "Use single NAT Gateway for cost optimization (dev environment)"
   type        = bool
-  default     = true  # Dev 환경에서는 비용 절감을 위해 단일 NAT Gateway 사용
+  default     = true
 }
 
-# EKS Cluster
+
+# ============================================
+# EKS Module Variables
+# ============================================
+
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "EKS Cluster name"
   type        = string
-  description = "Dev subnet AZ (e.g. ap-northeast-2c)"
 }
 
-variable "dev_public_cidr" {
+variable "cluster_version" {
+  description = "Kubernetes version"
   type        = string
-  description = "Dev public subnet CIDR (e.g. 10.1.1.0/24)"
 }
 
-variable "dev_private_app_cidr" {
+variable "eks_cluster_name" {
+  description = "EKS Cluster name for security module dependency"
   type        = string
-  description = "Dev private app subnet CIDR (e.g. 10.1.11.0/24)"
 }
 
-variable "dev_private_db_cidr" {
-  type        = string
-  description = "Dev private db subnet CIDR (e.g. 10.1.21.0/24)"
+# Node Group Settings
+variable "node_instance_types" {
+  description = "EC2 instance types for EKS nodes"
+  type        = list(string)
 }
+
+variable "capacity_type" {
+  description = "Type of capacity for EKS nodes (ON_DEMAND or SPOT)"
+  type        = string
+}
+
+variable "node_min_size" {
+  description = "Minimum number of nodes"
+  type        = number
+}
+
+variable "node_desired_size" {
+  description = "Desired number of nodes"
+  type        = number
+}
+
+variable "node_max_size" {
+  description = "Maximum number of nodes"
+  type        = number
+}
+
+# ============================================
+# Security Module Variables
+# ============================================
+
+# variable "allowed_cidr_blocks" {
+#   description = "Allowed CIDR blocks for external access (ALB)"
+#   type        = list(string)
+# }
+#
+# # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
+# variable "rds_security_group_id" {
+#   description = "Security group ID for RDS"
+#   type        = string
+#   default     = null
+# }
+#
+# variable "elasticache_security_group_id" {
+#   description = "Security group ID for ElastiCache"
+#   type        = string
+#   default     = null
+# }
