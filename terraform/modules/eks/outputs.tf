@@ -51,6 +51,7 @@ output "oidc_provider_url" {
 
 
 # Managed Node Group Outputs
+# Note: managed_node_groups not configured in main.tf yet
 output "managed_node_group_names" {
   description = "Names of EKS managed node groups"
   value       = keys(module.eks.eks_managed_node_groups)
