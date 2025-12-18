@@ -20,10 +20,6 @@ variable "owner" {
   type        = string
 }
 
-variable "prod_vpc_cidr" {
-  type = string
-}
-
 # Network
 # Network 모듈을 사용하는 경우 아래 변수들은 사용하지 않음 (모듈에서 자동 생성)
 variable "vpc_id" {
@@ -81,45 +77,26 @@ variable "single_nat_gateway" {
   default     = false  # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
 }
 
-variable "prod_public_a_cidr" {
+variable "account_id" {
+  description = "AWS Account ID"
   type = string
 }
 
-variable "prod_public_c_cidr" {
+variable "cluster_name" {
+  description = "EKS cluster name"
+  type        = string
+}
+
+variable "cluster_version" {
+  description = "Kubernetes version for EKS cluster"
   type = string
+  default = "1.34"
 }
 
-variable "prod_private_app_a_cidr" {
+variable "eks_cluster_name" {
+  description = "EKS cluster name for security module"
   type = string
-}
-
-variable "prod_private_app_c_cidr" {
-  type = string
-}
-
-variable "prod_private_db_a_cidr" {
-  type = string
-}
-
-variable "prod_private_db_c_cidr" {
-  type = string
-}
-
-variable "prod_vpc_id" {
-  type = string
-}
-
-
-variable "account_id" { 
-  type = string 
-}
-
-variable "cluster_version" { 
-  type = string 
-}
-
-variable "eks_cluster_name" { 
-  type = string 
+  default = ""
 }
 
 variable "node_instance_types" { 
