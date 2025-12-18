@@ -1,27 +1,41 @@
-output "prod_vpc_id" {
-  value = data.aws_vpc.prod.id
+# Network Module Outputs
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = module.network.vpc_id
 }
 
-output "prod_public_a_subnet_id" {
-  value = aws_subnet.prod_public_a.id
+output "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  value       = module.network.public_subnet_ids
 }
 
-output "prod_public_c_subnet_id" {
-  value = aws_subnet.prod_public_c.id
+output "private_subnet_ids" {
+  description = "List of private app subnet IDs"
+  value       = module.network.private_subnet_ids
 }
 
-output "prod_private_app_a_subnet_id" {
-  value = aws_subnet.prod_private_app_a.id
+output "private_db_subnet_ids" {
+  description = "List of private DB subnet IDs"
+  value       = module.network.private_db_subnet_ids
 }
 
-output "prod_private_app_c_subnet_id" {
-  value = aws_subnet.prod_private_app_c.id
+# EKS Module Outputs
+output "cluster_name" {
+  description = "EKS cluster name"
+  value       = module.eks.cluster_name
 }
 
-output "prod_private_db_a_subnet_id" {
-  value = aws_subnet.prod_private_db_a.id
+output "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = module.eks.cluster_endpoint
 }
 
-output "prod_private_db_c_subnet_id" {
-  value = aws_subnet.prod_private_db_c.id
+output "cluster_security_group_id" {
+  description = "Security group ID attached to the EKS cluster"
+  value       = module.eks.cluster_security_group_id
+}
+
+output "oidc_provider_arn" {
+  description = "OIDC provider ARN for IRSA"
+  value       = module.eks.oidc_provider_arn
 }
