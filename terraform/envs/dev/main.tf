@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
 # 기존 VPC 사용
 data "aws_vpc" "this" {
   id = var.vpc_id
