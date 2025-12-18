@@ -25,13 +25,6 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    description = "Allow traffic to App servers only"
-    from_port   = 8081
-    to_port     = 8085
-    protocol    = "tcp"
-    security_groups = [aws_security_group.eks_worker.id]
-  }
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-alb-sg"

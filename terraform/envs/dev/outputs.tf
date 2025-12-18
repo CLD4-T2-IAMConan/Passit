@@ -16,8 +16,3 @@ output "private_app_subnet_ids" {
   description = "List of IDs of private app subnets"
   value       = module.network.private_subnet_ids
 }
-
-output "nat_gateway_ips" {
-  description = "The public IP addresses of the NAT Gateways"
-  value       = module.network.nat_public_ips
-}

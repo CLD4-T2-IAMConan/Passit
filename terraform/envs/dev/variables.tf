@@ -121,10 +121,10 @@ variable "node_max_size" {
 # Security Module Variables
 # ============================================
 
-# variable "allowed_cidr_blocks" {
-#   description = "Allowed CIDR blocks for external access (ALB)"
-#   type        = list(string)
-# }
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for external access (ALB)"
+  type        = list(string)
+}
 #
 # # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
 # variable "rds_security_group_id" {
