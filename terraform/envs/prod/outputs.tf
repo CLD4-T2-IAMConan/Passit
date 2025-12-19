@@ -11,13 +11,13 @@ output "public_subnet_ids" {
   value       = module.network.public_subnet_ids
 }
 
-output "private_subnet_ids" {
-  description = "List of private app subnet IDs"
+output "private_app_subnet_ids" {
+  description = "List of private application subnet IDs"
   value       = module.network.private_subnet_ids
 }
 
 output "private_db_subnet_ids" {
-  description = "List of private DB subnet IDs"
+  description = "List of private database subnet IDs"
   value       = module.network.private_db_subnet_ids
 }
 

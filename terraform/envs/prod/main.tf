@@ -1,13 +1,11 @@
 # ============================================
-# Network Module (VPC, Subnets, NAT Gateway)
+# Network Module
 # ============================================
-
 module "network" {
   source = "../../modules/network"
 
-  # Common
   project_name = var.project_name
-  environment  = var.environment
+  environment  = "prod"
   region       = var.region
   team         = var.team
   owner        = var.owner
@@ -35,11 +33,9 @@ module "network" {
 # ============================================
 # Security Module
 # ============================================
-
 module "security" {
   source = "../../modules/security"
 
-  # 필수 변수
   account_id   = var.account_id
   environment  = "prod"
   region       = var.region
@@ -57,7 +53,6 @@ module "security" {
   # 보안 그룹 설정
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
-  # 선택적 변수
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
 }
@@ -65,25 +60,21 @@ module "security" {
 # ============================================
 # EKS Module
 # ============================================
-
 module "eks" {
   source = "../../modules/eks"
 
-  # Common
   project_name = var.project_name
-  environment  = var.environment
+  environment  = "prod"
   team         = var.team
   owner        = var.owner
 
-  # EKS Cluster
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  # Network (Network 모듈에서 가져옴)
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
-  # Node Group
+  # Prod는 더 높은 사양이나 개수를 tfvars에서 지정합니다.
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type
 

@@ -23,13 +23,13 @@ variable "region" {
   default     = "ap-northeast-2"
 }
 
-variable "team" {
-  description = "Owning team name"
+variable "project_name" {
+  description = "Project name"
   type        = string
 }
 
-variable "owner" {
-  description = "Owner name"
+variable "environment" {
+  description = "Environment (dev/prod)"
   type        = string
 }
 
@@ -43,9 +43,7 @@ variable "vpc_cidr" {
 }
 
 variable "availability_zones" {
-  description = "Availability zones for subnets"
-  type        = list(string)
-  default     = ["ap-northeast-2a", "ap-northeast-2c"]
+  type = list(string)
 }
 
 variable "public_subnet_cidrs" {
@@ -64,9 +62,7 @@ variable "private_db_subnet_cidrs" {
 }
 
 variable "enable_nat_gateway" {
-  description = "Enable NAT Gateway for private subnets"
-  type        = bool
-  default     = true
+  type = bool
 }
 
 variable "single_nat_gateway" {
