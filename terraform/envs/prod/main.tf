@@ -163,3 +163,46 @@ module "data" {
   existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
+
+# ============================================
+# Monitoring Module
+# ============================================
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  # ===== 공통 =====
+  project_name = var.project_name
+  environment  = var.environment
+  tags         = var.tags
+
+  # ===== EKS =====
+  cluster_name         = module.eks.cluster_name
+  oidc_provider_arn   = module.eks.oidc_provider_arn
+
+  # ===== Prometheus =====
+  prometheus_workspace_name         = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace              = "monitoring"
+  prometheus_service_account_name   = "prometheus-agent"
+
+  # ===== Grafana =====
+  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
+
+  # ===== Fluent Bit =====
+  fluentbit_namespace              = "kube-system"
+  fluentbit_service_account_name   = "fluent-bit"
+  fluentbit_chart_version          = "0.48.6"
+
+  # ===== CloudWatch =====
+  log_retention_days               = var.log_retention_days
+  application_error_threshold      = var.application_error_threshold
+  alarm_sns_topic_arn              = var.alarm_sns_topic_arn
+
+  # ===== AWS =====
+  region     = var.region
+  account_id = var.account_id
+
+  depends_on = [
+      module.eks
+    ]
+>>>>>>> 87fb4bd44e57db0335fea2b630f5f214337af895
+}

@@ -231,3 +231,30 @@ variable "valkey_ecpu_limit" {
   type        = number
   default     = 5000
 }
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+  default     = 30
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
+  type        = number
+  default     = 5
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
+}
