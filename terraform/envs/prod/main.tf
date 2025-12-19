@@ -204,5 +204,4 @@ module "monitoring" {
   depends_on = [
       module.eks
     ]
->>>>>>> 87fb4bd44e57db0335fea2b630f5f214337af895
 }
