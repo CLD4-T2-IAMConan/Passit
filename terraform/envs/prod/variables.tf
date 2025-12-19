@@ -43,7 +43,9 @@ variable "vpc_cidr" {
 }
 
 variable "availability_zones" {
-  type = list(string)
+  description = "List of availability zones"
+  type        = list(string)
+  default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
 
 variable "public_subnet_cidrs" {
@@ -65,7 +67,9 @@ variable "private_db_subnet_cidrs" {
 }
 
 variable "enable_nat_gateway" {
-  type = bool
+  description = "Enable NAT Gateway for private subnets"
+  type        = bool
+  default     = true
 }
 
 variable "single_nat_gateway" {
