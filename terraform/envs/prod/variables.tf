@@ -37,9 +37,9 @@ variable "owner" {
 # Network Module Variables
 # ============================================
 variable "vpc_cidr" {
-  description = "CIDR block for VPC"
+  description = "CIDR block for VPC (required only if use_existing_vpc = false or existing_vpc_id is empty)"
   type        = string
-  default     = "10.1.0.0/16" # Dev(10.0.0.0/16)와 겹치지 않게 설정
+  default     = ""
 }
 
 variable "availability_zones" {
@@ -49,18 +49,21 @@ variable "availability_zones" {
 }
 
 variable "public_subnet_cidrs" {
-  description = "CIDR blocks for public subnets"
+  description = "CIDR blocks for public subnets (required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "private_subnet_cidrs" {
-  description = "CIDR blocks for private app subnets (EKS용)"
+  description = "CIDR blocks for private app subnets (EKS용, required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "private_db_subnet_cidrs" {
-  description = "CIDR blocks for private db subnets (RDS, ElastiCache용)"
+  description = "CIDR blocks for private db subnets (RDS, ElastiCache용, required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "enable_nat_gateway" {

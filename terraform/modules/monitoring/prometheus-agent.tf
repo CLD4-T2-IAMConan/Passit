@@ -27,24 +27,36 @@ resource "kubernetes_service_account_v1" "adot" {
 # ADOT Collector Helm Release
 ############################
 
-resource "helm_release" "adot_collector" {
-  name       = "adot-collector"
-  repository = "https://aws-observability.github.io/aws-otel-helm-charts"
-  chart      = "aws-otel-collector"
-  version    = "0.25.0"
-
-  namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
-
-  values = [
-    yamlencode({
-      mode = "daemonset"
-
-      serviceAccount = {
-        create = false
-        name   = kubernetes_service_account_v1.adot.metadata[0].name
-      }
-
-      # (이하 config 동일)
-    })
-  ]
-}
+# ADOT Collector는 현재 주석 처리 (필요시 활성화)
+# 참고: 올바른 chart 이름과 버전 확인 필요
+# resource "helm_release" "adot_collector" {
+#   name       = "adot-collector"
+#   repository = "https://aws-observability.github.io/aws-otel-helm-charts"
+#   chart      = "adot-exporter-for-eks-on-ec2"
+#
+#   namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+#
+#   values = [
+#     yamlencode({
+#       serviceAccount = {
+#         create = false
+#         name   = kubernetes_service_account_v1.adot.metadata[0].name
+#       }
+#
+#       amp = {
+#         enabled = true
+#         remoteWriteEndpoint = aws_prometheus_workspace.this.prometheus_endpoint
+#         region = var.region
+#       }
+#
+#       metrics = {
+#         enabled = true
+#       }
+#     })
+#   ]
+#
+#   depends_on = [
+#     aws_iam_role_policy_attachment.amp_ingest,
+#     kubernetes_service_account_v1.adot
+#   ]
+# }

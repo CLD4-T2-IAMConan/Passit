@@ -81,16 +81,8 @@ resource "aws_rds_cluster" "main" {
   backup_retention_period = var.environment == "prod" ? 7 : 1
   preferred_backup_window = "03:00-04:00"
   deletion_protection     = var.environment == "prod" ? true : false
-  skip_final_snapshot     = var.environment == "prod" ? false : true
-
-  # [수정] Serverless 설정을 사용하지 않으므로 이 블록은 삭제
-  # dynamic "serverlessv2_scaling_configuration" {
-  #   for_each = var.environment == "dev" ? [1] : []
-  #   content {
-  #     min_capacity = var.rds_serverless_min_acu
-  #     max_capacity = var.rds_serverless_max_acu
-  #   }
-  # }
+  # Destroy 시 스냅샷 없이 삭제 (필요시 수동으로 스냅샷 생성 후 삭제)
+  skip_final_snapshot     = true
 
   tags = { Name = "${var.project_name}-${var.environment}-aurora-cluster" }
 }

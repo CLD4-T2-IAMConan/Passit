@@ -122,9 +122,10 @@ module "data" {
   team         = var.team
   owner        = var.owner
 
-  # Network Configuration (기존 VPC 사용 시 변수로 직접 전달, 아니면 모듈 output 사용)
-  vpc_id                = var.use_existing_vpc ? var.existing_vpc_id : module.network.vpc_id
-  private_db_subnet_ids = var.use_existing_vpc ? var.existing_private_db_subnet_ids : module.network.private_db_subnet_ids
+  # Network Configuration
+  # existing_vpc_id가 제공되면 직접 사용, 아니면 network 모듈 output 사용
+  vpc_id                = var.existing_vpc_id != "" ? var.existing_vpc_id : module.network.vpc_id
+  private_db_subnet_ids = var.existing_private_db_subnet_ids != [] ? var.existing_private_db_subnet_ids : module.network.private_db_subnet_ids
 
   # Security Groups (기존 리소스가 있으면 변수 사용, 없으면 security 모듈 output 사용)
   rds_security_group_id         = var.rds_security_group_id != "" ? var.rds_security_group_id : module.security.rds_security_group_id
@@ -146,10 +147,10 @@ module "data" {
   s3_kms_key_id = module.security.s3_kms_key_id
 
   # RDS Configuration
-  # Secrets Manager에서 DB 자격 증명 가져오기
-  db_secret_name      = "${var.project_name}/${var.environment}/db"
+  # Secrets Manager에서 DB 자격 증명 가져오기 (시크릿이 없으면 변수 사용)
+  db_secret_name      = "" # 시크릿이 없으면 빈 문자열로 설정 (변수 사용)
   rds_master_username = "admin"
-  rds_master_password = "" # 시크릿 사용 시 무시됨
+  rds_master_password = "" # 실제 비밀번호로 업데이트 필요
   rds_database_name   = "passit"
 
   # RDS 인스턴스 클래스 설정 (변수에서 가져오기)
@@ -176,32 +177,32 @@ module "monitoring" {
   tags         = var.tags
 
   # ===== EKS =====
-  cluster_name         = module.eks.cluster_name
-  oidc_provider_arn   = module.eks.oidc_provider_arn
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
 
   # ===== Prometheus =====
-  prometheus_workspace_name         = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace              = "monitoring"
-  prometheus_service_account_name   = "prometheus-agent"
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
 
   # ===== Grafana =====
   grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
 
   # ===== Fluent Bit =====
-  fluentbit_namespace              = "kube-system"
-  fluentbit_service_account_name   = "fluent-bit"
-  fluentbit_chart_version          = "0.48.6"
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
 
   # ===== CloudWatch =====
-  log_retention_days               = var.log_retention_days
-  application_error_threshold      = var.application_error_threshold
-  alarm_sns_topic_arn              = var.alarm_sns_topic_arn
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   # ===== AWS =====
   region     = var.region
   account_id = var.account_id
 
   depends_on = [
-      module.eks
-    ]
+    module.eks
+  ]
 }

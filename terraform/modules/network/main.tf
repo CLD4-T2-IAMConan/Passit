@@ -5,12 +5,13 @@
 # ============================================
 
 data "aws_vpc" "existing" {
-  count = var.use_existing_vpc ? 1 : 0
+  count = local.should_use_existing_vpc ? 1 : 0
   id    = var.existing_vpc_id
 }
 
 resource "aws_vpc" "main" {
-  count = var.use_existing_vpc ? 0 : 1
+  # existing_vpc_id가 제공되지 않으면 새 VPC 생성
+  count = local.should_use_existing_vpc ? 0 : 1
 
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -30,7 +31,7 @@ resource "aws_vpc" "main" {
 # ============================================
 
 data "aws_subnets" "existing_public" {
-  count = var.use_existing_vpc ? 1 : 0
+  count = local.should_use_existing_vpc ? 1 : 0
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.existing[0].id]
@@ -41,7 +42,7 @@ data "aws_subnets" "existing_public" {
 }
 
 data "aws_subnets" "existing_private_app" {
-  count = var.use_existing_vpc ? 1 : 0
+  count = local.should_use_existing_vpc ? 1 : 0
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.existing[0].id]
@@ -52,7 +53,7 @@ data "aws_subnets" "existing_private_app" {
 }
 
 data "aws_subnets" "existing_private_db" {
-  count = var.use_existing_vpc ? 1 : 0
+  count = local.should_use_existing_vpc ? 1 : 0
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.existing[0].id]
@@ -63,11 +64,14 @@ data "aws_subnets" "existing_private_db" {
 }
 
 locals {
-  vpc_id = var.use_existing_vpc ? data.aws_vpc.existing[0].id : aws_vpc.main[0].id
+  # existing_vpc_id가 제공되면 기존 VPC 사용, 아니면 새 VPC 생성
+  should_use_existing_vpc = var.use_existing_vpc && var.existing_vpc_id != ""
   
-  existing_public_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_public[0].ids : []
-  existing_private_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_private_app[0].ids : []
-  existing_private_db_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_private_db[0].ids : []
+  vpc_id = local.should_use_existing_vpc ? data.aws_vpc.existing[0].id : aws_vpc.main[0].id
+  
+  existing_public_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_public[0].ids : []
+  existing_private_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_private_app[0].ids : []
+  existing_private_db_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_private_db[0].ids : []
 }
 
 # ============================================
@@ -75,7 +79,7 @@ locals {
 # ============================================
 
 resource "aws_internet_gateway" "main" {
-  count  = var.use_existing_vpc ? 0 : 1
+  count  = local.should_use_existing_vpc ? 0 : 1
   vpc_id = local.vpc_id
 
   tags = {
@@ -90,7 +94,7 @@ resource "aws_internet_gateway" "main" {
 # ============================================
 
 resource "aws_subnet" "public" {
-  count = var.use_existing_vpc ? 0 : length(var.public_subnet_cidrs)
+  count = local.should_use_existing_vpc ? 0 : length(var.public_subnet_cidrs)
 
   vpc_id                  = local.vpc_id
   cidr_block              = var.public_subnet_cidrs[count.index]
@@ -111,7 +115,7 @@ resource "aws_subnet" "public" {
 # ============================================
 
 resource "aws_subnet" "private_app" {
-  count = var.use_existing_vpc ? 0 : length(var.private_subnet_cidrs)
+  count = local.should_use_existing_vpc ? 0 : length(var.private_subnet_cidrs)
 
   vpc_id            = local.vpc_id
   cidr_block        = var.private_subnet_cidrs[count.index]
@@ -131,7 +135,7 @@ resource "aws_subnet" "private_app" {
 # ============================================
 
 resource "aws_subnet" "private_db" {
-  count = var.use_existing_vpc ? 0 : length(var.private_db_subnet_cidrs)
+  count = local.should_use_existing_vpc ? 0 : length(var.private_db_subnet_cidrs)
 
   vpc_id            = local.vpc_id
   cidr_block        = var.private_db_subnet_cidrs[count.index]
@@ -150,7 +154,7 @@ resource "aws_subnet" "private_db" {
 # ============================================
 
 resource "aws_eip" "nat" {
-  count = var.use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
+  count = local.should_use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
 
   domain     = "vpc"
   depends_on = [aws_internet_gateway.main]
@@ -167,7 +171,7 @@ resource "aws_eip" "nat" {
 # ============================================
 
 resource "aws_nat_gateway" "main" {
-  count = var.use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
+  count = local.should_use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
@@ -187,7 +191,7 @@ resource "aws_nat_gateway" "main" {
 
 # Public Route Table
 resource "aws_route_table" "public" {
-  count  = var.use_existing_vpc ? 0 : 1
+  count  = local.should_use_existing_vpc ? 0 : 1
   vpc_id = local.vpc_id
 
   route {
@@ -204,7 +208,7 @@ resource "aws_route_table" "public" {
 
 # Public Route Table Associations
 resource "aws_route_table_association" "public" {
-  count = var.use_existing_vpc ? 0 : length(aws_subnet.public)
+  count = local.should_use_existing_vpc ? 0 : length(aws_subnet.public)
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public[0].id
@@ -217,7 +221,7 @@ resource "aws_route_table_association" "public" {
 # Dev: 단일 NAT이므로 App과 DB 서브넷이 같은 Route Table 공유 (private-rt)
 resource "aws_route_table" "private" {
   # 기존 VPC 사용 시 생성하지 않음
-  count = var.use_existing_vpc ? 0 : (var.single_nat_gateway ? 1 : length(aws_subnet.private_app))
+  count = local.should_use_existing_vpc ? 0 : (var.single_nat_gateway ? 1 : length(aws_subnet.private_app))
 
   vpc_id = local.vpc_id
 
@@ -236,7 +240,7 @@ resource "aws_route_table" "private" {
 
 # Private App Route Table Associations
 resource "aws_route_table_association" "private_app" {
-  count = var.use_existing_vpc ? 0 : length(aws_subnet.private_app)
+  count = local.should_use_existing_vpc ? 0 : length(aws_subnet.private_app)
 
   subnet_id      = aws_subnet.private_app[count.index].id
   route_table_id = var.single_nat_gateway ? aws_route_table.private[0].id : aws_route_table.private[count.index].id
@@ -244,7 +248,7 @@ resource "aws_route_table_association" "private_app" {
 
 # Private DB Route Table Associations (같은 Route Table 사용)
 resource "aws_route_table_association" "private_db" {
-  count = var.use_existing_vpc ? 0 : length(aws_subnet.private_db)
+  count = local.should_use_existing_vpc ? 0 : length(aws_subnet.private_db)
 
   subnet_id      = aws_subnet.private_db[count.index].id
   route_table_id = var.single_nat_gateway ? aws_route_table.private[0].id : aws_route_table.private[count.index].id
@@ -257,7 +261,7 @@ resource "aws_route_table_association" "private_db" {
 # Private Route Table에 자동으로 S3 프리픽스 리스트가 추가됨
 
 resource "aws_vpc_endpoint" "s3" {
-  count = var.use_existing_vpc ? 0 : 1
+  count = local.should_use_existing_vpc ? 0 : 1
   
   vpc_id            = local.vpc_id
   service_name      = "com.amazonaws.${var.region}.s3"
