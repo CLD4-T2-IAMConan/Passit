@@ -1,4 +1,6 @@
-# Network Module Variables
+# ============================================
+# Common / Global Variables
+# ============================================
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
@@ -33,7 +35,6 @@ variable "owner" {
 # ============================================
 # Network Module Variables
 # ============================================
-
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
@@ -68,13 +69,13 @@ variable "enable_nat_gateway" {
 variable "single_nat_gateway" {
   description = "Use single NAT Gateway for cost optimization (dev environment)"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "use_existing_vpc" {
   description = "Use existing VPC instead of creating a new one"
   type        = bool
-  default     = false  # Dev는 기본적으로 새 VPC 생성
+  default     = false # Dev는 기본적으로 새 VPC 생성
 }
 
 variable "existing_vpc_id" {
@@ -104,7 +105,6 @@ variable "existing_private_db_subnet_ids" {
 # ============================================
 # EKS Module Variables
 # ============================================
-
 variable "cluster_name" {
   description = "EKS Cluster name"
   type        = string
@@ -113,9 +113,9 @@ variable "cluster_name" {
 variable "cluster_version" {
   description = "Kubernetes version"
   type        = string
+  default     = "1.31"
 }
 
-# Node Group Settings
 variable "node_instance_types" {
   description = "EC2 instance types for EKS nodes"
   type        = list(string)
@@ -144,7 +144,6 @@ variable "node_max_size" {
 # ============================================
 # Security Module Variables
 # ============================================
-
 variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
@@ -158,19 +157,19 @@ variable "eks_cluster_name" {
 
 # Optional - Data Module용 (기존 리소스 ID)
 variable "rds_security_group_id" {
-  description = "RDS Security Group ID (required for data module when using existing resources)"
+  description = "RDS Security Group ID (optional - if empty, will use security module output)"
   type        = string
   default     = ""
 }
 
 variable "elasticache_security_group_id" {
-  description = "ElastiCache Security Group ID (required for data module when using existing resources)"
+  description = "ElastiCache Security Group ID (optional - if empty, will use security module output)"
   type        = string
   default     = ""
 }
 
 variable "elasticache_kms_key_id" {
-  description = "ElastiCache KMS Key ID (required for data module when using existing resources)"
+  description = "ElastiCache KMS Key ID (optional - if empty, will use security module output)"
   type        = string
   default     = ""
 }
@@ -198,4 +197,37 @@ variable "existing_elasticache_parameter_group_name" {
   description = "Existing ElastiCache parameter group name (if empty, will create new one)"
   type        = string
   default     = ""
+}
+
+# ============================================
+# Data Module (RDS / Valkey) Variables
+# ============================================
+variable "rds_instance_class" {
+  description = "Instance class for RDS"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "rds_serverless_min_acu" {
+  description = "Minimum Aurora Capacity Unit"
+  type        = number
+  default     = 0.5
+}
+
+variable "rds_serverless_max_acu" {
+  description = "Maximum Aurora Capacity Unit"
+  type        = number
+  default     = 2.0
+}
+
+variable "valkey_storage_limit" {
+  description = "Storage limit for Valkey in GB"
+  type        = number
+  default     = 1
+}
+
+variable "valkey_ecpu_limit" {
+  description = "ECPU limit for Valkey Serverless"
+  type        = number
+  default     = 5000
 }

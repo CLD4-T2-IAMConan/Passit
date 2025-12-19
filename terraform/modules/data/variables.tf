@@ -130,6 +130,11 @@ variable "rds_serverless_max_acu" {
   default = 2.0
 }
 
+variable "eks_worker_security_group_id" {
+  description = "EKS 노드 보안 그룹 ID (DB 접근 허용용)"
+  type        = string
+}
+
 # ============================================
 # ElastiCache (Valkey) Configuration
 # ============================================
