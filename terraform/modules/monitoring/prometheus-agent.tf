@@ -31,7 +31,7 @@ resource "helm_release" "adot_collector" {
   name       = "adot-collector"
   repository = "https://aws-observability.github.io/aws-otel-helm-charts"
   chart      = "aws-otel-collector"
-  version    = "0.25.0"
+  version    = "0.22.0"
 
   namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
 
