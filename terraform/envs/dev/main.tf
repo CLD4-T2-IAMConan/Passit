@@ -39,11 +39,14 @@ module "security" {
   # Network Output 참조
   vpc_id = module.network.vpc_id
 
-  # EKS 관련 (Cluster 생성 전에는 빈 값 또는 기본 이름 전달)
-  eks_cluster_name = var.eks_cluster_name
+  # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
+  eks_cluster_name = module.eks.cluster_name
 
   # 보안 그룹 허용 대역
   allowed_cidr_blocks = var.allowed_cidr_blocks
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
 }
 
 # ============================================

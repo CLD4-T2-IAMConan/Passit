@@ -38,7 +38,7 @@ variable "private_subnet_ids" {
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
-  default     = "10.1.0.0/16" # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
+  default     = "10.1.0.0/16"  # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
 }
 
 variable "availability_zones" {
@@ -89,38 +89,32 @@ variable "cluster_name" {
 
 variable "cluster_version" {
   description = "Kubernetes version for EKS cluster"
-  type        = string
-  default     = "1.34"
-}
-
-variable "eks_cluster_name" {
-  description = "EKS cluster name for security module"
-  type        = string
-  default     = ""
-}
-
-variable "node_instance_types" {
-  type = list(string)
-}
-
-variable "capacity_type" {
   type = string
+  default = "1.34"
 }
 
-variable "node_min_size" {
-  type = number
-}
-
-variable "node_desired_size" {
-  type = number
-}
-
-variable "node_max_size" {
-  type = number
-}
-
-variable "allowed_cidr_blocks" {
+variable "node_instance_types" { 
   type = list(string)
+}
+
+variable "capacity_type" { 
+  type = string 
+}
+
+variable "node_min_size" { 
+  type = number 
+}
+
+variable "node_desired_size" { 
+  type = number 
+}
+
+variable "node_max_size" { 
+  type = number 
+}
+
+variable "allowed_cidr_blocks" { 
+  type = list(string) 
 }
 
 # Optional

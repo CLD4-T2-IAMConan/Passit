@@ -86,11 +86,6 @@ variable "cluster_version" {
   type        = string
 }
 
-variable "eks_cluster_name" {
-  description = "EKS Cluster name for security module dependency"
-  type        = string
-}
-
 # Node Group Settings
 variable "node_instance_types" {
   description = "EC2 instance types for EKS nodes"
