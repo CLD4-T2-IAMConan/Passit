@@ -45,7 +45,19 @@ variable "oidc_provider_arn" {
 variable "log_retention_days" {
   description = "CloudWatch Logs retention period (days)"
   type        = number
-  default     = 7
+  default     = 30
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for application error log alarm"
+  type        = number
+  default     = 5
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
 }
 
 ############################
