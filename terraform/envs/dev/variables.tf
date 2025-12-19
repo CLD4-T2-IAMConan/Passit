@@ -120,6 +120,30 @@ variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
 }
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+
+variable "log_retention_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
+  type        = number
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
+}
+
+
+
+
 #
 # # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
 # variable "rds_security_group_id" {

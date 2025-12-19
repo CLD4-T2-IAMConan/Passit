@@ -127,3 +127,23 @@ variable "elasticache_security_group_id" {
   type    = string
   default = ""
 }
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+
+variable "log_retention_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
+  type        = number
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
+}
