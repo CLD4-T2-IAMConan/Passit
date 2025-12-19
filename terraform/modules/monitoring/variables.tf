@@ -105,6 +105,13 @@ variable "fluentbit_chart_version" {
   default     = "0.47.10"
 }
 
+variable "fluentbit_service_account_name" {
+  description = "Kubernetes ServiceAccount name for Fluent Bit (IRSA binding)"
+  type        = string
+  default     = "fluent-bit-sa"
+}
+
+
 ############################
 # Tags
 ############################

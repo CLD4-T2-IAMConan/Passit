@@ -19,14 +19,6 @@ resource "aws_prometheus_workspace" "this" {
 # (EKS에서 AMP로 메트릭 전송하는 ServiceAccount용)
 ############################
 
-data "aws_iam_openid_connect_provider" "this" {
-  arn = var.oidc_provider_arn
-}
-
-# OIDC issuer URL을 assume role policy에서 쓰기 위해 https:// 제거
-locals {
-  oidc_issuer = replace(data.aws_iam_openid_connect_provider.this.url, "https://", "")
-}
 
 data "aws_iam_policy_document" "amp_assume_role" {
   statement {
