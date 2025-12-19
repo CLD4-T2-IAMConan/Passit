@@ -74,12 +74,12 @@ variable "enable_nat_gateway" {
 variable "single_nat_gateway" {
   description = "Use single NAT Gateway for cost optimization (prod는 false 권장)"
   type        = bool
-  default     = false  # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
+  default     = false # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
 }
 
 variable "account_id" {
   description = "AWS Account ID"
-  type = string
+  type        = string
 }
 
 variable "cluster_name" {

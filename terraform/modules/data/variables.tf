@@ -61,7 +61,26 @@ variable "elasticache_security_group_id" {
 # ============================================
 # Aurora RDS Configuration - 예진님 여기 작성해주세용!
 # ============================================
+variable "rds_master_username" {
+  type    = string
+  default = "admin"
+}
 
+variable "rds_instance_class" {
+  description = "Instance class for Prod (e.g., db.t3.medium)"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "rds_serverless_min_acu" {
+  type    = number
+  default = 0.5
+}
+
+variable "rds_serverless_max_acu" {
+  type    = number
+  default = 2.0
+}
 
 # ============================================
 # ElastiCache (Valkey) Configuration
