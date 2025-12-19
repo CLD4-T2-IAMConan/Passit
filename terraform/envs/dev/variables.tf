@@ -134,3 +134,25 @@ variable "allowed_cidr_blocks" {
 #   default     = null
 # }
 
+# =========================
+# CI/CD
+# =========================
+variable "github_org" {
+  type = string
+}
+
+variable "github_repo" {
+  type = string
+}
+
+variable "github_ref" {
+  type = string
+}
+
+variable "enable_frontend" {
+  type = bool
+}
+
+variable "frontend_bucket_name" {
+  type = string
+}

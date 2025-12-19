@@ -120,7 +120,7 @@ module "cicd" {
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
   github_repo = var.github_repo
-  github_ref  = "refs/heads/main"
+  github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true

@@ -113,7 +113,9 @@ module "cicd" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
-  account_id   = var.account_id
+  # account_id   = var.account_id
+  team         = var.team
+  owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name        = module.eks.cluster_name
@@ -126,7 +128,7 @@ module "cicd" {
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
   github_repo = var.github_repo
-  github_ref  = "refs/heads/main"
+  github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true

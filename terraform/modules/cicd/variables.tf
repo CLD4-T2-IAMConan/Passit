@@ -35,10 +35,9 @@ variable "github_repo" {
   type        = string
 }
 
-variable "deploy_branch" {
+variable "github_ref" {
   description = "Branch allowed to deploy frontend"
   type        = string
-  default     = "main"
 }
 
 variable "region" { type = string }
