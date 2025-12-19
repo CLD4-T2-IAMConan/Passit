@@ -1,28 +1,50 @@
 # RDS Configuration
-# 1. DB 서브넷 그룹 (에러 2번 해결)
+# 1. DB 서브넷 그룹 (기존 리소스 또는 새로 생성)
+data "aws_db_subnet_group" "existing" {
+  count = var.existing_db_subnet_group_name != "" ? 1 : 0
+  name  = var.existing_db_subnet_group_name
+}
+
 resource "aws_db_subnet_group" "main" {
+  count      = var.existing_db_subnet_group_name != "" ? 0 : 1
   name       = "${var.project_name}-${var.environment}-rds-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
   tags = { Name = "${var.project_name}-${var.environment}-rds-subnet-group" }
 }
 
-# 1. 시크릿 불러오기 (이전과 동일)
+locals {
+  db_subnet_group_name = var.existing_db_subnet_group_name != "" ? data.aws_db_subnet_group.existing[0].name : aws_db_subnet_group.main[0].name
+}
+
+# 1. 시크릿 불러오기 (optional - 시크릿이 있으면 사용, 없으면 변수 사용)
 data "aws_secretsmanager_secret" "db_secret" {
-  name = "passit/${var.environment}/db"
+  count = var.db_secret_name != "" ? 1 : 0
+  name  = var.db_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "db_secret_version" {
-  secret_id = data.aws_secretsmanager_secret.db_secret.id
+  count     = var.db_secret_name != "" ? 1 : 0
+  secret_id = data.aws_secretsmanager_secret.db_secret[0].id
 }
 
-# 2. 알려주신 Key 이름에 맞춰 파싱 (대문자 주의)
+# 2. DB 자격 증명 (시크릿이 있으면 시크릿에서, 없으면 변수에서)
 locals {
-  db_creds = jsondecode(data.aws_secretsmanager_secret_version.db_secret_version.secret_string)
+  db_creds = var.db_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.db_secret_version[0].secret_string) : {
+    DB_USER     = var.rds_master_username
+    DB_PASSWORD = var.rds_master_password
+    DB_NAME     = var.rds_database_name
+  }
 }
 
-# 2. 파라미터 그룹 (에러 3번 해결)
+# 2. 파라미터 그룹 (기존 리소스 또는 새로 생성)
+data "aws_rds_cluster_parameter_group" "existing" {
+  count = var.existing_rds_parameter_group_name != "" ? 1 : 0
+  name  = var.existing_rds_parameter_group_name
+}
+
 resource "aws_rds_cluster_parameter_group" "main" {
+  count       = var.existing_rds_parameter_group_name != "" ? 0 : 1
   name        = "${var.project_name}-${var.environment}-aurora-pg"
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
@@ -38,6 +60,10 @@ resource "aws_rds_cluster_parameter_group" "main" {
   }
 }
 
+locals {
+  rds_parameter_group_name = var.existing_rds_parameter_group_name != "" ? data.aws_rds_cluster_parameter_group.existing[0].name : aws_rds_cluster_parameter_group.main[0].name
+}
+
 # 1. Aurora 클러스터 본체
 resource "aws_rds_cluster" "main" {
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
@@ -49,9 +75,9 @@ resource "aws_rds_cluster" "main" {
   master_password = local.db_creds["DB_PASSWORD"]
   database_name   = local.db_creds["DB_NAME"] # 'passit'이 자동으로 생성됨
 
-  db_subnet_group_name            = aws_db_subnet_group.main.name
+  db_subnet_group_name            = local.db_subnet_group_name
   vpc_security_group_ids          = [var.rds_security_group_id]
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.main.name
+  db_cluster_parameter_group_name = local.rds_parameter_group_name
 
   # 설계안: 백업 및 삭제 보호 설정 (환경별 분기)
   backup_retention_period = var.environment == "prod" ? 7 : 1
@@ -83,7 +109,7 @@ resource "aws_rds_cluster_instance" "main" {
 
   # 설계안: Prod는 t3.medium, Dev는 Serverless v2
   instance_class       = var.environment == "prod" ? "db.t3.medium" : "db.serverless"
-  db_subnet_group_name = aws_db_subnet_group.main.name
+  db_subnet_group_name = local.db_subnet_group_name
 
   publicly_accessible = false
 

@@ -1,10 +1,17 @@
 # Network Module - VPC, Subnet, NAT, Route Table, Security Group
 
 # ============================================
-# VPC
+# VPC (Existing or New)
 # ============================================
 
+data "aws_vpc" "existing" {
+  count = var.use_existing_vpc ? 1 : 0
+  id    = var.existing_vpc_id
+}
+
 resource "aws_vpc" "main" {
+  count = var.use_existing_vpc ? 0 : 1
+
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -19,11 +26,57 @@ resource "aws_vpc" "main" {
 }
 
 # ============================================
+# Existing Subnets (Data Sources)
+# ============================================
+
+data "aws_subnets" "existing_public" {
+  count = var.use_existing_vpc ? 1 : 0
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.existing[0].id]
+  }
+  tags = {
+    Type = "public"
+  }
+}
+
+data "aws_subnets" "existing_private_app" {
+  count = var.use_existing_vpc ? 1 : 0
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.existing[0].id]
+  }
+  tags = {
+    Type = "private-app"
+  }
+}
+
+data "aws_subnets" "existing_private_db" {
+  count = var.use_existing_vpc ? 1 : 0
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.existing[0].id]
+  }
+  tags = {
+    Type = "private-db"
+  }
+}
+
+locals {
+  vpc_id = var.use_existing_vpc ? data.aws_vpc.existing[0].id : aws_vpc.main[0].id
+  
+  existing_public_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_public[0].ids : []
+  existing_private_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_private_app[0].ids : []
+  existing_private_db_subnet_ids = var.use_existing_vpc ? data.aws_subnets.existing_private_db[0].ids : []
+}
+
+# ============================================
 # Internet Gateway
 # ============================================
 
 resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_existing_vpc ? 0 : 1
+  vpc_id = local.vpc_id
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-igw"
@@ -37,9 +90,9 @@ resource "aws_internet_gateway" "main" {
 # ============================================
 
 resource "aws_subnet" "public" {
-  count = length(var.public_subnet_cidrs)
+  count = var.use_existing_vpc ? 0 : length(var.public_subnet_cidrs)
 
-  vpc_id                  = aws_vpc.main.id
+  vpc_id                  = local.vpc_id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
@@ -58,9 +111,9 @@ resource "aws_subnet" "public" {
 # ============================================
 
 resource "aws_subnet" "private_app" {
-  count = length(var.private_subnet_cidrs)
+  count = var.use_existing_vpc ? 0 : length(var.private_subnet_cidrs)
 
-  vpc_id            = aws_vpc.main.id
+  vpc_id            = local.vpc_id
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
 
@@ -78,9 +131,9 @@ resource "aws_subnet" "private_app" {
 # ============================================
 
 resource "aws_subnet" "private_db" {
-  count = length(var.private_db_subnet_cidrs)
+  count = var.use_existing_vpc ? 0 : length(var.private_db_subnet_cidrs)
 
-  vpc_id            = aws_vpc.main.id
+  vpc_id            = local.vpc_id
   cidr_block        = var.private_db_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
 
@@ -97,7 +150,7 @@ resource "aws_subnet" "private_db" {
 # ============================================
 
 resource "aws_eip" "nat" {
-  count = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0
+  count = var.use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
 
   domain     = "vpc"
   depends_on = [aws_internet_gateway.main]
@@ -114,7 +167,7 @@ resource "aws_eip" "nat" {
 # ============================================
 
 resource "aws_nat_gateway" "main" {
-  count = var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0
+  count = var.use_existing_vpc ? 0 : (var.enable_nat_gateway ? (var.single_nat_gateway ? 1 : length(var.private_subnet_cidrs)) : 0)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
@@ -134,11 +187,12 @@ resource "aws_nat_gateway" "main" {
 
 # Public Route Table
 resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
+  count  = var.use_existing_vpc ? 0 : 1
+  vpc_id = local.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
+    gateway_id = aws_internet_gateway.main[0].id
   }
 
   tags = {
@@ -150,10 +204,10 @@ resource "aws_route_table" "public" {
 
 # Public Route Table Associations
 resource "aws_route_table_association" "public" {
-  count = length(aws_subnet.public)
+  count = var.use_existing_vpc ? 0 : length(aws_subnet.public)
 
   subnet_id      = aws_subnet.public[count.index].id
-  route_table_id = aws_route_table.public.id
+  route_table_id = aws_route_table.public[0].id
 }
 
 # ============================================
@@ -162,10 +216,10 @@ resource "aws_route_table_association" "public" {
 # Prod: AZ별로 App과 DB 서브넷이 같은 Route Table 공유 (private-rt-a, private-rt-c)
 # Dev: 단일 NAT이므로 App과 DB 서브넷이 같은 Route Table 공유 (private-rt)
 resource "aws_route_table" "private" {
-  # Prod: App 서브넷 개수만큼 (AZ별), Dev: 1개
-  count = var.single_nat_gateway ? 1 : length(aws_subnet.private_app)
+  # 기존 VPC 사용 시 생성하지 않음
+  count = var.use_existing_vpc ? 0 : (var.single_nat_gateway ? 1 : length(aws_subnet.private_app))
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = local.vpc_id
 
   route {
     cidr_block     = "0.0.0.0/0"
@@ -182,7 +236,7 @@ resource "aws_route_table" "private" {
 
 # Private App Route Table Associations
 resource "aws_route_table_association" "private_app" {
-  count = length(aws_subnet.private_app)
+  count = var.use_existing_vpc ? 0 : length(aws_subnet.private_app)
 
   subnet_id      = aws_subnet.private_app[count.index].id
   route_table_id = var.single_nat_gateway ? aws_route_table.private[0].id : aws_route_table.private[count.index].id
@@ -190,7 +244,7 @@ resource "aws_route_table_association" "private_app" {
 
 # Private DB Route Table Associations (같은 Route Table 사용)
 resource "aws_route_table_association" "private_db" {
-  count = length(aws_subnet.private_db)
+  count = var.use_existing_vpc ? 0 : length(aws_subnet.private_db)
 
   subnet_id      = aws_subnet.private_db[count.index].id
   route_table_id = var.single_nat_gateway ? aws_route_table.private[0].id : aws_route_table.private[count.index].id
@@ -203,10 +257,12 @@ resource "aws_route_table_association" "private_db" {
 # Private Route Table에 자동으로 S3 프리픽스 리스트가 추가됨
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = aws_vpc.main.id
+  count = var.use_existing_vpc ? 0 : 1
+  
+  vpc_id            = local.vpc_id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
-  route_table_ids   = concat(aws_route_table.private[*].id)
+  route_table_ids   = length(aws_route_table.private) > 0 ? aws_route_table.private[*].id : []
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-s3-vpce"

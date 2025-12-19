@@ -62,3 +62,33 @@ variable "owner" {
   description = "Owner name"
   type        = string
 }
+
+variable "use_existing_vpc" {
+  description = "Use existing VPC instead of creating a new one"
+  type        = bool
+  default     = false
+}
+
+variable "existing_vpc_id" {
+  description = "Existing VPC ID (required if use_existing_vpc is true)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_ids" {
+  description = "Existing public subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_subnet_ids" {
+  description = "Existing private app subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_db_subnet_ids" {
+  description = "Existing private db subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
