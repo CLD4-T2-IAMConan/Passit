@@ -141,6 +141,10 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
+variable "tags" {
+  type = map(string)
+}
+
 
 
 
