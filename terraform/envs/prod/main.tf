@@ -1,80 +1,67 @@
 # ============================================
-# Network Module (VPC, Subnets, NAT Gateway)
+# Network Module
 # ============================================
-
 module "network" {
   source = "../../modules/network"
 
-  # Common
   project_name = var.project_name
-  environment  = var.environment
+  environment  = "prod"
   region       = var.region
   team         = var.team
   owner        = var.owner
 
-  # VPC Configuration
-  vpc_cidr          = var.vpc_cidr
+  vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
 
-  # Subnet Configuration
-  public_subnet_cidrs   = var.public_subnet_cidrs
-  private_subnet_cidrs  = var.private_subnet_cidrs
+  public_subnet_cidrs     = var.public_subnet_cidrs
+  private_subnet_cidrs    = var.private_subnet_cidrs
   private_db_subnet_cidrs = var.private_db_subnet_cidrs
 
-  # NAT Gateway Configuration
-  enable_nat_gateway  = var.enable_nat_gateway
-  single_nat_gateway  = var.single_nat_gateway
+  # Prod는 고가용성이 중요하므로 보통 아래와 같이 설정합니다 (tfvars에서 조절 가능)
+  enable_nat_gateway = true
+  single_nat_gateway = false # AZ마다 NAT를 따로 생성
 }
 
 # ============================================
 # Security Module
 # ============================================
-
 module "security" {
   source = "../../modules/security"
 
-  # 필수 변수
   account_id   = var.account_id
   environment  = "prod"
   region       = var.region
   project_name = var.project_name
 
-  # 네트워크 의존성 (Network 모듈에서 가져옴)
-  vpc_id = module.network.vpc_id
-
-  # EKS 의존성 (EKS 모듈이 생성되면 실제 값으로 교체)
-  eks_cluster_name = var.eks_cluster_name
-
-  # 보안 그룹 설정
+  vpc_id              = module.network.vpc_id
+  eks_cluster_name    = var.eks_cluster_name
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
-  # 선택적 변수
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
 }
 
 # ============================================
 # EKS Module
 # ============================================
-
 module "eks" {
   source = "../../modules/eks"
 
-  # Common
   project_name = var.project_name
-  environment  = var.environment
+  environment  = "prod"
   team         = var.team
   owner        = var.owner
 
-  # EKS Cluster
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  # Network (Network 모듈에서 가져옴)
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
-  # Node Group
+  # Prod는 더 높은 사양이나 개수를 tfvars에서 지정합니다.
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type
 

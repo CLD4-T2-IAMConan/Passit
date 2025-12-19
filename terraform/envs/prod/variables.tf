@@ -1,17 +1,29 @@
-variable "project_name" {
-  type = string
-}
+# ============================================
+# Common Variables
+# ============================================
 
-variable "environment" {
-  type = string
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
 }
 
 variable "region" {
-  type = string
+  description = "AWS Region"
+  type        = string
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment (dev/prod)"
+  type        = string
 }
 
 variable "team" {
-  description = "Owning team name"
+  description = "Team name"
   type        = string
 }
 
@@ -20,25 +32,12 @@ variable "owner" {
   type        = string
 }
 
-# Network
-# Network 모듈을 사용하는 경우 아래 변수들은 사용하지 않음 (모듈에서 자동 생성)
-variable "vpc_id" {
-  description = "VPC ID for Security Groups and EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = string
-  default     = ""
-}
+# ============================================
+# Network Variables
+# ============================================
 
-variable "private_subnet_ids" {
-  description = "Private subnet IDs for EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = list(string)
-  default     = []
-}
-
-# Network Module Variables
 variable "vpc_cidr" {
-  description = "CIDR block for VPC"
-  type        = string
-  default     = "10.1.0.0/16"  # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
+  type = string
 }
 
 variable "availability_zones" {
@@ -136,30 +135,75 @@ variable "node_instance_types" {
   type = list(string)
 }
 
-variable "capacity_type" { 
-  type = string 
+variable "public_subnet_cidrs" {
+  type = list(string)
 }
 
-variable "node_min_size" { 
-  type = number 
+variable "private_subnet_cidrs" {
+  type = list(string)
 }
 
-variable "node_desired_size" { 
-  type = number 
+variable "private_db_subnet_cidrs" {
+  type    = list(string)
+  default = []
 }
 
-variable "node_max_size" { 
-  type = number 
+variable "enable_nat_gateway" {
+  type = bool
 }
 
-variable "allowed_cidr_blocks" { 
-  type = list(string) 
+variable "single_nat_gateway" {
+  type = bool
 }
 
-# Optional
+# ============================================
+# EKS Variables
+# ============================================
+
+variable "cluster_name" {
+  type = string
+}
+
+variable "cluster_version" {
+  type = string
+}
+
+variable "eks_cluster_name" {
+  description = "Security module reference"
+  type        = string
+}
+
+variable "node_instance_types" {
+  type = list(string)
+}
+
+variable "capacity_type" {
+  type = string
+}
+
+variable "node_min_size" {
+  type = number
+}
+
+variable "node_desired_size" {
+  type = number
+}
+
+variable "node_max_size" {
+  type = number
+}
+
+# ============================================
+# Security Variables
+# ============================================
+
+variable "allowed_cidr_blocks" {
+  type = list(string)
+}
+
 variable "rds_security_group_id" {
   type    = string
-  default = ""
+  default = null
 }
 
 variable "elasticache_security_group_id" {
