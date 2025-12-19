@@ -16,3 +16,43 @@ output "private_app_subnet_ids" {
   description = "List of IDs of private app subnets"
   value       = module.network.private_subnet_ids
 }
+
+# ============================================
+# EKS Information
+# ============================================
+
+output "cluster_name" {
+  value       = module.eks.cluster_name
+  description = "EKS cluster name"
+}
+
+output "cluster_endpoint" {
+  value       = module.eks.cluster_endpoint
+  description = "EKS API server endpoint"
+}
+
+# ============================================
+# CI/CD Information
+# ============================================
+output "argocd_irsa_role_arn" {
+  value       = module.cicd.argocd_irsa_role_arn
+  description = "IAM Role ARN used by Argo CD via IRSA"
+}
+
+output "github_actions_frontend_role_arn" {
+  value       = module.cicd.github_actions_frontend_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+# ============================================
+# Frontend Information (운영 편의)
+# ============================================
+output "frontend_bucket_name" {
+  value       = module.cicd.frontend_bucket_name
+  description = "S3 bucket for frontend static files"
+}
+
+output "frontend_cloudfront_domain" {
+  value       = module.cicd.frontend_cloudfront_domain
+  description = "CloudFront domain name for frontend"
+}

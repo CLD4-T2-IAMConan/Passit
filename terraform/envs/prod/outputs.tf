@@ -1,4 +1,6 @@
-# Network Module Outputs
+# ============================================
+# Network Information
+# ============================================
 output "vpc_id" {
   description = "The ID of the VPC"
   value       = module.network.vpc_id
@@ -19,7 +21,9 @@ output "private_db_subnet_ids" {
   value       = module.network.private_db_subnet_ids
 }
 
-# EKS Module Outputs
+# ============================================
+# EKS Information
+# ============================================
 output "cluster_name" {
   description = "EKS cluster name"
   value       = module.eks.cluster_name
@@ -30,12 +34,28 @@ output "cluster_endpoint" {
   value       = module.eks.cluster_endpoint
 }
 
-output "cluster_security_group_id" {
-  description = "Security group ID attached to the EKS cluster"
-  value       = module.eks.cluster_security_group_id
+# ============================================
+# CI/CD Information
+# ============================================
+output "argocd_irsa_role_arn" {
+  value       = module.cicd.argocd_irsa_role_arn
+  description = "IAM Role ARN used by Argo CD via IRSA"
 }
 
-output "oidc_provider_arn" {
-  description = "OIDC provider ARN for IRSA"
-  value       = module.eks.oidc_provider_arn
+output "github_actions_frontend_role_arn" {
+  value       = module.cicd.github_actions_frontend_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+# ============================================
+# Frontend Information (운영 편의)
+# ============================================
+output "frontend_bucket_name" {
+  value       = module.cicd.frontend_bucket_name
+  description = "S3 bucket for frontend static files"
+}
+
+output "frontend_cloudfront_domain" {
+  value       = module.cicd.frontend_cloudfront_domain
+  description = "CloudFront domain name for frontend"
 }
