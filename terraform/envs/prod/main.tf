@@ -39,6 +39,9 @@ module "security" {
 
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
 }
 
 # ============================================

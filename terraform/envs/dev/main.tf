@@ -39,11 +39,14 @@ module "security" {
   # Network Output 참조
   vpc_id = module.network.vpc_id
 
-  # EKS 관련 (Cluster 생성 전에는 빈 값 또는 기본 이름 전달)
-  eks_cluster_name = var.eks_cluster_name
+  # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
+  eks_cluster_name = module.eks.cluster_name
 
   # 보안 그룹 허용 대역
   allowed_cidr_blocks = var.allowed_cidr_blocks
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
 }
 
 # ============================================
@@ -71,4 +74,21 @@ module "eks" {
   node_min_size     = var.node_min_size
   node_desired_size = var.node_desired_size
   node_max_size     = var.node_max_size
+}
+
+# ============================================
+# Autoscaling Module (Cluster Autoscaler)
+# ============================================
+module "autoscaling" {
+  source = "../../modules/autoscaling"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  region       = var.region
+
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 }

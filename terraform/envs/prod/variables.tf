@@ -117,5 +117,5 @@ variable "rds_security_group_id" {
 
 variable "elasticache_security_group_id" {
   type    = string
-  default = null
+  default = ""
 }
