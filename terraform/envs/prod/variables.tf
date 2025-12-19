@@ -1,13 +1,26 @@
+# ============================================
+# Common / Global Variables
+# ============================================
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
 variable "project_name" {
-  type = string
+  description = "Project name for tagging"
+  type        = string
 }
 
 variable "environment" {
-  type = string
+  description = "Environment name (prod)"
+  type        = string
+  default     = "prod"
 }
 
 variable "region" {
-  type = string
+  description = "AWS Region"
+  type        = string
+  default     = "ap-northeast-2"
 }
 
 variable "team" {
@@ -20,25 +33,13 @@ variable "owner" {
   type        = string
 }
 
-# Network
-# Network 모듈을 사용하는 경우 아래 변수들은 사용하지 않음 (모듈에서 자동 생성)
-variable "vpc_id" {
-  description = "VPC ID for Security Groups and EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = string
-  default     = ""
-}
-
-variable "private_subnet_ids" {
-  description = "Private subnet IDs for EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = list(string)
-  default     = []
-}
-
+# ============================================
 # Network Module Variables
+# ============================================
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
-  default     = "10.1.0.0/16"  # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
+  default     = "10.1.0.0/16" # Dev(10.0.0.0/16)와 겹치지 않게 설정
 }
 
 variable "availability_zones" {
@@ -50,19 +51,16 @@ variable "availability_zones" {
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets"
   type        = list(string)
-  default     = ["10.1.1.0/24", "10.1.2.0/24"]
 }
 
 variable "private_subnet_cidrs" {
   description = "CIDR blocks for private app subnets (EKS용)"
   type        = list(string)
-  default     = ["10.0.11.0/24", "10.0.12.0/24"]
 }
 
 variable "private_db_subnet_cidrs" {
   description = "CIDR blocks for private db subnets (RDS, ElastiCache용)"
   type        = list(string)
-  default     = ["10.0.21.0/24", "10.0.22.0/24"]
 }
 
 variable "enable_nat_gateway" {
@@ -72,58 +70,97 @@ variable "enable_nat_gateway" {
 }
 
 variable "single_nat_gateway" {
-  description = "Use single NAT Gateway for cost optimization (prod는 false 권장)"
+  description = "Use single NAT Gateway (Prod는 고가용성을 위해 false 권장)"
   type        = bool
-  default     = false # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
+  default     = false # 각 AZ마다 NAT를 생성하여 장애 전파 방지
 }
 
-variable "account_id" {
-  description = "AWS Account ID"
-  type        = string
-}
-
+# ============================================
+# EKS Module Variables
+# ============================================
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "EKS Cluster name"
   type        = string
 }
 
 variable "cluster_version" {
-  description = "Kubernetes version for EKS cluster"
-  type = string
-  default = "1.34"
+  description = "Kubernetes version"
+  type        = string
+  default     = "1.31" # dev와 동일하게 맞추는 것이 관리상 유리
 }
 
-variable "node_instance_types" { 
-  type = list(string)
+variable "node_instance_types" {
+  description = "EC2 instance types for EKS nodes"
+  type        = list(string)
 }
 
-variable "capacity_type" { 
-  type = string 
+variable "capacity_type" {
+  description = "Type of capacity (Prod는 안정적인 ON_DEMAND 권장)"
+  type        = string
 }
 
-variable "node_min_size" { 
-  type = number 
+variable "node_min_size" {
+  type = number
 }
 
-variable "node_desired_size" { 
-  type = number 
+variable "node_desired_size" {
+  type = number
 }
 
-variable "node_max_size" { 
-  type = number 
+variable "node_max_size" {
+  type = number
 }
 
-variable "allowed_cidr_blocks" { 
-  type = list(string) 
+# ============================================
+# Security Module Variables
+# ============================================
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for external access"
+  type        = list(string)
 }
 
-# Optional
 variable "rds_security_group_id" {
-  type    = string
-  default = ""
+  description = "The ID of the RDS security group"
+  type        = string
+  default     = ""
 }
 
 variable "elasticache_security_group_id" {
-  type    = string
-  default = ""
+  description = "The ID of the ElastiCache security group"
+  type        = string
+  default     = ""
+}
+
+# ============================================
+# Data Module (RDS / Valkey) Variables
+# ============================================
+variable "rds_instance_class" {
+  description = "Instance class for RDS (e.g., db.t3.medium)"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+# Prod에서 사용하지 않더라도 모듈 호환성을 위해 선언 유지
+variable "rds_serverless_min_acu" {
+  description = "Minimum Aurora Capacity Unit"
+  type        = number
+  default     = 0.5
+}
+
+variable "rds_serverless_max_acu" {
+  description = "Maximum Aurora Capacity Unit"
+  type        = number
+  default     = 2.0
+}
+
+variable "valkey_storage_limit" {
+  description = "Storage limit for Valkey in GB"
+  type        = number
+  default     = 5
+}
+
+variable "valkey_ecpu_limit" {
+  description = "ECPU limit for Valkey Serverless"
+  type        = number
+  default     = 5000
 }

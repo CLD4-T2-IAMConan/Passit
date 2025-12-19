@@ -1,4 +1,6 @@
-# Network Module Variables
+# ============================================
+# Common / Global Variables
+# ============================================
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
@@ -33,7 +35,6 @@ variable "owner" {
 # ============================================
 # Network Module Variables
 # ============================================
-
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
@@ -71,11 +72,9 @@ variable "single_nat_gateway" {
   default     = true
 }
 
-
 # ============================================
 # EKS Module Variables
 # ============================================
-
 variable "cluster_name" {
   description = "EKS Cluster name"
   type        = string
@@ -84,9 +83,9 @@ variable "cluster_name" {
 variable "cluster_version" {
   description = "Kubernetes version"
   type        = string
+  default     = "1.31"
 }
 
-# Node Group Settings
 variable "node_instance_types" {
   description = "EC2 instance types for EKS nodes"
   type        = list(string)
@@ -115,21 +114,40 @@ variable "node_max_size" {
 # ============================================
 # Security Module Variables
 # ============================================
-
 variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
 }
-#
-# # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
-# variable "rds_security_group_id" {
-#   description = "Security group ID for RDS"
-#   type        = string
-#   default     = null
-# }
-#
-# variable "elasticache_security_group_id" {
-#   description = "Security group ID for ElastiCache"
-#   type        = string
-#   default     = null
-# }
+
+# ============================================
+# Data Module (RDS / Valkey) Variables
+# ============================================
+variable "rds_instance_class" {
+  description = "Instance class for RDS"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "rds_serverless_min_acu" {
+  description = "Minimum Aurora Capacity Unit"
+  type        = number
+  default     = 0.5
+}
+
+variable "rds_serverless_max_acu" {
+  description = "Maximum Aurora Capacity Unit"
+  type        = number
+  default     = 2.0
+}
+
+variable "valkey_storage_limit" {
+  description = "Storage limit for Valkey in GB"
+  type        = number
+  default     = 1
+}
+
+variable "valkey_ecpu_limit" {
+  description = "ECPU limit for Valkey Serverless"
+  type        = number
+  default     = 5000
+}

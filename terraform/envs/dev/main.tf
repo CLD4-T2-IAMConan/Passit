@@ -27,7 +27,7 @@ module "network" {
 
 # ============================================
 # Security Module (Security Groups, IAM Roles)
-# ============================================
+# ===========================================
 module "security" {
   source = "../../modules/security"
 
@@ -38,7 +38,6 @@ module "security" {
 
   # Network Output 참조
   vpc_id = module.network.vpc_id
-
   # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
   eks_cluster_name = module.eks.cluster_name
 
@@ -91,4 +90,35 @@ module "autoscaling" {
   cluster_name      = module.eks.cluster_name
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
+}
+
+# 데이터 모듈 호출 (RDS, ElastiCache/Valkey 담당)
+module "data" {
+  source = "../../modules/data"
+
+  # 1. 공통 변수 전달
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  region       = var.region
+  vpc_id       = module.network.vpc_id
+
+  # 2. 네트워크 및 보안 연결 (다른 모듈의 output을 주입)
+  # Network 모듈의 output 이름과 일치해야 함
+  private_db_subnet_ids = module.network.private_db_subnet_ids
+
+  # Security 모듈의 output 이름과 일치해야 함
+  rds_security_group_id         = module.security.rds_security_group_id
+  elasticache_security_group_id = module.security.elasticache_security_group_id
+  eks_worker_security_group_id  = module.security.eks_worker_security_group_id
+
+  #   # variables.tf에 정의된 KMS 관련 변수도 연결
+  #   rds_kms_key_arn         = module.security.rds_kms_key_arn
+  #   elasticache_kms_key_arn = module.security.elasticache_kms_key_arn
+
+  # 3. RDS/Valkey 상세 설정 변수 (variables.tf에 정의된 값들)
+  rds_instance_class     = var.rds_instance_class
+  rds_serverless_min_acu = var.rds_serverless_min_acu
+  rds_serverless_max_acu = var.rds_serverless_max_acu
 }
