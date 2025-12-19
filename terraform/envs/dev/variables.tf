@@ -69,7 +69,7 @@ variable "enable_nat_gateway" {
 variable "single_nat_gateway" {
   description = "Use single NAT Gateway for cost optimization (dev environment)"
   type        = bool
-  default     = true
+  default     = false
 }
 
 # ============================================

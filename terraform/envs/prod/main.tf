@@ -1,107 +1,107 @@
 # ============================================
 # Network Module (VPC, Subnets, NAT Gateway)
 # ============================================
-#
-# module "network" {
-#   source = "../../modules/network"
-#
-#   # Common
-#   project_name = var.project_name
-#   environment  = var.environment
-#   region       = var.region
-#   team         = var.team
-#   owner        = var.owner
-#
-#   # VPC Configuration
-#   vpc_cidr           = var.vpc_cidr
-#   availability_zones = var.availability_zones
-#
-#   # Subnet Configuration
-#   public_subnet_cidrs     = var.public_subnet_cidrs
-#   private_subnet_cidrs    = var.private_subnet_cidrs
-#   private_db_subnet_cidrs = var.private_db_subnet_cidrs
-#
-#   # NAT Gateway Configuration
-#   enable_nat_gateway = var.enable_nat_gateway
-#   single_nat_gateway = var.single_nat_gateway
-# }
+
+module "network" {
+  source = "../../modules/network"
+
+  # Common
+  project_name = var.project_name
+  environment  = var.environment
+  region       = var.region
+  team         = var.team
+  owner        = var.owner
+
+  # VPC Configuration
+  vpc_cidr           = var.vpc_cidr
+  availability_zones = var.availability_zones
+
+  # Subnet Configuration
+  public_subnet_cidrs     = var.public_subnet_cidrs
+  private_subnet_cidrs    = var.private_subnet_cidrs
+  private_db_subnet_cidrs = var.private_db_subnet_cidrs
+
+  # NAT Gateway Configuration
+  enable_nat_gateway = var.enable_nat_gateway
+  single_nat_gateway = var.single_nat_gateway
+}
 
 # ============================================
 # Security Module
 # ============================================
 
-# module "security" {
-#   source = "../../modules/security"
-#
-#   # 필수 변수
-#   account_id   = var.account_id
-#   environment  = "prod"
-#   region       = var.region
-#   project_name = var.project_name
-#
-#   # 네트워크 의존성 (Network 모듈에서 가져옴)
-#   vpc_id = module.network.vpc_id
-#
-#   # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
-#   eks_cluster_name = module.eks.cluster_name
-#
-#   # 보안 그룹 설정
-#   allowed_cidr_blocks = var.allowed_cidr_blocks
-#
-#   # 선택적 변수
-#   rds_security_group_id         = var.rds_security_group_id
-#   elasticache_security_group_id = var.elasticache_security_group_id
-#
-#   # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
-#   depends_on = [module.eks]
-# }
+module "security" {
+  source = "../../modules/security"
+
+  # 필수 변수
+  account_id   = var.account_id
+  environment  = "prod"
+  region       = var.region
+  project_name = var.project_name
+
+  # 네트워크 의존성 (Network 모듈에서 가져옴)
+  vpc_id = module.network.vpc_id
+
+  # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
+  eks_cluster_name = module.eks.cluster_name
+
+  # 보안 그룹 설정
+  allowed_cidr_blocks = var.allowed_cidr_blocks
+
+  # 선택적 변수
+  rds_security_group_id         = var.rds_security_group_id
+  elasticache_security_group_id = var.elasticache_security_group_id
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
+}
 
 # ============================================
 # EKS Module
 # ============================================
 
-# module "eks" {
-#   source = "../../modules/eks"
-#
-#   # Common
-#   project_name = var.project_name
-#   environment  = var.environment
-#   team         = var.team
-#   owner        = var.owner
-#
-#   # EKS Cluster
-#   cluster_name    = var.cluster_name
-#   cluster_version = var.cluster_version
-#
-#   # Network (Network 모듈에서 가져옴)
-#   vpc_id             = module.network.vpc_id
-#   private_subnet_ids = module.network.private_subnet_ids
-#
-#   # Node Group
-#   node_instance_types = var.node_instance_types
-#   capacity_type       = var.capacity_type
-#
-#   node_min_size     = var.node_min_size
-#   node_desired_size = var.node_desired_size
-#   node_max_size     = var.node_max_size
-# }
+module "eks" {
+  source = "../../modules/eks"
+
+  # Common
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+
+  # EKS Cluster
+  cluster_name    = var.cluster_name
+  cluster_version = var.cluster_version
+
+  # Network (Network 모듈에서 가져옴)
+  vpc_id             = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+
+  # Node Group
+  node_instance_types = var.node_instance_types
+  capacity_type       = var.capacity_type
+
+  node_min_size     = var.node_min_size
+  node_desired_size = var.node_desired_size
+  node_max_size     = var.node_max_size
+}
 
 # ============================================
 # Autoscaling Module (Cluster Autoscaler)
 # ============================================
-# module "autoscaling" {
-#   source = "../../modules/autoscaling"
-#
-#   project_name = var.project_name
-#   environment  = var.environment
-#   team         = var.team
-#   owner        = var.owner
-#   region       = var.region
-#
-#   cluster_name      = module.eks.cluster_name
-#   oidc_provider_arn = module.eks.oidc_provider_arn
-#   oidc_provider_url = module.eks.oidc_provider_url
-# }
+module "autoscaling" {
+  source = "../../modules/autoscaling"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  region       = var.region
+
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+}
 
 module "data" {
   source = "../../modules/data"
@@ -111,18 +111,14 @@ module "data" {
   team         = var.team
   owner        = var.owner
   region       = var.region
-  #   vpc_id       = module.network.vpc_id
-  vpc_id = "vpc-02fb478e1e6d01316"
+  vpc_id       = module.network.vpc_id
 
-  #   private_db_subnet_ids = module.network.private_db_subnet_ids
-  private_db_subnet_ids = ["subnet-0dcb3bd024a04cac3", "subnet-00db30d0707955500"] # prod용 서브넷 2개 이상
+  private_db_subnet_ids = module.network.private_db_subnet_ids
 
-  #   rds_security_group_id         = module.security.rds_security_group_id
-  rds_security_group_id = "sg-0c5f9913375080fe8"
-  #   elasticache_security_group_id = module.security.elasticache_security_group_id
-  elasticache_security_group_id = "sg-084bf5469c2730cbb"
-  #   eks_worker_security_group_id  = module.security.eks_worker_security_group_id
-  eks_worker_security_group_id = "sg-0951cdf9908a48b75"
+  rds_security_group_id         = module.security.rds_security_group_id
+  elasticache_security_group_id = module.security.elasticache_security_group_id
+  eks_worker_security_group_id  = module.security.eks_worker_security_group_id
+
 
   # Prod 전용 사양 (variables.tf에 정의된 값 사용)
   rds_instance_class     = var.rds_instance_class
