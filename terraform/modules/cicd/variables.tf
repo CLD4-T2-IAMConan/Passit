@@ -41,24 +41,12 @@ variable "deploy_branch" {
   default     = "main"
 }
 
-variable "frontend_bucket_name" {
-  description = "S3 bucket name for frontend deployment"
-  type        = string
-}
-
-
-
-
-
-
 variable "region" { type = string }
 variable "team" { type = string }
 variable "owner" { type = string }
 
 # EKS OIDC (IRSA / ArgoCD 연동용 - eks 모듈 output에서 받기)
 variable "cluster_name" { type = string }
-# variable "oidc_provider_arn"   { type = string }
-# variable "oidc_provider_url"   { type = string }
 
 # ----------------------------
 # ArgoCD
@@ -112,10 +100,10 @@ variable "enable_frontend" {
   default = true
 }
 
-# variable "frontend_bucket_name" {
-#  type    = string
-#  default = null
-# }
+variable "frontend_bucket_name" {
+ type    = string
+ default = null
+}
 
 variable "frontend_default_root_object" {
   type    = string
