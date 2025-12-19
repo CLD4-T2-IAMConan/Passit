@@ -93,12 +93,6 @@ variable "cluster_version" {
   default = "1.34"
 }
 
-variable "eks_cluster_name" {
-  description = "EKS cluster name for security module"
-  type = string
-  default = ""
-}
-
 variable "node_instance_types" { 
   type = list(string)
 }

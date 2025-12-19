@@ -42,8 +42,8 @@ module "security" {
   # 네트워크 의존성 (Network 모듈에서 가져옴)
   vpc_id = module.network.vpc_id
 
-  # EKS 의존성 (EKS 모듈이 생성되면 실제 값으로 교체)
-  eks_cluster_name = var.eks_cluster_name
+  # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
+  eks_cluster_name = module.eks.cluster_name
 
   # 보안 그룹 설정
   allowed_cidr_blocks = var.allowed_cidr_blocks
@@ -51,6 +51,9 @@ module "security" {
   # 선택적 변수
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
+  depends_on = [module.eks]
 }
 
 # ============================================
