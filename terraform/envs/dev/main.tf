@@ -1,28 +1,35 @@
 # ============================================
-# Network Module (VPC, Subnets, NAT Gateway, Route Tables)
+# Network Module (VPC, Subnets, NAT Gateway)
 # ============================================
+
 module "network" {
   source = "../../modules/network"
 
-  # Common Tags & Info
+  # Common
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
   team         = var.team
   owner        = var.owner
 
-  # VPC & Subnet Settings
-  vpc_cidr           = var.vpc_cidr
+  # VPC Configuration - Existing VPC 사용 시
+  use_existing_vpc = var.use_existing_vpc
+  existing_vpc_id   = var.existing_vpc_id
+
+  # VPC Configuration (for new VPC)
+  vpc_cidr          = var.vpc_cidr
   availability_zones = var.availability_zones
 
-  # CIDR 리스트 전달 (모듈 내부에서 count를 통해 서브넷들을 자동 생성함)
-  public_subnet_cidrs     = var.public_subnet_cidrs
-  private_subnet_cidrs    = var.private_subnet_cidrs
+  # Subnet Configuration (for new VPC)
+  public_subnet_cidrs   = var.public_subnet_cidrs
+  private_subnet_cidrs  = var.private_subnet_cidrs
   private_db_subnet_cidrs = var.private_db_subnet_cidrs
 
-  # NAT 설정 (Dev 환경은 single_nat_gateway = true 권장)
-  enable_nat_gateway = var.enable_nat_gateway
-  single_nat_gateway = var.single_nat_gateway
+  # Existing Subnet IDs는 모듈 내부에서 data source로 자동 조회됨
+
+  # NAT Gateway Configuration
+  enable_nat_gateway  = var.enable_nat_gateway
+  single_nat_gateway  = var.single_nat_gateway
 }
 
 # ============================================
@@ -31,22 +38,27 @@ module "network" {
 module "security" {
   source = "../../modules/security"
 
+  # 필수 변수
   account_id   = var.account_id
   environment  = var.environment
   region       = var.region
   project_name = var.project_name
 
-  # Network Output 참조
+  # 네트워크 의존성 (Network 모듈에서 가져옴)
   vpc_id = module.network.vpc_id
 
-  # EKS 관련 (Cluster 생성 후 IRSA를 사용하기 위함)
-  eks_cluster_name = module.eks.cluster_name
+  # EKS 관련
+  # 주의: 초기 배포 시에는 var.eks_cluster_name이 빈 문자열이어야 합니다
+  # EKS 클러스터 생성 후, terraform output으로 클러스터 이름을 확인하고
+  # terraform.tfvars의 eks_cluster_name에 설정한 후 다시 apply하세요
+  eks_cluster_name = var.eks_cluster_name
 
-  # 보안 그룹 허용 대역
+  # 보안 그룹 설정
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
-  # EKS 클러스터가 먼저 생성된 후 Security 모듈 실행
-  depends_on = [module.eks]
+  # 선택적 변수
+  rds_security_group_id         = var.rds_security_group_id
+  elasticache_security_group_id = var.elasticache_security_group_id
 }
 
 # ============================================
@@ -94,7 +106,57 @@ module "autoscaling" {
 }
 
 # ============================================
-# monitoring Module
+# Data Module (RDS, ElastiCache, S3)
+# ============================================
+module "data" {
+  source = "../../modules/data"
+
+  # Common Tags & Info
+  project_name = var.project_name
+  environment  = var.environment
+  region       = var.region
+  team         = var.team
+  owner        = var.owner
+
+  # Network Configuration
+  # existing_vpc_id가 제공되면 직접 사용, 아니면 network 모듈 output 사용
+  vpc_id                = var.existing_vpc_id != "" ? var.existing_vpc_id : module.network.vpc_id
+  private_db_subnet_ids = var.existing_private_db_subnet_ids != [] ? var.existing_private_db_subnet_ids : module.network.private_db_subnet_ids
+
+  # Security Groups (기존 리소스가 있으면 변수 사용, 없으면 security 모듈 output 사용)
+  rds_security_group_id         = var.rds_security_group_id != "" ? var.rds_security_group_id : module.security.rds_security_group_id
+  elasticache_security_group_id = var.elasticache_security_group_id != "" ? var.elasticache_security_group_id : module.security.elasticache_security_group_id
+  eks_worker_security_group_id  = module.security.eks_worker_security_group_id
+
+  # ElastiCache (Valkey) Configuration - Dev
+  valkey_node_type       = "cache.t4g.micro"
+  valkey_num_cache_nodes = 1
+  valkey_kms_key_id      = var.elasticache_kms_key_id != "" ? var.elasticache_kms_key_id : module.security.elasticache_kms_key_id
+
+  # S3 Configuration
+  s3_kms_key_id = module.security.s3_kms_key_id
+
+  # RDS Configuration
+  # Secrets Manager에서 DB 자격 증명 가져오기 (시크릿이 없으면 변수 사용)
+  db_secret_name      = "" # 시크릿이 없으면 빈 문자열로 설정 (변수 사용)
+  rds_master_username = "admin"
+  rds_master_password = "" # 실제 비밀번호로 업데이트 필요
+  rds_database_name   = "passit"
+
+  # RDS 인스턴스 클래스 설정 (변수에서 가져오기)
+  rds_instance_class     = var.rds_instance_class
+  rds_serverless_min_acu = var.rds_serverless_min_acu
+  rds_serverless_max_acu = var.rds_serverless_max_acu
+
+  # Existing Resources (기존 리소스 사용 시)
+  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name        = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
+  existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
+}
+
+# ============================================
+# Monitoring Module
 # ============================================
 module "monitoring" {
   source = "../../modules/monitoring"
@@ -105,32 +167,32 @@ module "monitoring" {
   tags         = var.tags
 
   # ===== EKS =====
-  cluster_name         = module.eks.cluster_name
-  oidc_provider_arn   = module.eks.oidc_provider_arn
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
 
   # ===== Prometheus =====
-  prometheus_workspace_name         = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace              = "monitoring"
-  prometheus_service_account_name   = "prometheus-agent"
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
 
   # ===== Grafana =====
   grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
 
   # ===== Fluent Bit =====
-  fluentbit_namespace              = "kube-system"
-  fluentbit_service_account_name   = "fluent-bit"
-  fluentbit_chart_version          = "0.48.6"
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
 
   # ===== CloudWatch =====
-  log_retention_days               = var.log_retention_days
-  application_error_threshold      = var.application_error_threshold
-  alarm_sns_topic_arn              = var.alarm_sns_topic_arn
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   # ===== AWS =====
   region     = var.region
   account_id = var.account_id
 
   depends_on = [
-      module.eks
-    ]
+    module.eks
+  ]
 }

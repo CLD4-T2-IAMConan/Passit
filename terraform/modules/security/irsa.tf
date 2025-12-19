@@ -2,25 +2,18 @@
 
 # EKS Cluster OIDC Provider (IRSA 활성화를 위해 필요)
 # 주의: EKS 클러스터가 먼저 생성되어야 함
+# 참고: EKS 모듈에서 enable_irsa = true로 설정하면 자동으로 OIDC Provider가 생성되므로
+# 여기서는 기존 OIDC Provider를 data source로 참조만 합니다.
 data "aws_eks_cluster" "main" {
   count = var.eks_cluster_name != "" ? 1 : 0
   name  = var.eks_cluster_name
 }
 
-# OIDC Provider 생성 (EKS 클러스터와 연결)
-# thumbprint_list를 생략하면 AWS가 자동으로 계산합니다
-resource "aws_iam_openid_connect_provider" "eks" {
+# 기존 OIDC Provider를 data source로 참조 (EKS 모듈에서 이미 생성됨)
+# 중복 생성을 방지하기 위해 resource 대신 data source 사용
+data "aws_iam_openid_connect_provider" "eks" {
   count = var.eks_cluster_name != "" ? 1 : 0
-
-  client_id_list = ["sts.amazonaws.com"]
-  url            = data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer
-  # thumbprint_list는 생략 - AWS가 자동 계산
-
-  tags = {
-    Name        = "${var.project_name}-eks-oidc-${var.environment}"
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  url   = data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer
 }
 
 # ============================================

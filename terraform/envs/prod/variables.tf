@@ -1,13 +1,26 @@
+# ============================================
+# Common / Global Variables
+# ============================================
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
 variable "project_name" {
-  type = string
+  description = "Project name for tagging"
+  type        = string
 }
 
 variable "environment" {
-  type = string
+  description = "Environment name (prod)"
+  type        = string
+  default     = "prod"
 }
 
 variable "region" {
-  type = string
+  description = "AWS Region"
+  type        = string
+  default     = "ap-northeast-2"
 }
 
 variable "team" {
@@ -20,49 +33,37 @@ variable "owner" {
   type        = string
 }
 
-# Network
-# Network 모듈을 사용하는 경우 아래 변수들은 사용하지 않음 (모듈에서 자동 생성)
-variable "vpc_id" {
-  description = "VPC ID for Security Groups and EKS (Network 모듈 사용 시 자동 생성됨)"
+# ============================================
+# Network Module Variables
+# ============================================
+variable "vpc_cidr" {
+  description = "CIDR block for VPC (required only if use_existing_vpc = false or existing_vpc_id is empty)"
   type        = string
   default     = ""
 }
 
-variable "private_subnet_ids" {
-  description = "Private subnet IDs for EKS (Network 모듈 사용 시 자동 생성됨)"
-  type        = list(string)
-  default     = []
-}
-
-# Network Module Variables
-variable "vpc_cidr" {
-  description = "CIDR block for VPC"
-  type        = string
-  default     = "10.1.0.0/16"  # Prod는 dev(10.0.0.0/16)와 다른 CIDR 사용
-}
-
 variable "availability_zones" {
-  description = "Availability zones for subnets"
+  description = "List of availability zones"
   type        = list(string)
   default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
 
 variable "public_subnet_cidrs" {
-  description = "CIDR blocks for public subnets"
+  description = "CIDR blocks for public subnets (required only if use_existing_vpc = false)"
   type        = list(string)
-  default     = ["10.1.1.0/24", "10.1.2.0/24"]
+  default     = []
 }
 
 variable "private_subnet_cidrs" {
-  description = "CIDR blocks for private app subnets (EKS용)"
+  description = "CIDR blocks for private app subnets (EKS용, required only if use_existing_vpc = false)"
   type        = list(string)
-  default     = ["10.0.11.0/24", "10.0.12.0/24"]
+  default     = []
 }
 
 variable "private_db_subnet_cidrs" {
-  description = "CIDR blocks for private db subnets (RDS, ElastiCache용)"
+  description = "CIDR blocks for private db subnets (RDS, ElastiCache용, required only if use_existing_vpc = false)"
   type        = list(string)
-  default     = ["10.0.21.0/24", "10.0.22.0/24"]
+  default     = []
 }
 
 variable "enable_nat_gateway" {
@@ -72,82 +73,191 @@ variable "enable_nat_gateway" {
 }
 
 variable "single_nat_gateway" {
-  description = "Use single NAT Gateway for cost optimization (prod는 false 권장)"
+  description = "Use single NAT Gateway (Prod는 고가용성을 위해 false 권장)"
   type        = bool
-  default     = false  # Prod는 고가용성을 위해 각 서브넷마다 NAT Gateway 사용
+  default     = false # 각 AZ마다 NAT를 생성하여 장애 전파 방지
 }
 
-variable "account_id" {
-  description = "AWS Account ID"
-  type = string
+variable "use_existing_vpc" {
+  description = "Use existing VPC instead of creating a new one"
+  type        = bool
+  default     = true # Prod는 기존 VPC 사용
 }
 
+variable "existing_vpc_id" {
+  description = "Existing VPC ID (required if use_existing_vpc is true)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_ids" {
+  description = "Existing public subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_subnet_ids" {
+  description = "Existing private app subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_db_subnet_ids" {
+  description = "Existing private db subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+# ============================================
+# EKS Module Variables
+# ============================================
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "EKS Cluster name"
   type        = string
 }
 
+variable "eks_cluster_name" {
+  description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
+  type        = string
+  default     = ""
+}
+
 variable "cluster_version" {
-  description = "Kubernetes version for EKS cluster"
-  type = string
-  default = "1.34"
+  description = "Kubernetes version"
+  type        = string
+  default     = "1.31" # dev와 동일하게 맞추는 것이 관리상 유리
 }
 
-variable "node_instance_types" { 
-  type = list(string)
+variable "node_instance_types" {
+  description = "EC2 instance types for EKS nodes"
+  type        = list(string)
 }
 
-variable "capacity_type" { 
-  type = string 
+variable "capacity_type" {
+  description = "Type of capacity (Prod는 안정적인 ON_DEMAND 권장)"
+  type        = string
 }
 
-variable "node_min_size" { 
-  type = number 
+variable "node_min_size" {
+  type = number
 }
 
-variable "node_desired_size" { 
-  type = number 
+variable "node_desired_size" {
+  type = number
 }
 
-variable "node_max_size" { 
-  type = number 
+variable "node_max_size" {
+  type = number
 }
 
-variable "allowed_cidr_blocks" { 
-  type = list(string) 
+# ============================================
+# Security Module Variables
+# ============================================
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for external access"
+  type        = list(string)
 }
 
-# Optional
 variable "rds_security_group_id" {
-  type    = string
-  default = ""
+  description = "RDS Security Group ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
 }
 
 variable "elasticache_security_group_id" {
-  type    = string
-  default = ""
+  description = "ElastiCache Security Group ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+variable "elasticache_kms_key_id" {
+  description = "ElastiCache KMS Key ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+# Optional - Data Module용 (기존 리소스 이름)
+variable "existing_db_subnet_group_name" {
+  description = "Existing DB subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_rds_parameter_group_name" {
+  description = "Existing RDS cluster parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_subnet_group_name" {
+  description = "Existing ElastiCache subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_parameter_group_name" {
+  description = "Existing ElastiCache parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+# ============================================
+# Data Module (RDS / Valkey) Variables
+# ============================================
+variable "rds_instance_class" {
+  description = "Instance class for RDS (e.g., db.t3.medium)"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+# Prod에서 사용하지 않더라도 모듈 호환성을 위해 선언 유지
+variable "rds_serverless_min_acu" {
+  description = "Minimum Aurora Capacity Unit"
+  type        = number
+  default     = 0.5
+}
+
+variable "rds_serverless_max_acu" {
+  description = "Maximum Aurora Capacity Unit"
+  type        = number
+  default     = 2.0
+}
+
+variable "valkey_storage_limit" {
+  description = "Storage limit for Valkey in GB"
+  type        = number
+  default     = 5
+}
+
+variable "valkey_ecpu_limit" {
+  description = "ECPU limit for Valkey Serverless"
+  type        = number
+  default     = 5000
 }
 
 # ============================================
 # Monitoring Module Variables
 # ============================================
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
 
 variable "log_retention_days" {
   description = "CloudWatch Logs retention period in days"
   type        = number
+  default     = 30
 }
 
 variable "application_error_threshold" {
   description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
   type        = number
+  default     = 5
 }
 
 variable "alarm_sns_topic_arn" {
   description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
   type        = string
   default     = null
-}
-
-variable "tags" {
-  type = map(string)
 }
