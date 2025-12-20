@@ -106,6 +106,7 @@ module "autoscaling" {
 }
 
 # ============================================
+<<<<<<< HEAD
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
 module "data" {
@@ -196,3 +197,45 @@ module "monitoring" {
     module.eks
   ]
 }
+=======
+# CI/CD Module (Argo CD, IRSA, GitHub OIDC)
+# ============================================
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+
+  config = {
+    bucket = "my-terraform-state-bucket"
+    key    = "shared/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
+module "cicd" {
+  source = "../../modules/cicd"
+
+  # Common
+  project_name = var.project_name
+  environment  = var.environment
+  region       = var.region
+  # account_id   = var.account_id
+  team         = var.team
+  owner        = var.owner
+
+  # EKS 연동 (IRSA for Argo CD)
+  cluster_name        = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_provider_url
+
+  # GitHub OIDC (shared에서 만든 걸 사용)
+  github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
+  
+  # GitHub Actions OIDC (CI)
+  github_org  = var.github_org
+  github_repo = var.github_repo
+  github_ref  = var.github_ref
+
+  # Frontend CD (S3 / CloudFront)
+  enable_frontend        = true
+  frontend_bucket_name  = var.frontend_bucket_name
+}
+>>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960
