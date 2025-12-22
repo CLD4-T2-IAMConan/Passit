@@ -77,3 +77,10 @@ output "frontend_cloudfront_domain" {
   value       = module.cicd.frontend_cloudfront_domain
   description = "CloudFront domain name for frontend"
 }
+
+# ===========================================
+# ALB Controller (운영 편의)
+# ===========================================
+output "alb_controller_role_arn" {
+  value = module.cicd.alb_controller_role_arn
+}

@@ -54,7 +54,9 @@ variable "github_ref" {
 
 
 # EKS OIDC (IRSA / ArgoCD 연동용 - eks 모듈 output에서 받기)
-variable "cluster_name" { type = string }
+variable "cluster_name" {
+  type = string
+}
 
 # ----------------------------
 # ArgoCD
