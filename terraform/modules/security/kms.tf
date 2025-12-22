@@ -87,3 +87,25 @@ resource "aws_kms_alias" "ebs" {
   name          = "alias/${var.project_name}-ebs-${var.environment}"
   target_key_id = aws_kms_key.ebs.key_id
 }
+
+# ============================================
+# S3용 KMS 키
+# ============================================
+
+resource "aws_kms_key" "s3" {
+  description             = "KMS key for S3 bucket encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name        = "${var.project_name}-s3-${var.environment}"
+    Project     = var.project_name
+    Environment = var.environment
+    Purpose     = "S3 bucket encryption"
+  }
+}
+
+resource "aws_kms_alias" "s3" {
+  name          = "alias/${var.project_name}-s3-${var.environment}"
+  target_key_id = aws_kms_key.s3.key_id
+}

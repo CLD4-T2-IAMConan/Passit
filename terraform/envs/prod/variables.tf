@@ -37,30 +37,33 @@ variable "owner" {
 # Network Module Variables
 # ============================================
 variable "vpc_cidr" {
-  description = "CIDR block for VPC"
+  description = "CIDR block for VPC (required only if use_existing_vpc = false or existing_vpc_id is empty)"
   type        = string
-  default     = "10.1.0.0/16" # Dev(10.0.0.0/16)와 겹치지 않게 설정
+  default     = ""
 }
 
 variable "availability_zones" {
-  description = "Availability zones for subnets"
+  description = "List of availability zones"
   type        = list(string)
   default     = ["ap-northeast-2a", "ap-northeast-2c"]
 }
 
 variable "public_subnet_cidrs" {
-  description = "CIDR blocks for public subnets"
+  description = "CIDR blocks for public subnets (required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "private_subnet_cidrs" {
-  description = "CIDR blocks for private app subnets (EKS용)"
+  description = "CIDR blocks for private app subnets (EKS용, required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "private_db_subnet_cidrs" {
-  description = "CIDR blocks for private db subnets (RDS, ElastiCache용)"
+  description = "CIDR blocks for private db subnets (RDS, ElastiCache용, required only if use_existing_vpc = false)"
   type        = list(string)
+  default     = []
 }
 
 variable "enable_nat_gateway" {
@@ -75,12 +78,48 @@ variable "single_nat_gateway" {
   default     = false # 각 AZ마다 NAT를 생성하여 장애 전파 방지
 }
 
+variable "use_existing_vpc" {
+  description = "Use existing VPC instead of creating a new one"
+  type        = bool
+  default     = true # Prod는 기존 VPC 사용
+}
+
+variable "existing_vpc_id" {
+  description = "Existing VPC ID (required if use_existing_vpc is true)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_ids" {
+  description = "Existing public subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_subnet_ids" {
+  description = "Existing private app subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_db_subnet_ids" {
+  description = "Existing private db subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
 # ============================================
 # EKS Module Variables
 # ============================================
 variable "cluster_name" {
   description = "EKS Cluster name"
   type        = string
+}
+
+variable "eks_cluster_name" {
+  description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
+  type        = string
+  default     = ""
 }
 
 variable "cluster_version" {
@@ -120,13 +159,44 @@ variable "allowed_cidr_blocks" {
 }
 
 variable "rds_security_group_id" {
-  description = "The ID of the RDS security group"
+  description = "RDS Security Group ID (optional - if empty, will use security module output)"
   type        = string
   default     = ""
 }
 
 variable "elasticache_security_group_id" {
-  description = "The ID of the ElastiCache security group"
+  description = "ElastiCache Security Group ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+variable "elasticache_kms_key_id" {
+  description = "ElastiCache KMS Key ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+# Optional - Data Module용 (기존 리소스 이름)
+variable "existing_db_subnet_group_name" {
+  description = "Existing DB subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_rds_parameter_group_name" {
+  description = "Existing RDS cluster parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_subnet_group_name" {
+  description = "Existing ElastiCache subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_parameter_group_name" {
+  description = "Existing ElastiCache parameter group name (if empty, will create new one)"
   type        = string
   default     = ""
 }
@@ -163,4 +233,31 @@ variable "valkey_ecpu_limit" {
   description = "ECPU limit for Valkey Serverless"
   type        = number
   default     = 5000
+}
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+  default     = 30
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
+  type        = number
+  default     = 5
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
 }

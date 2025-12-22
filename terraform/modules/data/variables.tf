@@ -59,11 +59,59 @@ variable "elasticache_security_group_id" {
 }
 
 # ============================================
-# Aurora RDS Configuration - 예진님 여기 작성해주세용!
+# Existing Resources (Optional)
+# ============================================
+
+variable "existing_db_subnet_group_name" {
+  description = "Existing DB subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_rds_parameter_group_name" {
+  description = "Existing RDS cluster parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_subnet_group_name" {
+  description = "Existing ElastiCache subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_parameter_group_name" {
+  description = "Existing ElastiCache parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+# ============================================
+# Aurora RDS Configuration
 # ============================================
 variable "rds_master_username" {
-  type    = string
-  default = "admin"
+  description = "RDS master username (used if db_secret_name is not provided)"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "RDS master password (used if db_secret_name is not provided)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "rds_database_name" {
+  description = "RDS database name (used if db_secret_name is not provided)"
+  type        = string
+  default     = "passit"
+}
+
+variable "db_secret_name" {
+  description = "Secrets Manager secret name for DB credentials (e.g., 'passit/prod/db'). If empty, use rds_master_username/password variables"
+  type        = string
+  default     = ""
 }
 
 variable "rds_instance_class" {
@@ -98,19 +146,25 @@ variable "valkey_engine_version" {
 }
 
 variable "valkey_node_type" {
-  description = "Node type for node-based cache (optional for serverless)"
+  description = "Node type for node-based cache (e.g., cache.t4g.micro, cache.t4g.small)"
   type        = string
   default     = "cache.t4g.micro"
 }
 
+variable "valkey_num_cache_nodes" {
+  description = "Number of cache nodes in the replication group (typically 1 for dev, can be increased for prod)"
+  type        = number
+  default     = 1
+}
+
 variable "valkey_storage_limit" {
-  description = "Data storage limit in GB (prod: 10, dev: 1)"
+  description = "[Deprecated for node-based cache] Data storage limit in GB - not used for node-based cache (node type determines storage)"
   type        = number
   default     = 1
 }
 
 variable "valkey_ecpu_limits" {
-  description = "ECPU limits per second (prod: { min = 10000, max = 100000 }, dev: { min = 1000, max = 5000 })"
+  description = "[Deprecated for node-based cache] ECPU limits per second - not used for node-based cache (node type determines performance)"
   type = object({
     min = number
     max = number
@@ -128,9 +182,9 @@ variable "valkey_snapshot_retention_limit" {
 }
 
 variable "valkey_snapshot_window" {
-  description = "Daily time range for snapshots (UTC)"
+  description = "Daily time range for snapshots (UTC). For KST 03:00-04:00, use 18:00-19:00 UTC"
   type        = string
-  default     = "19:00-20:00" # 04:00-05:00 KST
+  default     = "18:00-19:00" # 03:00-04:00 KST
 }
 
 variable "valkey_kms_key_id" {
@@ -151,6 +205,7 @@ variable "s3_buckets" {
     lifecycle_rules = optional(list(object({
       id      = string
       enabled = bool
+      prefix  = optional(string, null)
       transitions = optional(list(object({
         days          = number
         storage_class = string
@@ -162,7 +217,14 @@ variable "s3_buckets" {
     {
       name               = "uploads"
       versioning_enabled = false
-      lifecycle_rules    = []
+      lifecycle_rules = [
+        {
+          id            = "temp-files-cleanup"
+          enabled       = true
+          prefix        = "temp/"
+          expiration_days = 7
+        }
+      ]
     },
     {
       name               = "logs"

@@ -11,17 +11,36 @@ environment  = "dev"
 team  = "IAMConan"
 owner = "Platform Team"
 
-# Network
-vpc_id = "vpc-XXXXXXXXXXXXXXXXX"
-private_subnet_ids = [
-  "subnet-XXXXXXXXXXXXXXXXX", # ap-northeast-2a
-  "subnet-XXXXXXXXXXXXXXXXX", # ap-northeast-2c
-]
+# Network Module Configuration
+# 기존 VPC 사용 시 설정 (use_existing_vpc = true일 때)
+# use_existing_vpc = false  # Dev는 기본적으로 새 VPC 생성
+# existing_vpc_id  = "vpc-XXXXXXXXXXXXXXXXX"  # 기존 VPC ID
+# existing_public_subnet_ids = [
+#   "subnet-XXXXXXXXXXXXXXXXX",  # 기존 Public Subnet (ap-northeast-2a)
+#   "subnet-XXXXXXXXXXXXXXXXX"  # 기존 Public Subnet (ap-northeast-2c)
+# ]
+# existing_private_subnet_ids = [
+#   "subnet-XXXXXXXXXXXXXXXXX",  # 기존 Private App Subnet (ap-northeast-2a)
+#   "subnet-XXXXXXXXXXXXXXXXX"   # 기존 Private App Subnet (ap-northeast-2c)
+# ]
+# existing_private_db_subnet_ids = [
+#   "subnet-XXXXXXXXXXXXXXXXX",  # 기존 Private DB Subnet (ap-northeast-2a)
+#   "subnet-XXXXXXXXXXXXXXXXX"   # 기존 Private DB Subnet (ap-northeast-2c)
+# ]
+
+# 새 VPC 생성 시 설정 (use_existing_vpc = false일 때 사용, Dev 기본값)
+vpc_cidr                = "10.1.0.0/16" # Dev VPC CIDR
+availability_zones      = ["ap-northeast-2a", "ap-northeast-2c"]
+public_subnet_cidrs     = ["10.1.2.0/24"]                  # Dev Public 1개 (AZ C)
+private_subnet_cidrs    = ["10.1.11.0/24", "10.1.12.0/24"] # Dev Private App 2개 (AZ A, AZ C)
+private_db_subnet_cidrs = ["10.1.22.0/24"]                 # Dev Private DB 1개 (AZ C)
+enable_nat_gateway      = true
+single_nat_gateway      = true  # Dev 환경은 비용 절감을 위해 단일 NAT Gateway 사용
 
 # EKS Cluster
 cluster_name    = "passit-dev-eks"
-cluster_version = "1.31"
-eks_cluster_name = "" # Security 모듈용 (EKS 생성 후 업데이트)
+cluster_version = "1.34"
+eks_cluster_name = ""  # Security 모듈용 (EKS 생성 후 업데이트)
 
 # EKS Node Group
 node_instance_types = ["t3.medium"]
@@ -32,4 +51,17 @@ node_max_size       = 4
 
 # 보안 그룹 설정: Dev 환경은 특정 IP 대역만 허용
 # 예: 사무실 IP, VPN IP 등
-allowed_cidr_blocks = ["YOUR_OFFICE_IP/32", "YOUR_VPN_IP/32"]
+# 실제 IP 주소를 입력하세요. 예: ["123.456.789.0/32", "98.76.54.32/32"]
+# 개발 환경에서는 일시적으로 모든 IP 허용: ["0.0.0.0/0"]
+allowed_cidr_blocks = ["0.0.0.0/0"]
+
+# Optional - Data Module용 (기존 리소스 사용 시)
+# rds_security_group_id         = "sg-XXXXXXXXXXXXXXXXX"
+# elasticache_security_group_id = "sg-XXXXXXXXXXXXXXXXX"
+# elasticache_kms_key_id        = "arn:aws:kms:ap-northeast-2:YOUR_ACCOUNT_ID:key/XXXXXXXXXXXXXXXXX"
+
+# Optional - 기존 리소스 이름 (이미 존재하는 리소스 사용 시)
+# existing_db_subnet_group_name              = "passit-dev-rds-subnet-group"
+# existing_rds_parameter_group_name          = "passit-dev-aurora-pg"
+# existing_elasticache_subnet_group_name     = "passit-dev-valkey-subnet-group"
+# existing_elasticache_parameter_group_name  = "passit-dev-valkey-pg"

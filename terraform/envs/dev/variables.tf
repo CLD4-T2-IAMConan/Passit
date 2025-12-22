@@ -4,6 +4,7 @@
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
+  default     = "727646470302"
 }
 
 variable "project_name" {
@@ -72,6 +73,36 @@ variable "single_nat_gateway" {
   default     = false
 }
 
+variable "use_existing_vpc" {
+  description = "Use existing VPC instead of creating a new one"
+  type        = bool
+  default     = false # Dev는 기본적으로 새 VPC 생성
+}
+
+variable "existing_vpc_id" {
+  description = "Existing VPC ID (required if use_existing_vpc is true)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_public_subnet_ids" {
+  description = "Existing public subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_subnet_ids" {
+  description = "Existing private app subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_private_db_subnet_ids" {
+  description = "Existing private db subnet IDs (required if use_existing_vpc is true)"
+  type        = list(string)
+  default     = []
+}
+
 # ============================================
 # EKS Module Variables
 # ============================================
@@ -119,6 +150,56 @@ variable "allowed_cidr_blocks" {
   type        = list(string)
 }
 
+variable "eks_cluster_name" {
+  description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
+  type        = string
+  default     = ""
+}
+
+# Optional - Data Module용 (기존 리소스 ID)
+variable "rds_security_group_id" {
+  description = "RDS Security Group ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+variable "elasticache_security_group_id" {
+  description = "ElastiCache Security Group ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+variable "elasticache_kms_key_id" {
+  description = "ElastiCache KMS Key ID (optional - if empty, will use security module output)"
+  type        = string
+  default     = ""
+}
+
+# Optional - Data Module용 (기존 리소스 이름)
+variable "existing_db_subnet_group_name" {
+  description = "Existing DB subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_rds_parameter_group_name" {
+  description = "Existing RDS cluster parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_subnet_group_name" {
+  description = "Existing ElastiCache subnet group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
+variable "existing_elasticache_parameter_group_name" {
+  description = "Existing ElastiCache parameter group name (if empty, will create new one)"
+  type        = string
+  default     = ""
+}
+
 # ============================================
 # Data Module (RDS / Valkey) Variables
 # ============================================
@@ -150,4 +231,31 @@ variable "valkey_ecpu_limit" {
   description = "ECPU limit for Valkey Serverless"
   type        = number
   default     = 5000
+}
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch Logs retention period in days"
+  type        = number
+  default     = 30
+}
+
+variable "application_error_threshold" {
+  description = "Threshold for ERROR log count to trigger CloudWatch Alarm"
+  type        = number
+  default     = 5
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch alarm notifications (optional)"
+  type        = string
+  default     = null
 }
