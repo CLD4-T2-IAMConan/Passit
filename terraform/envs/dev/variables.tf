@@ -334,7 +334,25 @@ variable "s3_bucket_ticket" {
   type        = string
 }
 
+# ==================================
+# CI/CD - 백엔드 서비스 IRSA 관련 - secrets manager
+# ==================================
 variable "secret_db_password_arn" {
-  description = "ARN of the Secrets Manager secret containing DB password"
+  description = "Secrets Manager ARN for DB password"
+  type        = string
+}
+
+variable "secret_elasticache_arn" {
+  description = "Secrets Manager ARN for ElastiCache (Valkey) auth token"
+  type        = string
+}
+
+variable "secret_smtp_arn" {
+  description = "Secrets Manager ARN for SMTP credentials"
+  type        = string
+}
+
+variable "secret_kakao_arn" {
+  description = "Secrets Manager ARN for Kakao OAuth secret"
   type        = string
 }

@@ -138,9 +138,9 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
-# ----------------------------
+# ============================================
 # irsa.tf
-# ----------------------------
+# ============================================
 variable "s3_bucket_profile" {
   description = "Account 서비스 프로필 이미지용 S3 버킷 이름"
   type        = string
@@ -151,7 +151,25 @@ variable "s3_bucket_ticket" {
   type        = string
 }
 
+# ============================================
+# irsa - Secrets Manager
+# ============================================
 variable "secret_db_password_arn" {
-  description = "RDS Database 비밀번호를 저장한 Secrets Manager ARN"
+  description = "RDS DB 비밀번호를 저장한 Secrets Manager ARN"
+  type        = string
+}
+
+variable "secret_elasticache_arn" {
+  description = "Valkey(ElastiCache) 인증 토큰을 저장한 Secrets Manager ARN"
+  type        = string
+}
+
+variable "secret_smtp_arn" {
+  description = "SMTP 메일 계정 자격 증명 Secrets Manager ARN (account 서비스 전용)"
+  type        = string
+}
+
+variable "secret_kakao_arn" {
+  description = "Kakao OAuth 자격 증명 Secrets Manager ARN (account 서비스 전용)"
   type        = string
 }

@@ -90,9 +90,9 @@ output "github_actions_frontend_role_arn" {
 }
 
 # irsa 부분
-output "backend_service_irsa_arns" {
-  description = "Map of backend service name to IRSA IAM Role ARN"
-  value       = { for k, r in aws_iam_role.backend_service : k => r.arn }
+output "backend_irsa_roles" {
+  description = "IRSA role ARNs per backend service"
+  value       = module.cicd.backend_irsa_roles
 }
 
 output "backend_service_sa_names" {

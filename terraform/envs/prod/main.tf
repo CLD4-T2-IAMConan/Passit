@@ -252,4 +252,14 @@ module "cicd" {
   ghcr_pat                = var.ghcr_pat
   ghcr_secret_name        = var.ghcr_secret_name
   service_namespaces      = var.service_namespaces
+
+  # irsa (서비스들)
+  s3_bucket_profile       = var.s3_bucket_profile
+  s3_bucket_ticket        = var.s3_bucket_ticket
+  
+  # Secrets Manager ARNs
+  secret_db_password_arn = var.secret_db_password_arn
+  secret_elasticache_arn = var.secret_elasticache_arn
+  secret_smtp_arn        = var.secret_smtp_arn
+  secret_kakao_arn       = var.secret_kakao_arn
 }
