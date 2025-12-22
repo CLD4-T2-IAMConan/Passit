@@ -81,3 +81,10 @@ output "ghcr_secret_name" {
   value       = var.enable_ghcr_pull_secret ? var.ghcr_secret_name : null
   description = "Kubernetes dockerconfigjson secret name"
 }
+
+# ===========================================
+# ALB Controller
+# ===========================================
+output "alb_controller_role_arn" {
+  value = aws_iam_role.alb_controller.arn
+}
