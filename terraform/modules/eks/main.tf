@@ -23,6 +23,8 @@ module "eks" {
   create_kms_key            = false
   cluster_encryption_config = {}
 
+  managed_node_groups = local.managed_node_groups
+
   tags = {
     Project     = var.project_name
     Environment = var.environment
