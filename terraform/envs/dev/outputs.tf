@@ -54,11 +54,6 @@ output "cluster_endpoint" {
 # ============================================
 # CI/CD Information
 # ============================================
-output "argocd_irsa_role_arn" {
-  value       = module.cicd.argocd_irsa_role_arn
-  description = "IAM Role ARN used by Argo CD via IRSA"
-}
-
 output "github_actions_frontend_role_arn" {
   value       = module.cicd.github_actions_frontend_role_arn
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
@@ -68,16 +63,6 @@ output "github_actions_frontend_role_arn" {
 output "backend_irsa_roles" {
   description = "IRSA role ARNs per backend service"
   value       = module.cicd.backend_irsa_roles
-}
-
-output "backend_service_sa_names" {
-  description = "Map of backend service name to ServiceAccount name and namespace"
-  value = { 
-    for k, sa in kubernetes_service_account.backend_service : k => {
-      name      = sa.metadata[0].name
-      namespace = sa.metadata[0].namespace
-    }
-  }
 }
 
 # ============================================
