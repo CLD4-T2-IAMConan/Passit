@@ -24,6 +24,7 @@ module "eks" {
   cluster_encryption_config = {}
 
   managed_node_groups = local.managed_node_groups
+  manage_aws_auth_configmap = true
 
   tags = {
     Project     = var.project_name
