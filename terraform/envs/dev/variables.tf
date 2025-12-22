@@ -149,6 +149,7 @@ variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
 }
+<<<<<<< HEAD
 
 variable "eks_cluster_name" {
   description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
@@ -259,3 +260,41 @@ variable "alarm_sns_topic_arn" {
   type        = string
   default     = null
 }
+=======
+#
+# # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
+# variable "rds_security_group_id" {
+#   description = "Security group ID for RDS"
+#   type        = string
+#   default     = null
+# }
+#
+# variable "elasticache_security_group_id" {
+#   description = "Security group ID for ElastiCache"
+#   type        = string
+#   default     = null
+# }
+
+# =========================
+# CI/CD
+# =========================
+variable "github_org" {
+  type = string
+}
+
+variable "github_repo" {
+  type = string
+}
+
+variable "github_ref" {
+  type = string
+}
+
+variable "enable_frontend" {
+  type = bool
+}
+
+variable "frontend_bucket_name" {
+  type = string
+}
+>>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960

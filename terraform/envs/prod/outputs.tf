@@ -1,6 +1,7 @@
 # ============================================
 # Network Module Outputs
 # ============================================
+
 output "vpc_id" {
   description = "The ID of the VPC"
   value       = module.network.vpc_id
@@ -73,4 +74,30 @@ output "rds_cluster_endpoint" {
 output "rds_reader_endpoint" {
   description = "The reader endpoint for RDS Aurora"
   value       = module.data.rds_reader_endpoint
+}
+
+# ============================================
+# CI/CD Information
+# ============================================
+output "argocd_irsa_role_arn" {
+  value       = module.cicd.argocd_irsa_role_arn
+  description = "IAM Role ARN used by Argo CD via IRSA"
+}
+
+output "github_actions_frontend_role_arn" {
+  value       = module.cicd.github_actions_frontend_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+# ============================================
+# Frontend Information (운영 편의)
+# ============================================
+output "frontend_bucket_name" {
+  value       = module.cicd.frontend_bucket_name
+  description = "S3 bucket for frontend static files"
+}
+
+output "frontend_cloudfront_domain" {
+  value       = module.cicd.frontend_cloudfront_domain
+  description = "CloudFront domain name for frontend"
 }
