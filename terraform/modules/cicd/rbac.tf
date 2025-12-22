@@ -1,52 +1,52 @@
-############################################
-# Argo CD ServiceAccount (IRSA 대상)
-############################################
-resource "kubernetes_service_account" "argocd_application_controller" {
+# 서비스별 ServiceAccount
+resource "kubernetes_service_account_v1" "backend_service" {
+  for_each = toset(var.service_namespaces)
   metadata {
-    name      = "argocd-application-controller"
-    namespace = "argocd"
+    name      = "${each.key}-sa"
+    namespace = each.key
 
     annotations = {
-      # irsa.tf 에서 만든 IAM Role
-      "eks.amazonaws.com/role-arn" = aws_iam_role.cicd.arn
+      "eks.amazonaws.com/role-arn" = aws_iam_role.backend_service[each.key].arn
     }
   }
 }
 
-############################################
-# Argo CD ClusterRole
-# - Argo CD가 클러스터 리소스를 관리하기 위한 권한
-############################################
-resource "kubernetes_cluster_role" "argocd_application_controller" {
+# 서비스별 ClusterRole (최소 권한)
+resource "kubernetes_cluster_role" "backend_service" {
+  for_each = toset(var.service_namespaces)
   metadata {
-    name = "argocd-application-controller"
+    name = "${each.key}-cluster-role"
   }
 
   rule {
-    api_groups = ["", "apps", "networking.k8s.io"]
-    resources  = ["*"]
-    verbs      = ["*"]
+    api_groups = [""]
+    resources  = ["pods", "services", "configmaps", "secrets"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments", "statefulsets"]
+    verbs      = ["get", "list", "watch"]
   }
 }
 
-############################################
 # ClusterRoleBinding
-# - 위 ClusterRole을 ServiceAccount에 연결
-############################################
-resource "kubernetes_cluster_role_binding" "argocd_application_controller" {
+resource "kubernetes_cluster_role_binding" "backend_service" {
+  for_each = toset(var.service_namespaces)
   metadata {
-    name = "argocd-application-controller-binding"
+    name = "${each.key}-cluster-role-binding"
   }
 
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.argocd_application_controller.metadata[0].name
+    name      = kubernetes_cluster_role.backend_service[each.key].metadata[0].name
   }
 
   subject {
     kind      = "ServiceAccount"
-    name      = kubernetes_service_account.argocd_application_controller.metadata[0].name
-    namespace = "argocd"
+    name      = kubernetes_service_account_v1.backend_service[each.key].metadata[0].name
+    namespace = each.key
   }
 }

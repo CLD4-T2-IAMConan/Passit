@@ -296,22 +296,36 @@ variable "github_oidc_provider_arn" {
   default     = ""
 }
 
+# =========================
+# CI/CD - registry (GHCR)
+# =========================
 variable "enable_ghcr_pull_secret" {
-  description = "Enable GHCR (GitHub Container Registry) pull secret for Kubernetes"
-  type        = bool
-  default     = false
+  type = bool
 }
 
 variable "ghcr_username" {
-  description = "GitHub username for GHCR authentication"
-  type        = string
-  sensitive   = true
-  default     = null
+  type = string
 }
 
 variable "ghcr_pat" {
-  description = "GitHub Personal Access Token (PAT) for GHCR authentication"
+  type      = string
+  sensitive = true
+}
+
+variable "ghcr_secret_name" {
+  type    = string
+  default = "ghcr-pull-secret"
+}
+
+# ==================================
+# CI/CD - 백엔드 서비스 IRSA 관련
+# ==================================
+variable "s3_bucket_profile" {
+  description = "S3 bucket for account service profile images"
   type        = string
-  sensitive   = true
-  default     = null
+}
+
+variable "s3_bucket_ticket" {
+  description = "S3 bucket for ticket service images"
+  type        = string
 }

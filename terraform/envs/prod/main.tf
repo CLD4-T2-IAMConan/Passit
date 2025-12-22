@@ -205,6 +205,8 @@ module "monitoring" {
 
   depends_on = [module.eks]
 }
+
+# ============================================
 # CI/CD Module (Argo CD, IRSA, GitHub OIDC)
 # ============================================
 # Note: GitHub OIDC Provider는 변수로 받거나 직접 생성해야 합니다.
@@ -238,14 +240,23 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = var.enable_frontend
-  frontend_bucket_name = var.frontend_bucket_name
+  enable_frontend        = true
+  frontend_bucket_name  = var.frontend_bucket_name
 
-  # GHCR Pull Secret (optional)
-  enable_ghcr_pull_secret = try(var.enable_ghcr_pull_secret, false)
-  ghcr_username           = try(var.ghcr_username, null)
-  ghcr_pat                = try(var.ghcr_pat, null)
+  # registry (GHCR)
+  enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
+  ghcr_username           = var.ghcr_username
+  ghcr_pat                = var.ghcr_pat
+  ghcr_secret_name        = var.ghcr_secret_name
   service_namespaces      = var.service_namespaces
 
-  depends_on = [module.eks]
+  # irsa (서비스들)
+  s3_bucket_profile       = var.s3_bucket_profile
+  s3_bucket_ticket        = var.s3_bucket_ticket
+  
+  # Secrets Manager ARNs
+  secret_db_password_arn = module.security.db_secret_arn
+  secret_elasticache_arn = module.security.elasticache_secret_arn
+  secret_smtp_arn        = module.security.smtp_secret_arn
+  secret_kakao_arn       = module.security.kakao_secret_arn
 }

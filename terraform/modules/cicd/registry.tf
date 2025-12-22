@@ -20,11 +20,15 @@ resource "kubernetes_secret" "ghcr" {
     namespace = var.service_namespaces[count.index]
   }
   
-  depends_on = [kubernetes_namespace.services]
+  depends_on = [kubernetes_namespace_v1.services]
 
   type = "kubernetes.io/dockerconfigjson"
 
   data = {
     ".dockerconfigjson" = local.dockerconfigjson
+  }
+
+  lifecycle {
+    ignore_changes = [data]
   }
 }

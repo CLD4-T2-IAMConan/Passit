@@ -51,7 +51,29 @@ output "cluster_endpoint" {
   value       = module.eks.cluster_endpoint
 }
 
-output "region" {
-  description = "AWS region"
-  value       = var.region
+# ============================================
+# CI/CD Information
+# ============================================
+output "github_actions_frontend_role_arn" {
+  value       = module.cicd.github_actions_frontend_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+# irsa 부분
+output "backend_irsa_roles" {
+  description = "IRSA role ARNs per backend service"
+  value       = module.cicd.backend_irsa_roles
+}
+
+# ============================================
+# Frontend Information (운영 편의)
+# ============================================
+output "frontend_bucket_name" {
+  value       = module.cicd.frontend_bucket_name
+  description = "S3 bucket for frontend static files"
+}
+
+output "frontend_cloudfront_domain" {
+  value       = module.cicd.frontend_cloudfront_domain
+  description = "CloudFront domain name for frontend"
 }

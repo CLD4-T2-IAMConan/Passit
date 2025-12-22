@@ -12,9 +12,7 @@ locals {
   # Managed Node Groups
   managed_node_groups = {
     default = {
-
-      # Node Group 기본 식별 정보
-      name = "${var.project_name}-${var.environment}-eks-nodegroup-default"
+      # Node Group 이름은 EKS 모듈이 자동 생성 (name 필드 제거하여 IAM Role 이름 길이 제한 회피)
 
       # EC2 인스턴스 설정
       instance_types = var.node_instance_types

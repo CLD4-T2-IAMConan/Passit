@@ -183,12 +183,12 @@ resource "aws_iam_role" "argocd" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}"
+          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}"
         }
         Condition = {
           StringEquals = {
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:argocd:argocd-server"
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:sub" = "system:serviceaccount:argocd:argocd-server"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -264,12 +264,12 @@ resource "aws_iam_role" "prometheus" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}"
+          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}"
         }
         Condition = {
           StringEquals = {
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:monitoring:prometheus"
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:sub" = "system:serviceaccount:monitoring:prometheus"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -339,12 +339,12 @@ resource "aws_iam_role" "fluentbit" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}"
+          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}"
         }
         Condition = {
           StringEquals = {
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:logging:fluent-bit"
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:sub" = "system:serviceaccount:logging:fluent-bit"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -413,12 +413,12 @@ resource "aws_iam_role" "app_pod" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}"
+          Federated = "arn:aws:iam::${var.account_id}:oidc-provider/${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}"
         }
         Condition = {
           StringEquals = {
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:default:*"
-            "${replace(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:sub" = "system:serviceaccount:default:*"
+            "${replace(try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, ""), "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }

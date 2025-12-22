@@ -234,14 +234,25 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = var.enable_frontend
-  frontend_bucket_name = var.frontend_bucket_name
+  enable_frontend        = true
+  frontend_bucket_name  = var.frontend_bucket_name
 
-  # GHCR Pull Secret
+  # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
   ghcr_username           = var.ghcr_username
   ghcr_pat                = var.ghcr_pat
+  ghcr_secret_name        = var.ghcr_secret_name
   service_namespaces      = var.service_namespaces
+
+  # irsa (서비스들)
+  s3_bucket_profile       = var.s3_bucket_profile
+  s3_bucket_ticket        = var.s3_bucket_ticket
+  
+  # Secrets Manager ARNs
+  secret_db_password_arn = module.security.db_secret_arn
+  secret_elasticache_arn = module.security.elasticache_secret_arn
+  secret_smtp_arn        = module.security.smtp_secret_arn
+  secret_kakao_arn       = module.security.kakao_secret_arn
 
   depends_on = [module.eks]
 }

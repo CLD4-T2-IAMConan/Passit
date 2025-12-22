@@ -320,3 +320,25 @@ variable "github_oidc_provider_arn" {
   type        = string
   default     = ""
 }
+
+# =========================
+# CI/CD - registry (GHCR)
+# =========================
+variable "ghcr_secret_name" {
+  description = "Kubernetes secret name for GHCR pull secret"
+  type        = string
+  default     = "ghcr-pull-secret"
+}
+
+# ==================================
+# CI/CD - 백엔드 서비스 IRSA 관련
+# ==================================
+variable "s3_bucket_profile" {
+  description = "S3 bucket for account service profile images"
+  type        = string
+}
+
+variable "s3_bucket_ticket" {
+  description = "S3 bucket for ticket service images"
+  type        = string
+}
