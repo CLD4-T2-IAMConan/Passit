@@ -89,6 +89,22 @@ output "github_actions_frontend_role_arn" {
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
 }
 
+# irsa 부분
+output "backend_service_irsa_arns" {
+  description = "Map of backend service name to IRSA IAM Role ARN"
+  value       = { for k, r in aws_iam_role.backend_service : k => r.arn }
+}
+
+output "backend_service_sa_names" {
+  description = "Map of backend service name to ServiceAccount name and namespace"
+  value = { 
+    for k, sa in kubernetes_service_account.backend_service : k => {
+      name      = sa.metadata[0].name
+      namespace = sa.metadata[0].namespace
+    }
+  }
+}
+
 # ============================================
 # Frontend Information (운영 편의)
 # ============================================

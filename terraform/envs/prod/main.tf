@@ -206,6 +206,8 @@ module "monitoring" {
     module.eks
   ]
 }
+
+# ============================================
 # CI/CD Module (Argo CD, IRSA, GitHub OIDC)
 # ============================================
 data "terraform_remote_state" "shared" {
@@ -243,4 +245,11 @@ module "cicd" {
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true
   frontend_bucket_name  = var.frontend_bucket_name
+
+  # registry (GHCR)
+  enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
+  ghcr_username           = var.ghcr_username
+  ghcr_pat                = var.ghcr_pat
+  ghcr_secret_name        = var.ghcr_secret_name
+  service_namespaces      = var.service_namespaces
 }

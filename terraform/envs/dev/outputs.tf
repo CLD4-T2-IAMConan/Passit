@@ -18,7 +18,6 @@ output "private_app_subnet_ids" {
 }
 
 # ============================================
-<<<<<<< HEAD
 # Security Information (모듈의 Output 참조로 수정)
 # ============================================
 
@@ -37,7 +36,8 @@ output "eks_worker_security_group_id" {
   description = "The ID of the EKS worker security group"
   value       = module.security.eks_worker_security_group_id
 }
-=======
+
+# ============================================
 # EKS Information
 # ============================================
 
@@ -64,6 +64,22 @@ output "github_actions_frontend_role_arn" {
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
 }
 
+# irsa 부분
+output "backend_service_irsa_arns" {
+  description = "Map of backend service name to IRSA IAM Role ARN"
+  value       = { for k, r in aws_iam_role.backend_service : k => r.arn }
+}
+
+output "backend_service_sa_names" {
+  description = "Map of backend service name to ServiceAccount name and namespace"
+  value = { 
+    for k, sa in kubernetes_service_account.backend_service : k => {
+      name      = sa.metadata[0].name
+      namespace = sa.metadata[0].namespace
+    }
+  }
+}
+
 # ============================================
 # Frontend Information (운영 편의)
 # ============================================
@@ -76,4 +92,3 @@ output "frontend_cloudfront_domain" {
   value       = module.cicd.frontend_cloudfront_domain
   description = "CloudFront domain name for frontend"
 }
->>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960

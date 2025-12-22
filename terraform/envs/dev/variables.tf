@@ -149,7 +149,6 @@ variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
 }
-<<<<<<< HEAD
 
 variable "eks_cluster_name" {
   description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
@@ -260,7 +259,6 @@ variable "alarm_sns_topic_arn" {
   type        = string
   default     = null
 }
-=======
 #
 # # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
 # variable "rds_security_group_id" {
@@ -297,4 +295,46 @@ variable "enable_frontend" {
 variable "frontend_bucket_name" {
   type = string
 }
->>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960
+
+# =========================
+# CI/CD - registry (GHCR)
+# =========================
+variable "enable_ghcr_pull_secret" {
+  type = bool
+}
+
+variable "ghcr_username" {
+  type = string
+}
+
+variable "ghcr_pat" {
+  type      = string
+  sensitive = true
+}
+
+variable "ghcr_secret_name" {
+  type    = string
+  default = "ghcr-pull-secret"
+}
+
+variable "service_namespaces" {
+  type = list(string)
+}
+
+# ==================================
+# CI/CD - 백엔드 서비스 IRSA 관련
+# ==================================
+variable "s3_bucket_profile" {
+  description = "S3 bucket for account service profile images"
+  type        = string
+}
+
+variable "s3_bucket_ticket" {
+  description = "S3 bucket for ticket service images"
+  type        = string
+}
+
+variable "secret_db_password_arn" {
+  description = "ARN of the Secrets Manager secret containing DB password"
+  type        = string
+}

@@ -11,6 +11,18 @@ variable "environment" {
   type = string
 }
 
+variable "region" {
+  type = string
+}
+
+variable "team" {
+  type = string
+}
+
+variable "owner" {
+  type = string
+}
+
 # ================================
 # irsa.tf
 # ================================
@@ -40,9 +52,6 @@ variable "github_ref" {
   type        = string
 }
 
-variable "region" { type = string }
-variable "team" { type = string }
-variable "owner" { type = string }
 
 # EKS OIDC (IRSA / ArgoCD 연동용 - eks 모듈 output에서 받기)
 variable "cluster_name" { type = string }
@@ -129,3 +138,14 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
+variable "s3_bucket_profile" {
+
+}
+
+variable "s3_bucket_ticket" {
+
+}
+
+variable "secret_db_password_arn" {
+
+}
