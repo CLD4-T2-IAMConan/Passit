@@ -258,8 +258,8 @@ module "cicd" {
   s3_bucket_ticket        = var.s3_bucket_ticket
   
   # Secrets Manager ARNs
-  secret_db_password_arn = var.secret_db_password_arn
-  secret_elasticache_arn = var.secret_elasticache_arn
-  secret_smtp_arn        = var.secret_smtp_arn
-  secret_kakao_arn       = var.secret_kakao_arn
+  secret_db_password_arn = module.security.db_secret_arn
+  secret_elasticache_arn = module.security.elasticache_secret_arn
+  secret_smtp_arn        = module.security.smtp_secret_arn
+  secret_kakao_arn       = module.security.kakao_secret_arn
 }
