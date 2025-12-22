@@ -13,7 +13,7 @@ locals {
 
   # 네트워크 설정 (기존 VPC 사용 여부에 따른 값 선택)
   vpc_id                = var.existing_vpc_id != "" ? var.existing_vpc_id : module.network.vpc_id
-  private_db_subnet_ids = var.existing_private_db_subnet_ids != [] ? var.existing_private_db_subnet_ids : module.network.private_db_subnet_ids
+  private_db_subnet_ids = length(var.existing_private_db_subnet_ids) > 0 ? var.existing_private_db_subnet_ids : (try(length(module.network.private_db_subnet_ids), 0) > 0 ? module.network.private_db_subnet_ids : [])
 
   # 보안 그룹 설정 (기존 리소스 사용 여부에 따른 값 선택)
   rds_security_group_id         = var.rds_security_group_id != "" ? var.rds_security_group_id : module.security.rds_security_group_id
@@ -95,6 +95,9 @@ module "eks" {
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
+  # Public endpoint access for Terraform/kubectl (임시로 0.0.0.0/0 허용, 추후 특정 IP로 제한 권장)
+  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type
   node_min_size       = var.node_min_size
@@ -117,6 +120,8 @@ module "autoscaling" {
   cluster_name       = module.eks.cluster_name
   oidc_provider_arn  = module.eks.oidc_provider_arn
   oidc_provider_url  = module.eks.oidc_provider_url
+
+  depends_on = [module.eks]
 }
 
 # ============================================
@@ -134,6 +139,8 @@ module "data" {
   # Network Configuration
   vpc_id                = local.vpc_id
   private_db_subnet_ids = local.private_db_subnet_ids
+
+  depends_on = [module.network]
 
   # Security Groups
   rds_security_group_id         = local.rds_security_group_id
@@ -153,7 +160,7 @@ module "data" {
   # RDS Configuration
   db_secret_name      = ""
   rds_master_username = "admin"
-  rds_master_password = ""
+  rds_master_password = "PassitProdPassword123!"  # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
   rds_database_name   = "passit"
 
   rds_instance_class     = var.rds_instance_class
@@ -200,14 +207,11 @@ module "monitoring" {
 }
 # CI/CD Module (Argo CD, IRSA, GitHub OIDC)
 # ============================================
-data "terraform_remote_state" "shared" {
-  backend = "s3"
-
-  config = {
-    bucket = "my-terraform-state-bucket"
-    key    = "shared/terraform.tfstate"
-    region = "ap-northeast-2"
-  }
+# Note: GitHub OIDC Provider는 변수로 받거나 직접 생성해야 합니다.
+# prod 환경에서는 terraform.tfvars에 github_oidc_provider_arn을 설정하세요.
+# GitHub OIDC Provider가 없다면 terraform/shared에서 생성하거나 수동으로 생성해야 합니다.
+locals {
+  github_oidc_provider_arn = var.github_oidc_provider_arn
 }
 
 module "cicd" {
@@ -217,15 +221,16 @@ module "cicd" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
-  account_id   = var.account_id
+  team         = var.team
+  owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name        = module.eks.cluster_name
+  cluster_name       = module.eks.cluster_name
   oidc_provider_arn  = module.eks.oidc_provider_arn
   oidc_provider_url  = module.eks.oidc_provider_url
 
-  # GitHub OIDC (shared에서 만든 걸 사용)
-  github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
+  # GitHub OIDC (변수로 받기)
+  github_oidc_provider_arn = local.github_oidc_provider_arn
 
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
@@ -233,6 +238,14 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = true
-  frontend_bucket_name  = var.frontend_bucket_name
+  enable_frontend      = var.enable_frontend
+  frontend_bucket_name = var.frontend_bucket_name
+
+  # GHCR Pull Secret (optional)
+  enable_ghcr_pull_secret = try(var.enable_ghcr_pull_secret, false)
+  ghcr_username           = try(var.ghcr_username, null)
+  ghcr_pat                = try(var.ghcr_pat, null)
+  service_namespaces      = var.service_namespaces
+
+  depends_on = [module.eks]
 }

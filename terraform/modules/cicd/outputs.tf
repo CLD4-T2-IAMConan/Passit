@@ -13,7 +13,7 @@ output "argocd_irsa_role_arn" {
 # ===========================================
 output "github_actions_frontend_role_arn" {
   description = "IAM Role ARN assumed by GitHub Actions for frontend deployment"
-  value       = aws_iam_role.github_actions_frontend.arn
+  value       = try(aws_iam_role.github_actions_frontend[0].arn, null)
 }
 
 

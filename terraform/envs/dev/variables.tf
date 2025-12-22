@@ -149,7 +149,6 @@ variable "allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for external access (ALB)"
   type        = list(string)
 }
-<<<<<<< HEAD
 
 variable "eks_cluster_name" {
   description = "Existing EKS cluster name (if cluster already exists, use this instead of creating new one)"
@@ -260,41 +259,64 @@ variable "alarm_sns_topic_arn" {
   type        = string
   default     = null
 }
-=======
-#
-# # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
-# variable "rds_security_group_id" {
-#   description = "Security group ID for RDS"
-#   type        = string
-#   default     = null
-# }
-#
-# variable "elasticache_security_group_id" {
-#   description = "Security group ID for ElastiCache"
-#   type        = string
-#   default     = null
-# }
 
-# =========================
-# CI/CD
-# =========================
+# ============================================
+# CI/CD Module Variables
+# ============================================
 variable "github_org" {
-  type = string
+  description = "GitHub organization or user name"
+  type        = string
 }
 
 variable "github_repo" {
-  type = string
+  description = "GitHub repository name"
+  type        = string
 }
 
 variable "github_ref" {
-  type = string
+  description = "GitHub branch or ref allowed to deploy (e.g., refs/heads/main)"
+  type        = string
 }
 
 variable "enable_frontend" {
-  type = bool
+  description = "Enable frontend deployment (S3 + CloudFront)"
+  type        = bool
+  default     = true
 }
 
 variable "frontend_bucket_name" {
-  type = string
+  description = "S3 bucket name for frontend static files"
+  type        = string
 }
->>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960
+
+variable "enable_ghcr_pull_secret" {
+  description = "Enable GHCR (GitHub Container Registry) pull secret for Kubernetes"
+  type        = bool
+  default     = false
+}
+
+variable "ghcr_username" {
+  description = "GitHub username for GHCR authentication"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "ghcr_pat" {
+  description = "GitHub Personal Access Token (PAT) for GHCR authentication"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "service_namespaces" {
+  description = "List of Kubernetes namespaces for services"
+  type        = list(string)
+  default     = []
+}
+
+variable "github_oidc_provider_arn" {
+  description = "GitHub OIDC Provider ARN for GitHub Actions authentication (optional, can be created in shared resources)"
+  type        = string
+  default     = ""
+}

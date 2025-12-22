@@ -1,18 +1,22 @@
 # cicd - github-oidc.tf
 
 variable "github_oidc_provider_arn" {
-  type = string
+  type        = string
+  description = "GitHub OIDC Provider ARN (optional, if empty, GitHub Actions resources will not be created)"
+  default     = ""
 }
 
 data "aws_iam_openid_connect_provider" "github" {
-  arn = var.github_oidc_provider_arn
+  count = var.github_oidc_provider_arn != "" ? 1 : 0
+  arn   = var.github_oidc_provider_arn
 }
 
 ################################################
 # IAM Role for GitHub Actions (Frontend Deploy)
 ################################################
 resource "aws_iam_role" "github_actions_frontend" {
-  name = "${var.project_name}-${var.environment}-github-actions-frontend"
+  count = var.github_oidc_provider_arn != "" ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-github-actions-frontend"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -20,7 +24,7 @@ resource "aws_iam_role" "github_actions_frontend" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = data.aws_iam_openid_connect_provider.github.arn
+          Federated = data.aws_iam_openid_connect_provider.github[0].arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -40,7 +44,8 @@ resource "aws_iam_role" "github_actions_frontend" {
 # IAM Policy for Frontend Deploy (ECR로 바뀌면 ECR 권한만 추가)
 ############################################
 resource "aws_iam_policy" "frontend_deploy" {
-  name = "${var.project_name}-${var.environment}-frontend-deploy"
+  count = var.github_oidc_provider_arn != "" ? 1 : 0
+  name  = "${var.project_name}-${var.environment}-frontend-deploy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -76,6 +81,7 @@ resource "aws_iam_policy" "frontend_deploy" {
 # Policy Attachment
 ############################################
 resource "aws_iam_role_policy_attachment" "frontend_deploy" {
-  role       = aws_iam_role.github_actions_frontend.name
-  policy_arn = aws_iam_policy.frontend_deploy.arn
+  count      = var.github_oidc_provider_arn != "" ? 1 : 0
+  role       = aws_iam_role.github_actions_frontend[0].name
+  policy_arn = aws_iam_policy.frontend_deploy[0].arn
 }

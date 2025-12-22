@@ -12,6 +12,12 @@ resource "helm_release" "argocd" {
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   version    = var.argocd_chart_version
+  
+  timeout = 600  # 10분 timeout
+  
+  # 기존 리소스가 Helm으로 관리되지 않은 경우를 대비
+  skip_crds = false
+  replace   = false
 
   values = [
     <<EOF
