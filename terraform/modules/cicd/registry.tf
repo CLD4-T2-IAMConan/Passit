@@ -13,11 +13,11 @@ locals {
 }
 
 resource "kubernetes_secret" "ghcr" {
-  count = var.enable_ghcr_pull_secret ? 1 : 0
+  count = var.enable_ghcr_pull_secret ? length(var.service_namespaces) : 0
 
   metadata {
     name      = var.ghcr_secret_name
-    namespace = var.ghcr_secret_namespace
+    namespace = var.service_namespaces[count.index]
   }
 
   type = "kubernetes.io/dockerconfigjson"

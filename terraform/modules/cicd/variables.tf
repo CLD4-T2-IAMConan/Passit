@@ -57,7 +57,7 @@ variable "argocd_namespace" {
 
 variable "argocd_chart_version" {
   type    = string
-  default = "6.7.12"
+  default = "9.1.6"
 }
 
 # ----------------------------
@@ -69,9 +69,9 @@ variable "enable_ghcr_pull_secret" {
   default = false
 }
 
-variable "ghcr_secret_namespace" {
-  type    = string
-  default = "default"
+variable "service_namespaces" {
+  type        = list(string)
+  description = "List of Kubernetes namespaces for services"
 }
 
 variable "ghcr_username" {
@@ -100,8 +100,8 @@ variable "enable_frontend" {
 }
 
 variable "frontend_bucket_name" {
- type    = string
- default = null
+  type    = string
+  default = null
 }
 
 variable "frontend_default_root_object" {
@@ -128,3 +128,4 @@ variable "frontend_spa_fallback" {
   type    = bool
   default = true
 }
+
