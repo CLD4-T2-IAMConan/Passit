@@ -106,7 +106,6 @@ module "autoscaling" {
 }
 
 # ============================================
-<<<<<<< HEAD
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
 module "data" {
@@ -197,7 +196,8 @@ module "monitoring" {
     module.eks
   ]
 }
-=======
+
+# ============================================
 # CI/CD Module (Argo CD, IRSA, GitHub OIDC)
 # ============================================
 data "terraform_remote_state" "shared" {
@@ -237,5 +237,21 @@ module "cicd" {
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true
   frontend_bucket_name  = var.frontend_bucket_name
+
+  # registry (GHCR)
+  enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
+  ghcr_username           = var.ghcr_username
+  ghcr_pat                = var.ghcr_pat
+  ghcr_secret_name        = var.ghcr_secret_name
+  service_namespaces      = var.service_namespaces
+
+  # irsa (서비스들)
+  s3_bucket_profile       = var.s3_bucket_profile
+  s3_bucket_ticket        = var.s3_bucket_ticket
+  
+  # Secrets Manager ARNs
+  secret_db_password_arn = module.security.db_secret_arn
+  secret_elasticache_arn = module.security.elasticache_secret_arn
+  secret_smtp_arn        = module.security.smtp_secret_arn
+  secret_kakao_arn       = module.security.kakao_secret_arn
 }
->>>>>>> 5336c2345ef5ae48f6c79b4d1f9c10c016c18960

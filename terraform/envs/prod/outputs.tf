@@ -79,14 +79,15 @@ output "rds_reader_endpoint" {
 # ============================================
 # CI/CD Information
 # ============================================
-output "argocd_irsa_role_arn" {
-  value       = module.cicd.argocd_irsa_role_arn
-  description = "IAM Role ARN used by Argo CD via IRSA"
-}
-
 output "github_actions_frontend_role_arn" {
   value       = module.cicd.github_actions_frontend_role_arn
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+# irsa 부분
+output "backend_irsa_roles" {
+  description = "IRSA role ARNs per backend service"
+  value       = module.cicd.backend_irsa_roles
 }
 
 # ============================================

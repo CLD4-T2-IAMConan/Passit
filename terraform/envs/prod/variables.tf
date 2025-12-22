@@ -373,3 +373,41 @@ variable "enable_frontend" {
 variable "frontend_bucket_name" {
   type = string
 }
+
+# =========================
+# CI/CD - registry (GHCR)
+# =========================
+variable "enable_ghcr_pull_secret" {
+  type = bool
+}
+
+variable "ghcr_username" {
+  type = string
+}
+
+variable "ghcr_pat" {
+  type      = string
+  sensitive = true
+}
+
+variable "ghcr_secret_name" {
+  type    = string
+  default = "ghcr-pull-secret"
+}
+
+variable "service_namespaces" {
+  type = list(string)
+}
+
+# ==================================
+# CI/CD - 백엔드 서비스 IRSA 관련
+# ==================================
+variable "s3_bucket_profile" {
+  description = "S3 bucket for account service profile images"
+  type        = string
+}
+
+variable "s3_bucket_ticket" {
+  description = "S3 bucket for ticket service images"
+  type        = string
+}

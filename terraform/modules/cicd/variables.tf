@@ -11,6 +11,18 @@ variable "environment" {
   type = string
 }
 
+variable "region" {
+  type = string
+}
+
+variable "team" {
+  type = string
+}
+
+variable "owner" {
+  type = string
+}
+
 # ================================
 # irsa.tf
 # ================================
@@ -40,9 +52,6 @@ variable "github_ref" {
   type        = string
 }
 
-variable "region" { type = string }
-variable "team" { type = string }
-variable "owner" { type = string }
 
 # EKS OIDC (IRSA / ArgoCD 연동용 - eks 모듈 output에서 받기)
 variable "cluster_name" { type = string }
@@ -66,7 +75,7 @@ variable "argocd_chart_version" {
 # ----------------------------
 variable "enable_ghcr_pull_secret" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "service_namespaces" {
@@ -129,3 +138,38 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
+# ============================================
+# irsa.tf
+# ============================================
+variable "s3_bucket_profile" {
+  description = "Account 서비스 프로필 이미지용 S3 버킷 이름"
+  type        = string
+}
+
+variable "s3_bucket_ticket" {
+  description = "Ticket 서비스 티켓 이미지용 S3 버킷 이름"
+  type        = string
+}
+
+# ============================================
+# irsa - Secrets Manager
+# ============================================
+variable "secret_db_password_arn" {
+  description = "RDS DB 비밀번호를 저장한 Secrets Manager ARN"
+  type        = string
+}
+
+variable "secret_elasticache_arn" {
+  description = "Valkey(ElastiCache) 인증 토큰을 저장한 Secrets Manager ARN"
+  type        = string
+}
+
+variable "secret_smtp_arn" {
+  description = "SMTP 메일 계정 자격 증명 Secrets Manager ARN (account 서비스 전용)"
+  type        = string
+}
+
+variable "secret_kakao_arn" {
+  description = "Kakao OAuth 자격 증명 Secrets Manager ARN (account 서비스 전용)"
+  type        = string
+}
