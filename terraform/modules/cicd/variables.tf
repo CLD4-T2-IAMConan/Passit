@@ -75,7 +75,7 @@ variable "argocd_chart_version" {
 # ----------------------------
 variable "enable_ghcr_pull_secret" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "service_namespaces" {
@@ -138,14 +138,20 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
+# ----------------------------
+# irsa.tf
+# ----------------------------
 variable "s3_bucket_profile" {
-
+  description = "Account 서비스 프로필 이미지용 S3 버킷 이름"
+  type        = string
 }
 
 variable "s3_bucket_ticket" {
-
+  description = "Ticket 서비스 티켓 이미지용 S3 버킷 이름"
+  type        = string
 }
 
 variable "secret_db_password_arn" {
-
+  description = "RDS Database 비밀번호를 저장한 Secrets Manager ARN"
+  type        = string
 }

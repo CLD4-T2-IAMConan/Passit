@@ -11,6 +11,21 @@ output "github_actions_frontend_role_arn" {
 # ===========================================
 # irsa
 # ===========================================
+output "s3_bucket_profile" {
+  description = "Account 서비스 프로필 이미지용 S3 버킷 이름"
+  value       = var.s3_bucket_profile
+}
+
+output "s3_bucket_ticket" {
+  description = "Ticket 서비스 티켓 이미지용 S3 버킷 이름"
+  value       = var.s3_bucket_ticket
+}
+
+output "secret_db_password_arn" {
+  description = "RDS Database 비밀번호 저장용 Secrets Manager ARN"
+  value       = var.secret_db_password_arn
+}
+
 output "backend_service_irsa_arns" {
   description = "Map of backend service name to IRSA IAM Role ARN"
   value       = { for k, r in aws_iam_role.backend_service : k => r.arn }
