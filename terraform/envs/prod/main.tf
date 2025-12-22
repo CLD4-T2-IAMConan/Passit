@@ -127,34 +127,12 @@ module "autoscaling" {
 # ============================================
 # Bastion Host Module
 # ============================================
-module "bastion" {
-  source = "../../modules/bastion"
-
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  team         = var.team
-  owner        = var.owner
-
-  # Network Configuration
-  vpc_id           = module.network.vpc_id
-  public_subnet_id = module.network.public_subnet_ids[0]
-
-  # Security Configuration
-  allowed_cidr_blocks = var.allowed_cidr_blocks_bastion
-
-  # Instance Configuration
-  instance_type          = var.bastion_instance_type
-  key_name               = var.bastion_key_name
-  enable_session_manager = true
-
-  # Security Group References
-  rds_security_group_id         = local.rds_security_group_id
-  elasticache_security_group_id = local.elasticache_security_group_id
-  eks_cluster_security_group_id = module.eks.cluster_security_group_id
-
-  depends_on = [module.network, module.security, module.eks]
-}
+# Note: Bastion Host는 prod 환경에서는 보안상의 이유로 제외됩니다.
+#       dev 환경에서만 사용됩니다.
+#       prod 환경에서 DB 접근이 필요한 경우:
+#       - VPN을 통한 접근
+#       - AWS Systems Manager Session Manager (직접 EKS Pod 접속)
+#       - 전용 관리 서버 (별도 구성)
 
 # ============================================
 # Data Module (RDS, ElastiCache, S3)

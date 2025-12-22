@@ -6,14 +6,17 @@
 
 ## 📋 스크립트 목록
 
-현재 **4개의 배포 자동화 스크립트**가 있습니다:
+현재 **7개의 배포 자동화 스크립트**가 있습니다:
 
 | 스크립트                     | 용도                                               | 사용 시점               |
 | ---------------------------- | -------------------------------------------------- | ----------------------- |
 | `setup-terraform-backend.sh` | Terraform Backend 설정 (S3, DynamoDB)              | 배포 전 필수            |
 | `connect-eks.sh`             | EKS 클러스터 접속 설정                             | 인프라 배포 후          |
+| `add-eks-access-entry.sh`    | EKS Access Entry 추가 (IAM 사용자 권한 부여)       | EKS 접근 권한 오류 시   |
 | `setup-k8s-prerequisites.sh` | Kubernetes 기본 설정 (NS, Secrets, ALB Controller) | EKS 접속 후             |
 | `update-helm-values.sh`      | Helm Values 자동 업데이트                          | Helm values 업데이트 시 |
+| `connect-bastion-rds.sh`     | Bastion을 통한 RDS 접속 (Session Manager)          | 로컬 개발 시            |
+| `connect-bastion-redis.sh`   | Bastion을 통한 Redis 접속 (Session Manager)        | 로컬 개발 시            |
 
 ---
 
@@ -86,6 +89,38 @@ export GITHUB_PAT="your_pat"
 
 ---
 
+### `add-eks-access-entry.sh`
+
+**용도**: IAM 사용자에게 EKS 클러스터 접근 권한 부여
+
+**사용법**:
+
+```bash
+./add-eks-access-entry.sh <env> <iam-user> [region]
+# 예시: ./add-eks-access-entry.sh dev t2-krystal
+# 예시: ./add-eks-access-entry.sh dev t2-krystal ap-northeast-2
+```
+
+**기능**:
+
+- Terraform output에서 클러스터 이름 자동 추출
+- EKS Access Entry 생성
+- Admin Policy 자동 연결
+- 기존 Entry 확인 및 업데이트 지원
+
+**사용 시나리오**:
+
+- `eks:DescribeCluster` 권한 오류 발생 시
+- 새로운 팀원에게 EKS 접근 권한 부여 시
+- IAM 사용자 권한 변경 시
+
+**주의사항**:
+
+- AWS CLI 권한 필요 (`eks:CreateAccessEntry`, `eks:AssociateAccessPolicy`)
+- Terraform 코드에도 추가하는 것을 권장 (GitOps 원칙)
+
+---
+
 ### `setup-k8s-prerequisites.sh`
 
 **용도**: Kubernetes 기본 리소스 생성
@@ -147,12 +182,95 @@ export GITHUB_PAT="your_pat"
 
 ---
 
+### `connect-bastion-rds.sh`
+
+**용도**: Bastion Host를 통한 RDS 접속 (Session Manager Port Forwarding)
+
+**사용법**:
+
+```bash
+./connect-bastion-rds.sh <env> [region] [local-port]
+# 예시: ./connect-bastion-rds.sh dev
+# 예시: ./connect-bastion-rds.sh prod ap-northeast-2 13306
+```
+
+**기능**:
+
+- Terraform output에서 Bastion Instance ID 자동 추출
+- Terraform output에서 RDS Endpoint 자동 추출
+- Session Manager Plugin 설치 확인
+- 포트 충돌 자동 감지 및 처리
+- MySQL 클라이언트 접속 명령어 안내
+
+**사전 요구사항**:
+
+- Session Manager Plugin 설치
+  ```bash
+  brew install --cask session-manager-plugin  # macOS
+  ```
+- AWS CLI 권한 (`ssm:StartSession`)
+
+**사용 예시**:
+
+```bash
+# dev 환경 RDS 접속
+./connect-bastion-rds.sh dev
+
+# 새 터미널에서 MySQL 접속
+mysql -h 127.0.0.1 -P 3306 -u admin -p
+```
+
+---
+
+### `connect-bastion-redis.sh`
+
+**용도**: Bastion Host를 통한 ElastiCache (Valkey/Redis) 접속 (Session Manager Port Forwarding)
+
+**사용법**:
+
+```bash
+./connect-bastion-redis.sh <env> [region] [local-port]
+# 예시: ./connect-bastion-redis.sh dev
+# 예시: ./connect-bastion-redis.sh prod ap-northeast-2 16379
+```
+
+**기능**:
+
+- Terraform output에서 Bastion Instance ID 자동 추출
+- Terraform output에서 Valkey Endpoint 자동 추출
+- Session Manager Plugin 설치 확인
+- 포트 충돌 자동 감지 및 처리
+- Redis CLI 접속 명령어 안내
+
+**사전 요구사항**:
+
+- Session Manager Plugin 설치
+  ```bash
+  brew install --cask session-manager-plugin  # macOS
+  ```
+- AWS CLI 권한 (`ssm:StartSession`)
+
+**사용 예시**:
+
+```bash
+# dev 환경 Redis 접속
+./connect-bastion-redis.sh dev
+
+# 새 터미널에서 Redis 접속
+redis-cli -h localhost -p 6379
+> PING
+PONG
+```
+
+---
+
 ## 📊 배포 가이드 연동
 
 이 스크립트들은 [배포 가이드](/Users/krystal/workspace/Passit/DEPLOYMENT_GUIDE.md)의 다음 단계에서 사용됩니다:
 
 - **0단계**: `setup-terraform-backend.sh` - Terraform Backend 설정
 - **2단계**: `connect-eks.sh` - EKS 클러스터 접근 설정
+- **2-1단계**: `add-eks-access-entry.sh` - EKS 접근 권한 오류 시 (선택)
 - **3단계**: `setup-k8s-prerequisites.sh` - Kubernetes 기본 설정
 - **5단계**: `update-helm-values.sh` - Helm Values 업데이트
 
@@ -164,8 +282,9 @@ export GITHUB_PAT="your_pat"
 
 1. **Backend 설정** (최초 1회만)
 2. **EKS 접속** (인프라 배포 후)
-3. **Kubernetes 기본 설정** (EKS 접속 후)
-4. **Helm Values 업데이트** (Terraform output 변경 시)
+3. **EKS Access Entry 추가** (접근 권한 오류 시, 선택)
+4. **Kubernetes 기본 설정** (EKS 접속 후)
+5. **Helm Values 업데이트** (Terraform output 변경 시)
 
 ### 환경 변수 설정
 

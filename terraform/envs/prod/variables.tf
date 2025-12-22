@@ -333,20 +333,24 @@ variable "s3_bucket_ticket" {
 # ============================================
 # Bastion Host Module Variables
 # ============================================
+# Note: Bastion Host는 prod 환경에서 사용되지 않습니다.
+#       변수는 호환성을 위해 유지되지만 실제로는 사용되지 않습니다.
+#       dev 환경에서만 Bastion Host가 배포됩니다.
+
 variable "bastion_instance_type" {
-  description = "Bastion Host EC2 instance type"
+  description = "Bastion Host EC2 instance type (prod에서는 사용되지 않음)"
   type        = string
   default     = "t3.micro"
 }
 
 variable "bastion_key_name" {
-  description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
+  description = "SSH key pair name for Bastion Host (prod에서는 사용되지 않음)"
   type        = string
   default     = ""
 }
 
 variable "allowed_cidr_blocks_bastion" {
-  description = "CIDR blocks allowed to SSH into Bastion Host (recommend restricting to your IP)"
+  description = "CIDR blocks allowed to SSH into Bastion Host (prod에서는 사용되지 않음)"
   type        = list(string)
-  default     = ["0.0.0.0/0"] # 보안을 위해 실제 환경에서는 특정 IP로 제한 필요
+  default     = [] # prod에서는 빈 배열
 }
