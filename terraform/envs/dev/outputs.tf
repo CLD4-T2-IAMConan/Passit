@@ -77,3 +77,34 @@ output "frontend_cloudfront_domain" {
   value       = module.cicd.frontend_cloudfront_domain
   description = "CloudFront domain name for frontend"
 }
+
+# ============================================
+# Bastion Host Information
+# ============================================
+output "bastion_instance_id" {
+  description = "Bastion Host 인스턴스 ID"
+  value       = module.bastion.bastion_instance_id
+}
+
+output "bastion_public_ip" {
+  description = "Bastion Host 퍼블릭 IP"
+  value       = module.bastion.bastion_public_ip
+}
+
+output "bastion_connection_info" {
+  description = "Bastion Host 접속 정보"
+  value = {
+    session_manager_command = module.bastion.session_manager_command
+    ssh_command            = module.bastion.ssh_command
+  }
+}
+
+output "rds_tunnel_command" {
+  description = "RDS SSH 터널링 명령어"
+  value       = module.bastion.ssh_tunnel_rds_command
+}
+
+output "elasticache_tunnel_command" {
+  description = "ElastiCache SSH 터널링 명령어"
+  value       = module.bastion.ssh_tunnel_elasticache_command
+}

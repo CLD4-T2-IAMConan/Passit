@@ -125,6 +125,38 @@ module "autoscaling" {
 }
 
 # ============================================
+# Bastion Host Module
+# ============================================
+module "bastion" {
+  source = "../../modules/bastion"
+
+  project_name = var.project_name
+  environment  = var.environment
+  region       = var.region
+  team         = var.team
+  owner        = var.owner
+
+  # Network Configuration
+  vpc_id           = module.network.vpc_id
+  public_subnet_id = module.network.public_subnet_ids[0]
+
+  # Security Configuration
+  allowed_cidr_blocks = var.allowed_cidr_blocks_bastion
+
+  # Instance Configuration
+  instance_type          = var.bastion_instance_type
+  key_name               = var.bastion_key_name
+  enable_session_manager = true
+
+  # Security Group References
+  rds_security_group_id         = local.rds_security_group_id
+  elasticache_security_group_id = local.elasticache_security_group_id
+  eks_cluster_security_group_id = module.eks.cluster_security_group_id
+
+  depends_on = [module.network, module.security, module.eks]
+}
+
+# ============================================
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
 module "data" {

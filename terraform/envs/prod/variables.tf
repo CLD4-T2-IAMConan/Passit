@@ -329,3 +329,24 @@ variable "s3_bucket_ticket" {
   description = "S3 bucket for ticket service images"
   type        = string
 }
+
+# ============================================
+# Bastion Host Module Variables
+# ============================================
+variable "bastion_instance_type" {
+  description = "Bastion Host EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "bastion_key_name" {
+  description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
+  type        = string
+  default     = ""
+}
+
+variable "allowed_cidr_blocks_bastion" {
+  description = "CIDR blocks allowed to SSH into Bastion Host (recommend restricting to your IP)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # 보안을 위해 실제 환경에서는 특정 IP로 제한 필요
+}
