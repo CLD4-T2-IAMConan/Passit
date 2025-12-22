@@ -7,15 +7,15 @@ data "aws_iam_policy_document" "backend_service_policy" {
   # 공통: DB 비번 접근 (account, trade, ticket, chat, cs)
   # =================================================
   statement {
-    actions = ["secretsmanager:GetSecretValue"]
+    actions   = ["secretsmanager:GetSecretValue"]
     resources = [var.secret_db_password_arn]
   }
- 
+
   # =================================================
   # ElastiCache 인증 토큰 접근 (account, trade, ticket, chat)
   # =================================================
   dynamic "statement" {
-    for_each = contains(["account","trade","ticket","chat"], each.key) ? [1] : []
+    for_each = contains(["account", "trade", "ticket", "chat"], each.key) ? [1] : []
     content {
       actions   = ["secretsmanager:GetSecretValue"]
       resources = [var.secret_elasticache_arn]
@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "backend_service_policy" {
   dynamic "statement" {
     for_each = each.key == "account" ? [1] : []
     content {
-      actions   = ["secretsmanager:GetSecretValue"]
+      actions = ["secretsmanager:GetSecretValue"]
       resources = [
         var.secret_smtp_arn,
         var.secret_kakao_arn
