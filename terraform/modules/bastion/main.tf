@@ -160,7 +160,7 @@ resource "aws_instance" "bastion" {
   # 루트 볼륨 설정
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 8
+    volume_size           = 30
     delete_on_termination = true
     encrypted             = true
 

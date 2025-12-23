@@ -113,3 +113,9 @@ output "elasticache_tunnel_command" {
   description = "ElastiCache SSH 터널링 명령어"
   value       = module.bastion.ssh_tunnel_elasticache_command
 }
+# ===========================================
+# ALB Controller (운영 편의)
+# ===========================================
+output "alb_controller_role_arn" {
+  value = module.cicd.alb_controller_role_arn
+}

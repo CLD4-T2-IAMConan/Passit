@@ -343,6 +343,19 @@ variable "s3_bucket_ticket" {
   type        = string
 }
 
+# --- 애플리케이션 이미지 변수 ---
+variable "account_image" {
+  description = "Docker image for account service"
+  type        = string
+}
+
+# 다른 서비스 추가
+variable "chat_image" {
+  description = "Docker image for chat service"
+  type        = string
+  default     = ""
+}
+
 # ============================================
 # Bastion Host Module Variables
 # ============================================
@@ -354,12 +367,23 @@ variable "bastion_instance_type" {
 
 variable "bastion_key_name" {
   description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
-  type        = string
-  default     = ""
 }
 
 variable "allowed_cidr_blocks_bastion" {
   description = "CIDR blocks allowed to SSH into Bastion Host (recommend restricting to your IP)"
   type        = list(string)
   default     = ["0.0.0.0/0"] # 보안을 위해 실제 환경에서는 특정 IP로 제한 필요
+}
+
+# --- DB 인증 변수 (RDS 및 App 모듈 전달용) ---
+variable "rds_master_username" {
+  description = "Master username for RDS"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "Master password for RDS"
+  type        = string
+  sensitive   = true # 보안을 위해 출력을 숨깁니다.
 }

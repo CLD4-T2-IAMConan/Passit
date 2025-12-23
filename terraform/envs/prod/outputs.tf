@@ -113,3 +113,9 @@ output "frontend_cloudfront_domain" {
 # ============================================
 # Note: Bastion Host는 prod 환경에서 제외됩니다.
 #       dev 환경에서만 사용 가능합니다.
+# ===========================================
+# ALB Controller (운영 편의)
+# ===========================================
+output "alb_controller_role_arn" {
+  value = module.cicd.alb_controller_role_arn
+}
