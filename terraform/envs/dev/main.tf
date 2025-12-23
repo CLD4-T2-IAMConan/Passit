@@ -228,7 +228,7 @@ module "cicd" {
 
   # GitHub OIDC (shared에서 만든 걸 사용)
   github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
-  
+
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
   github_repo = var.github_repo
@@ -248,10 +248,39 @@ module "cicd" {
   # irsa (서비스들)
   s3_bucket_profile       = var.s3_bucket_profile
   s3_bucket_ticket        = var.s3_bucket_ticket
-  
+
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
   secret_elasticache_arn = module.security.elasticache_secret_arn
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
+}
+
+
+module "account_app" {
+  source = "../../modules/kubernetes_app"
+
+  # [1] 앱 식별 정보
+  app_name        = "account"
+  project_name    = var.project_name
+  environment     = var.environment
+
+  # [2] 이미지 설정
+  container_image = var.account_image
+  container_port  = 8081
+  service_port    = 8081
+  replicas        = 2
+
+  # [3] 네트워크 및 인프라 연결
+  vpc_id          = module.network.vpc_id
+
+  # [4] DB 연결
+  db_host         = module.data.rds_cluster_endpoint
+  db_secret_name  = "passit/${var.environment}/db"
+
+
+  rds_master_username = "admin"
+  rds_database_name   = "passit"
+
+  depends_on = [module.eks, module.data]
 }
