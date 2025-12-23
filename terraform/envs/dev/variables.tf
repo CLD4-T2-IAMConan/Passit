@@ -333,3 +333,30 @@ variable "s3_bucket_ticket" {
   description = "S3 bucket for ticket service images"
   type        = string
 }
+
+
+# --- 애플리케이션 이미지 변수 ---
+variable "account_image" {
+  description = "Docker image for account service"
+  type        = string
+}
+
+# 다른 서비스 추가
+variable "chat_image" {
+  description = "Docker image for chat service"
+  type        = string
+  default     = ""
+}
+
+# --- DB 인증 변수 (RDS 및 App 모듈 전달용) ---
+variable "rds_master_username" {
+  description = "Master username for RDS"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "Master password for RDS"
+  type        = string
+  sensitive   = true # 보안을 위해 출력을 숨깁니다.
+}
