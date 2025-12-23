@@ -43,14 +43,8 @@ fi
 
 # Terraform output 값 추출
 echo "📋 Terraform output 값 추출 중..."
-cd "$TERRAFORM_DIR"
+cd ${TERRAFORM_DIR}
 
-# Terraform 초기화 확인 (원격 backend 사용 시 로컬 state 파일 체크 불필요)
-# terraform output 명령어가 자동으로 원격 state에서 값을 가져옵니다.
-if [ ! -d ".terraform" ]; then
-    echo "⚠️  Terraform이 초기화되지 않았습니다. terraform init을 먼저 실행하세요."
-    exit 1
-fi
 
 # Output 값 추출
 RDS_ENDPOINT=$(terraform output -raw rds_cluster_endpoint 2>/dev/null || echo "")
