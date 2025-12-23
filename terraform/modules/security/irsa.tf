@@ -4,6 +4,9 @@
 # 주의: EKS 클러스터가 먼저 생성되어야 함
 # 참고: EKS 모듈에서 enable_irsa = true로 설정하면 자동으로 OIDC Provider가 생성되므로
 # 여기서는 기존 OIDC Provider를 data source로 참조만 합니다.
+# 
+# Note: destroy 시 클러스터가 이미 삭제되었을 수 있으므로, 
+# 이 data source는 destroy 시 무시됩니다 (state에서 제거 필요).
 data "aws_eks_cluster" "main" {
   count = var.eks_cluster_name != "" ? 1 : 0
   name  = var.eks_cluster_name
@@ -11,9 +14,12 @@ data "aws_eks_cluster" "main" {
 
 # 기존 OIDC Provider를 data source로 참조 (EKS 모듈에서 이미 생성됨)
 # 중복 생성을 방지하기 위해 resource 대신 data source 사용
+# 
+# Note: destroy 시 클러스터가 이미 삭제되었을 수 있으므로,
+# 이 data source는 destroy 시 무시됩니다 (state에서 제거 필요).
 data "aws_iam_openid_connect_provider" "eks" {
   count = var.eks_cluster_name != "" ? 1 : 0
-  url   = data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer
+  url   = try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "")
 }
 
 # ============================================

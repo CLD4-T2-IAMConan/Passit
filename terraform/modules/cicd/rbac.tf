@@ -1,5 +1,5 @@
 # 서비스별 ServiceAccount
-resource "kubernetes_service_account" "backend_service" {
+resource "kubernetes_service_account_v1" "backend_service" {
   for_each = toset(var.service_namespaces)
   metadata {
     name      = "${each.key}-sa"
@@ -46,7 +46,7 @@ resource "kubernetes_cluster_role_binding" "backend_service" {
 
   subject {
     kind      = "ServiceAccount"
-    name      = kubernetes_service_account.backend_service[each.key].metadata[0].name
+    name      = kubernetes_service_account_v1.backend_service[each.key].metadata[0].name
     namespace = each.key
   }
 }

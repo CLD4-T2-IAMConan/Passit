@@ -1,189 +1,303 @@
-# Terraform 리소스 테스트 스크립트
+# Terraform Scripts 가이드
 
-이 디렉토리에는 배포된 AWS 리소스(Valkey, S3)를 테스트하는 스크립트가 포함되어 있습니다.
+배포 자동화를 위한 스크립트 모음입니다.
 
-## 사전 요구사항
+---
 
-### 공통
+## 📋 스크립트 목록
 
-- AWS CLI 설치 및 구성 (`aws configure`)
-- 적절한 IAM 권한 (Secrets Manager 읽기, S3 접근 등)
+현재 **7개의 배포 자동화 스크립트**가 있습니다:
 
-### Valkey 테스트
+| 스크립트                     | 용도                                               | 사용 시점               |
+| ---------------------------- | -------------------------------------------------- | ----------------------- |
+| `setup-terraform-backend.sh` | Terraform Backend 설정 (S3, DynamoDB)              | 배포 전 필수            |
+| `connect-eks.sh`             | EKS 클러스터 접속 설정                             | 인프라 배포 후          |
+| `add-eks-access-entry.sh`    | EKS Access Entry 추가 (IAM 사용자 권한 부여)       | EKS 접근 권한 오류 시   |
+| `setup-k8s-prerequisites.sh` | Kubernetes 기본 설정 (NS, Secrets, ALB Controller) | EKS 접속 후             |
+| `update-helm-values.sh`      | Helm Values 자동 업데이트                          | Helm values 업데이트 시 |
+| `connect-bastion-rds.sh`     | Bastion을 통한 RDS 접속 (Session Manager)          | 로컬 개발 시            |
+| `connect-bastion-redis.sh`   | Bastion을 통한 Redis 접속 (Session Manager)        | 로컬 개발 시            |
 
-- **Bash 스크립트**: `redis-cli` 설치 (선택사항)
+---
 
+## 🚀 사용 방법
+
+### 전체 배포 흐름
+
+```bash
+cd /Users/krystal/workspace/Passit/terraform/scripts
+
+# 1. Backend 설정 (최초 1회)
+./setup-terraform-backend.sh dev
+
+# 2. EKS 접속
+./connect-eks.sh dev
+
+# 3. Kubernetes 기본 설정
+export GITHUB_USERNAME="your_username"
+export GITHUB_PAT="your_pat"
+./setup-k8s-prerequisites.sh dev
+
+# 4. Helm Values 업데이트
+./update-helm-values.sh dev
+```
+
+---
+
+## 📝 스크립트 상세 설명
+
+### `setup-terraform-backend.sh`
+
+**용도**: Terraform Backend 리소스 생성 (S3 Bucket, DynamoDB Table)
+
+**사용법**:
+
+```bash
+./setup-terraform-backend.sh <env>
+# 예시: ./setup-terraform-backend.sh dev
+```
+
+**생성 리소스**:
+
+- S3 Bucket: `passit-terraform-state-{env}` (Versioning, 암호화, Public Access 차단)
+- DynamoDB Table: `passit-terraform-locks-{env}` (State Lock용)
+
+**주의사항**:
+
+- 여러 명이 동시 작업 시 필수
+- Backend 설정 후 `backend.tf` 파일 주석 해제 필요
+- State 마이그레이션: `terraform init -migrate-state`
+
+---
+
+### `connect-eks.sh`
+
+**용도**: EKS 클러스터 접속 설정
+
+**사용법**:
+
+```bash
+./connect-eks.sh <env>
+# 예시: ./connect-eks.sh dev
+```
+
+**기능**:
+
+- Terraform output에서 클러스터 이름 자동 추출
+- kubeconfig 업데이트
+- 접속 확인 및 클러스터 정보 출력
+
+---
+
+### `add-eks-access-entry.sh`
+
+**용도**: IAM 사용자에게 EKS 클러스터 접근 권한 부여
+
+**사용법**:
+
+```bash
+./add-eks-access-entry.sh <env> <iam-user> [region]
+# 예시: ./add-eks-access-entry.sh dev t2-krystal
+# 예시: ./add-eks-access-entry.sh dev t2-krystal ap-northeast-2
+```
+
+**기능**:
+
+- Terraform output에서 클러스터 이름 자동 추출
+- EKS Access Entry 생성
+- Admin Policy 자동 연결
+- 기존 Entry 확인 및 업데이트 지원
+
+**사용 시나리오**:
+
+- `eks:DescribeCluster` 권한 오류 발생 시
+- 새로운 팀원에게 EKS 접근 권한 부여 시
+- IAM 사용자 권한 변경 시
+
+**주의사항**:
+
+- AWS CLI 권한 필요 (`eks:CreateAccessEntry`, `eks:AssociateAccessPolicy`)
+- Terraform 코드에도 추가하는 것을 권장 (GitOps 원칙)
+
+---
+
+### `setup-k8s-prerequisites.sh`
+
+**용도**: Kubernetes 기본 리소스 생성
+
+**사용법**:
+
+```bash
+export GITHUB_USERNAME="your_username"
+export GITHUB_PAT="your_pat"
+./setup-k8s-prerequisites.sh <env>
+# 예시: ./setup-k8s-prerequisites.sh dev
+```
+
+**생성 리소스**:
+
+- Namespace: `services`, `argocd`
+- GHCR Pull Secret: `ghcr-pull-secret` (GitHub PAT 필요)
+- Database Secrets: 각 서비스별 Secret (account, ticket, trade, cs, chat)
+- AWS Load Balancer Controller: Helm으로 설치
+
+**필수 환경 변수**:
+
+- `GITHUB_USERNAME`: GitHub 사용자명
+- `GITHUB_PAT`: GitHub Personal Access Token (packages:read 권한)
+
+---
+
+### `update-helm-values.sh`
+
+**용도**: Helm Values 파일 자동 업데이트
+
+**사용법**:
+
+```bash
+./update-helm-values.sh <env>
+# 예시: ./update-helm-values.sh dev
+```
+
+**기능**:
+
+- Terraform output 값 자동 추출 (RDS, Valkey, S3, IRSA Role ARN)
+- 모든 서비스의 `values-{env}.yaml` 파일 자동 업데이트
+- `values-{env}.yaml`이 없으면 `values.yaml`을 복사하여 생성
+
+**사전 요구사항**:
+
+- `yq` 설치 권장 (더 정확한 YAML 수정)
   ```bash
-  # macOS
-  brew install redis
-
-  # Ubuntu/Debian
-  sudo apt-get install redis-tools
+  brew install yq  # macOS
   ```
+- `yq`가 없어도 `sed`로 기본 업데이트 가능
 
-- **Python 스크립트**: Python 3.6+ 및 필수 패키지
+**업데이트되는 값**:
+
+- `database.host`: RDS Endpoint
+- `redis.host`: Valkey Endpoint
+- `s3.bucket`: S3 Bucket ID (해당 서비스)
+- `serviceAccount.annotations.eks.amazonaws.com/role-arn`: IRSA Role ARN
+
+---
+
+### `connect-bastion-rds.sh`
+
+**용도**: Bastion Host를 통한 RDS 접속 (Session Manager Port Forwarding)
+
+**사용법**:
+
+```bash
+./connect-bastion-rds.sh <env> [region] [local-port]
+# 예시: ./connect-bastion-rds.sh dev
+# 예시: ./connect-bastion-rds.sh prod ap-northeast-2 13306
+```
+
+**기능**:
+
+- Terraform output에서 Bastion Instance ID 자동 추출
+- Terraform output에서 RDS Endpoint 자동 추출
+- Session Manager Plugin 설치 확인
+- 포트 충돌 자동 감지 및 처리
+- MySQL 클라이언트 접속 명령어 안내
+
+**사전 요구사항**:
+
+- Session Manager Plugin 설치
   ```bash
-  pip install boto3 redis
+  brew install --cask session-manager-plugin  # macOS
   ```
+- AWS CLI 권한 (`ssm:StartSession`)
 
-### S3 테스트
+**사용 예시**:
 
-- **Python 스크립트**: Python 3.6+ 및 boto3
+```bash
+# dev 환경 RDS 접속
+./connect-bastion-rds.sh dev
+
+# 새 터미널에서 MySQL 접속
+mysql -h 127.0.0.1 -P 3306 -u admin -p
+```
+
+---
+
+### `connect-bastion-redis.sh`
+
+**용도**: Bastion Host를 통한 ElastiCache (Valkey/Redis) 접속 (Session Manager Port Forwarding)
+
+**사용법**:
+
+```bash
+./connect-bastion-redis.sh <env> [region] [local-port]
+# 예시: ./connect-bastion-redis.sh dev
+# 예시: ./connect-bastion-redis.sh prod ap-northeast-2 16379
+```
+
+**기능**:
+
+- Terraform output에서 Bastion Instance ID 자동 추출
+- Terraform output에서 Valkey Endpoint 자동 추출
+- Session Manager Plugin 설치 확인
+- 포트 충돌 자동 감지 및 처리
+- Redis CLI 접속 명령어 안내
+
+**사전 요구사항**:
+
+- Session Manager Plugin 설치
   ```bash
-  pip install boto3
+  brew install --cask session-manager-plugin  # macOS
   ```
+- AWS CLI 권한 (`ssm:StartSession`)
 
-## 사용 방법
-
-### Valkey (ElastiCache) 테스트
-
-#### Bash 스크립트
+**사용 예시**:
 
 ```bash
-# Dev 환경 테스트
-./test-valkey.sh dev
+# dev 환경 Redis 접속
+./connect-bastion-redis.sh dev
 
-# Prod 환경 테스트
-./test-valkey.sh prod
+# 새 터미널에서 Redis 접속
+redis-cli -h localhost -p 6379
+> PING
+PONG
 ```
 
-#### Python 스크립트
+---
+
+## 📊 배포 가이드 연동
+
+이 스크립트들은 [배포 가이드](/Users/krystal/workspace/Passit/DEPLOYMENT_GUIDE.md)의 다음 단계에서 사용됩니다:
+
+- **0단계**: `setup-terraform-backend.sh` - Terraform Backend 설정
+- **2단계**: `connect-eks.sh` - EKS 클러스터 접근 설정
+- **2-1단계**: `add-eks-access-entry.sh` - EKS 접근 권한 오류 시 (선택)
+- **3단계**: `setup-k8s-prerequisites.sh` - Kubernetes 기본 설정
+- **5단계**: `update-helm-values.sh` - Helm Values 업데이트
+
+---
+
+## 💡 팁
+
+### 스크립트 실행 순서
+
+1. **Backend 설정** (최초 1회만)
+2. **EKS 접속** (인프라 배포 후)
+3. **EKS Access Entry 추가** (접근 권한 오류 시, 선택)
+4. **Kubernetes 기본 설정** (EKS 접속 후)
+5. **Helm Values 업데이트** (Terraform output 변경 시)
+
+### 환경 변수 설정
 
 ```bash
-# Dev 환경 테스트
-python3 test-valkey-python.py dev
-
-# Prod 환경 테스트
-python3 test-valkey-python.py prod
+# GitHub PAT 설정 (Kubernetes 기본 설정 전에)
+export GITHUB_USERNAME="your_username"
+export GITHUB_PAT="your_pat"
 ```
 
-**테스트 내용:**
+### 스크립트 재실행
 
-- Secrets Manager에서 연결 정보 조회
-- Valkey 연결 확인 (PING)
-- 기본 정보 조회 (버전, 업타임 등)
-- 데이터 쓰기/읽기 테스트
-- 리스트 및 해시 데이터 타입 테스트
+- 대부분의 스크립트는 **멱등성(idempotent)**을 보장합니다
+- 이미 생성된 리소스가 있으면 건너뛰거나 업데이트합니다
+- 안전하게 여러 번 실행 가능합니다
 
-**주의사항:**
-
-- Valkey는 VPC 내부에서만 접근 가능합니다
-- 로컬에서 테스트하려면 VPN 또는 Bastion 호스트를 통해 접근해야 합니다
-- EKS Pod에서 테스트하는 것이 가장 안전합니다
-
-**EKS Pod에서 테스트:**
-
-```bash
-# 연결 정보 확인
-ENDPOINT=$(aws secretsmanager get-secret-value \
-  --secret-id passit/prod/valkey/connection \
-  --query 'SecretString' --output text | jq -r '.primary_endpoint')
-PORT=$(aws secretsmanager get-secret-value \
-  --secret-id passit/prod/valkey/connection \
-  --query 'SecretString' --output text | jq -r '.port')
-
-# Pod에서 테스트
-kubectl run -it --rm redis-test \
-  --image=redis:7-alpine \
-  --restart=Never \
-  -- redis-cli -h $ENDPOINT -p $PORT PING
-```
-
-### S3 버킷 테스트
-
-#### Bash 스크립트
-
-```bash
-# Dev 환경 테스트
-./test-s3.sh dev
-
-# Prod 환경 테스트
-./test-s3.sh prod
-```
-
-#### Python 스크립트
-
-```bash
-# Dev 환경 테스트
-python3 test-s3-python.py dev
-
-# Prod 환경 테스트
-python3 test-s3-python.py prod
-```
-
-**테스트 내용:**
-
-- 버킷 존재 확인
-- 버킷 정보 조회 (Location, Versioning, Encryption)
-- 파일 업로드 테스트
-- 파일 다운로드 테스트
-- 테스트 파일 삭제
-
-**테스트되는 버킷:**
-
-- `passit-{env}-uploads`
-- `passit-{env}-logs`
-- `passit-{env}-backup`
-
-## 문제 해결
-
-### Valkey 연결 실패
-
-**증상:** `Connection refused` 또는 타임아웃
-
-**가능한 원인:**
-
-1. Security Group이 접근을 허용하지 않음
-   - EKS 노드의 Security Group이 ElastiCache Security Group에 허용되어 있는지 확인
-2. 네트워크 경로 문제
-   - Valkey는 Private Subnet에 배포되어 VPC 내부에서만 접근 가능
-   - VPN 또는 Bastion 호스트를 통해 접근 필요
-3. ElastiCache 클러스터가 아직 생성 중
-   - AWS 콘솔에서 클러스터 상태 확인
-
-**해결 방법:**
-
-```bash
-# Security Group 확인
-aws ec2 describe-security-groups \
-  --filters "Name=tag:Name,Values=passit-prod-elasticache-sg" \
-  --query 'SecurityGroups[0].IpPermissions'
-
-# ElastiCache 상태 확인
-aws elasticache describe-replication-groups \
-  --replication-group-id passit-prod-valkey \
-  --query 'ReplicationGroups[0].Status'
-```
-
-### S3 업로드 실패
-
-**증상:** `Access Denied` 또는 권한 오류
-
-**가능한 원인:**
-
-1. IAM 권한 부족
-   - `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` 권한 필요
-2. 버킷 정책 제한
-   - 버킷 정책에서 특정 조건만 허용하는 경우
-3. KMS 키 권한 부족 (암호화 사용 시)
-   - KMS 키에 대한 `kms:Decrypt`, `kms:GenerateDataKey` 권한 필요
-
-**해결 방법:**
-
-```bash
-# 현재 IAM 사용자 확인
-aws sts get-caller-identity
-
-# 버킷 정책 확인
-aws s3api get-bucket-policy --bucket passit-prod-uploads
-
-# IAM 정책 확인
-aws iam list-user-policies --user-name <your-username>
-```
-
-## 추가 리소스
-
-- [AWS ElastiCache 문서](https://docs.aws.amazon.com/elasticache/)
-- [AWS S3 문서](https://docs.aws.amazon.com/s3/)
-- [Redis 명령어 참조](https://redis.io/commands)
-- [AWS CLI S3 명령어](https://docs.aws.amazon.com/cli/latest/reference/s3/)
+---

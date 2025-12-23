@@ -11,9 +11,29 @@ module "eks" {
   subnet_ids = var.private_subnet_ids
 
   cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = false
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   enable_irsa = true
+
+  # Cluster creator admin permissions
+  enable_cluster_creator_admin_permissions = true
+
+  # Access entries for additional users
+  access_entries = {
+    iamconan = {
+      principal_arn     = "arn:aws:iam::727646470302:user/iamconan"
+      type              = "STANDARD"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 
   # Disable CloudWatch Logs (권한 문제)
   create_cloudwatch_log_group = false
@@ -23,8 +43,7 @@ module "eks" {
   create_kms_key            = false
   cluster_encryption_config = {}
 
-  managed_node_groups = local.managed_node_groups
-  manage_aws_auth_configmap = true
+  eks_managed_node_groups = local.eks_managed_node_groups
 
   tags = {
     Project     = var.project_name

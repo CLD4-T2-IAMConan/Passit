@@ -7,7 +7,7 @@
 resource "aws_secretsmanager_secret" "db" {
   name                    = "${var.project_name}/${var.environment}/db"
   description             = "RDS database credentials (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD)"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 
@@ -38,7 +38,7 @@ resource "aws_secretsmanager_secret_version" "db" {
 resource "aws_secretsmanager_secret" "smtp" {
   name                    = "${var.project_name}/${var.environment}/smtp"
   description             = "SMTP email credentials (MAIL_USERNAME, MAIL_PASSWORD)"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 
@@ -66,7 +66,7 @@ resource "aws_secretsmanager_secret_version" "smtp" {
 resource "aws_secretsmanager_secret" "kakao" {
   name                    = "${var.project_name}/${var.environment}/kakao"
   description             = "Kakao OAuth credentials (KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET, KAKAO_ADMIN_KEY)"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 
@@ -95,7 +95,7 @@ resource "aws_secretsmanager_secret_version" "kakao" {
 resource "aws_secretsmanager_secret" "admin" {
   name                    = "${var.project_name}/${var.environment}/admin"
   description             = "Initial admin account credentials (ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME, ADMIN_NICKNAME)"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 
@@ -125,7 +125,7 @@ resource "aws_secretsmanager_secret_version" "admin" {
 resource "aws_secretsmanager_secret" "app_secrets" {
   name                    = "${var.project_name}/${var.environment}/app/secrets"
   description             = "Application secrets (JWT secrets, API keys, etc.)"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 
@@ -153,7 +153,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
 resource "aws_secretsmanager_secret" "elasticache_credentials" {
   name                    = "${var.project_name}/elasticache/credentials/${var.environment}"
   description             = "ElastiCache credentials"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
 
   kms_key_id = aws_kms_key.secrets.arn
 

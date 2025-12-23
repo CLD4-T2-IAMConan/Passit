@@ -5,7 +5,7 @@
 # ===========================================
 output "github_actions_frontend_role_arn" {
   description = "IAM Role ARN assumed by GitHub Actions for frontend deployment"
-  value       = aws_iam_role.github_actions_frontend.arn
+  value       = try(aws_iam_role.github_actions_frontend[0].arn, null)
 }
 
 # ===========================================
@@ -37,7 +37,7 @@ output "backend_irsa_roles" {
 output "backend_service_sa_names" {
   description = "Map of backend service to ServiceAccount name and namespace"
   value = {
-    for k, sa in kubernetes_service_account.backend_service : k => {
+    for k, sa in kubernetes_service_account_v1.backend_service : k => {
       name      = sa.metadata[0].name
       namespace = sa.metadata[0].namespace
     }
@@ -45,8 +45,8 @@ output "backend_service_sa_names" {
 }
 
 output "backend_service_policy_arns" {
-  description = "Map of backend service name to IAM policy ARN"
-  value       = { for k, p in aws_iam_role_policy.backend_service : k => p.arn }
+  description = "Map of backend service name to IAM role ARN (inline policies don't have ARNs)"
+  value       = { for k, r in aws_iam_role.backend_service : k => r.arn }
 }
 
 # ===========================================

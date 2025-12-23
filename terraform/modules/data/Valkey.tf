@@ -116,8 +116,9 @@ resource "aws_elasticache_replication_group" "valkey" {
 # ============================================
 
 resource "aws_secretsmanager_secret" "valkey" {
-  name        = "${var.project_name}/${var.environment}/valkey/connection"
-  description = "Valkey connection information for ${var.environment}"
+  name                    = "${var.project_name}/${var.environment}/valkey/connection"
+  description             = "Valkey connection information for ${var.environment}"
+  recovery_window_in_days = 0
 
   tags = merge(
     local.common_tags,

@@ -42,13 +42,13 @@ output "eks_worker_security_group_id" {
 # ============================================
 
 output "cluster_name" {
-  value       = module.eks.cluster_name
   description = "EKS cluster name"
+  value       = module.eks.cluster_name
 }
 
 output "cluster_endpoint" {
+  description = "EKS cluster API server endpoint"
   value       = module.eks.cluster_endpoint
-  description = "EKS API server endpoint"
 }
 
 # ============================================
@@ -57,6 +57,11 @@ output "cluster_endpoint" {
 output "github_actions_frontend_role_arn" {
   value       = module.cicd.github_actions_frontend_role_arn
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
+}
+
+output "github_actions_role_arn" {
+  value       = module.security.github_actions_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for EKS deployment"
 }
 
 # irsa 부분
@@ -78,6 +83,36 @@ output "frontend_cloudfront_domain" {
   description = "CloudFront domain name for frontend"
 }
 
+# ============================================
+# Bastion Host Information
+# ============================================
+output "bastion_instance_id" {
+  description = "Bastion Host 인스턴스 ID"
+  value       = module.bastion.bastion_instance_id
+}
+
+output "bastion_public_ip" {
+  description = "Bastion Host 퍼블릭 IP"
+  value       = module.bastion.bastion_public_ip
+}
+
+output "bastion_connection_info" {
+  description = "Bastion Host 접속 정보"
+  value = {
+    session_manager_command = module.bastion.session_manager_command
+    ssh_command            = module.bastion.ssh_command
+  }
+}
+
+output "rds_tunnel_command" {
+  description = "RDS SSH 터널링 명령어"
+  value       = module.bastion.ssh_tunnel_rds_command
+}
+
+output "elasticache_tunnel_command" {
+  description = "ElastiCache SSH 터널링 명령어"
+  value       = module.bastion.ssh_tunnel_elasticache_command
+}
 # ===========================================
 # ALB Controller (운영 편의)
 # ===========================================

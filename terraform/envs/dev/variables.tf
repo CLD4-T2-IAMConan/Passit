@@ -259,66 +259,75 @@ variable "alarm_sns_topic_arn" {
   type        = string
   default     = null
 }
-#
-# # 아래는 main.tf에서 모듈 결과값으로 채워지거나 tfvars에서 제공될 수 있음
-# variable "rds_security_group_id" {
-#   description = "Security group ID for RDS"
-#   type        = string
-#   default     = null
-# }
-#
-# variable "elasticache_security_group_id" {
-#   description = "Security group ID for ElastiCache"
-#   type        = string
-#   default     = null
-# }
 
-# =========================
-# CI/CD
-# =========================
+# ============================================
+# CI/CD Module Variables
+# ============================================
 variable "github_org" {
-  type = string
+  description = "GitHub organization or user name"
+  type        = string
 }
 
 variable "github_repo" {
-  type = string
+  description = "GitHub repository name"
+  type        = string
 }
 
 variable "github_ref" {
-  type = string
+  description = "GitHub branch or ref allowed to deploy (e.g., refs/heads/main)"
+  type        = string
 }
 
 variable "enable_frontend" {
-  type = bool
+  description = "Enable frontend deployment (S3 + CloudFront)"
+  type        = bool
+  default     = true
 }
 
 variable "frontend_bucket_name" {
-  type = string
+  description = "S3 bucket name for frontend static files"
+  type        = string
+}
+
+variable "enable_ghcr_pull_secret" {
+  description = "Enable GHCR (GitHub Container Registry) pull secret for Kubernetes"
+  type        = bool
+  default     = false
+}
+
+variable "ghcr_username" {
+  description = "GitHub username for GHCR authentication"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "ghcr_pat" {
+  description = "GitHub Personal Access Token (PAT) for GHCR authentication"
+  type        = string
+  sensitive   = true
+  default     = null
+}
+
+variable "service_namespaces" {
+  description = "List of Kubernetes namespaces for services"
+  type        = list(string)
+  default     = []
+}
+
+variable "github_oidc_provider_arn" {
+  description = "GitHub OIDC Provider ARN for GitHub Actions authentication (optional, can be created in shared resources)"
+  type        = string
+  default     = ""
 }
 
 # =========================
 # CI/CD - registry (GHCR)
 # =========================
-variable "enable_ghcr_pull_secret" {
-  type = bool
-}
-
-variable "ghcr_username" {
-  type = string
-}
-
-variable "ghcr_pat" {
-  type      = string
-  sensitive = true
-}
-
 variable "ghcr_secret_name" {
-  type    = string
-  default = "ghcr-pull-secret"
-}
-
-variable "service_namespaces" {
-  type = list(string)
+  description = "Kubernetes secret name for GHCR pull secret"
+  type        = string
+  default     = "ghcr-pull-secret"
 }
 
 # ==================================
@@ -334,11 +343,11 @@ variable "s3_bucket_ticket" {
   type        = string
 }
 
-
 # --- 애플리케이션 이미지 변수 ---
 variable "account_image" {
   description = "Docker image for account service"
   type        = string
+  default     = "ghcr.io/cld4-t2-iamconan/passit-account:latest"
 }
 
 # 다른 서비스 추가
@@ -346,6 +355,27 @@ variable "chat_image" {
   description = "Docker image for chat service"
   type        = string
   default     = ""
+}
+
+# ============================================
+# Bastion Host Module Variables
+# ============================================
+variable "bastion_instance_type" {
+  description = "Bastion Host EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "bastion_key_name" {
+  description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
+  type        = string
+  default     = ""
+}
+
+variable "allowed_cidr_blocks_bastion" {
+  description = "CIDR blocks allowed to SSH into Bastion Host (recommend restricting to your IP)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # 보안을 위해 실제 환경에서는 특정 IP로 제한 필요
 }
 
 # --- DB 인증 변수 (RDS 및 App 모듈 전달용) ---
@@ -359,4 +389,10 @@ variable "rds_master_password" {
   description = "Master password for RDS"
   type        = string
   sensitive   = true # 보안을 위해 출력을 숨깁니다.
+}
+
+variable "rds_database_name" {
+  description = "Database name for RDS"
+  type        = string
+  default     = "passit"
 }

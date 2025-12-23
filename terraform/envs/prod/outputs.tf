@@ -84,6 +84,11 @@ output "github_actions_frontend_role_arn" {
   description = "IAM Role ARN assumed by GitHub Actions for frontend deploy"
 }
 
+output "github_actions_role_arn" {
+  value       = module.security.github_actions_role_arn
+  description = "IAM Role ARN assumed by GitHub Actions for EKS deployment"
+}
+
 # irsa 부분
 output "backend_irsa_roles" {
   description = "IRSA role ARNs per backend service"
@@ -103,6 +108,11 @@ output "frontend_cloudfront_domain" {
   description = "CloudFront domain name for frontend"
 }
 
+# ============================================
+# Bastion Host Information
+# ============================================
+# Note: Bastion Host는 prod 환경에서 제외됩니다.
+#       dev 환경에서만 사용 가능합니다.
 # ===========================================
 # ALB Controller (운영 편의)
 # ===========================================
