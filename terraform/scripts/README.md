@@ -4,6 +4,72 @@
 
 ---
 
+## 🪟 Windows 사용자 가이드
+
+### Windows에서 스크립트 실행 방법
+
+#### 옵션 1: 배치 파일 사용 (권장)
+
+Windows 사용자를 위한 전용 배치 파일이 제공됩니다:
+
+```cmd
+REM EKS 접속
+terraform\scripts\connect-eks.bat dev
+```
+
+#### 옵션 2: Git Bash 사용
+
+Git Bash를 사용하는 경우:
+
+```bash
+./terraform/scripts/connect-eks.sh dev
+```
+
+### Windows 문제 해결
+
+#### 1. "No outputs found" 에러
+
+**원인**: Terraform state 초기화 문제 또는 S3 backend 접근 권한 문제
+
+**해결 방법**:
+```bash
+cd terraform/envs/dev
+terraform init -reconfigure
+terraform output  # 정상 작동 확인
+```
+
+#### 2. 창이 바로 닫히는 문제
+
+**원인**: 스크립트 실행 중 에러 또는 CRLF 줄바꿈 문제
+
+**해결 방법**:
+- **배치 파일 사용** (`connect-eks.bat`) - 에러 메시지 확인 가능
+- **Git Bash에서 직접 실행**: `bash ./terraform/scripts/connect-eks.sh dev`
+
+#### 3. 줄바꿈 문자 (CRLF) 에러
+
+**원인**: Git이 윈도우에서 자동으로 CRLF로 변환
+
+**해결 방법**:
+```bash
+# 프로젝트 루트에서 파일 정규화
+git add --renormalize .
+
+# 특정 파일만 다시 체크아웃
+cd terraform/scripts
+git checkout -- connect-eks.sh
+```
+
+#### 4. 권한 문제
+
+**해결 방법**:
+```bash
+# Git Bash에서
+chmod +x terraform/scripts/*.sh
+```
+
+---
+
 ## 📋 스크립트 목록
 
 현재 **7개의 배포 자동화 스크립트**가 있습니다:
