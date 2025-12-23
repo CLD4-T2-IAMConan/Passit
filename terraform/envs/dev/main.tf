@@ -186,9 +186,9 @@ module "data" {
 
   # RDS Configuration
   db_secret_name      = ""
-  rds_master_username = "admin"
-  rds_master_password = "PassitDevPassword123!"  # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
-  rds_database_name   = "passit"
+  rds_master_username = var.rds_master_username
+  rds_master_password = var.rds_master_password
+  rds_database_name   = var.rds_database_name
 
   rds_instance_class     = var.rds_instance_class
   rds_serverless_min_acu = var.rds_serverless_min_acu

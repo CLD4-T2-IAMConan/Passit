@@ -347,6 +347,7 @@ variable "s3_bucket_ticket" {
 variable "account_image" {
   description = "Docker image for account service"
   type        = string
+  default     = "ghcr.io/cld4-t2-iamconan/passit-account:latest"
 }
 
 # 다른 서비스 추가
@@ -367,6 +368,8 @@ variable "bastion_instance_type" {
 
 variable "bastion_key_name" {
   description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
+  type        = string
+  default     = ""
 }
 
 variable "allowed_cidr_blocks_bastion" {
@@ -386,4 +389,10 @@ variable "rds_master_password" {
   description = "Master password for RDS"
   type        = string
   sensitive   = true # 보안을 위해 출력을 숨깁니다.
+}
+
+variable "rds_database_name" {
+  description = "Database name for RDS"
+  type        = string
+  default     = "passit"
 }
