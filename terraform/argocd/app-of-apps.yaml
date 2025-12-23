@@ -10,13 +10,13 @@ spec:
 
   source:
     repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
-    targetRevision: develop
+    targetRevision: main
     path: terraform/argocd/applications
-  
+
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
-  
+
   syncPolicy:
     automated:
       prune: true
