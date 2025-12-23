@@ -57,11 +57,42 @@ VALKEY_ENDPOINT=$(terraform output -raw valkey_primary_endpoint 2>/dev/null || e
 S3_BUCKET_PROFILE=$(terraform output -raw s3_uploads_bucket_id 2>/dev/null || echo "")
 S3_BUCKET_TICKET=$(terraform output -raw s3_ticket_bucket_id 2>/dev/null || echo "")
 
-# IRSA Role ARN 추출
-IRSA_ACCOUNT=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.account // empty' || echo "")
-IRSA_TICKET=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.ticket // empty' || echo "")
-IRSA_TRADE=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.trade // empty' || echo "")
-IRSA_CS=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.cs // empty' || echo "")
+# IRSA Role ARN 추출 (jq 없이도 작동하도록)
+if command -v jq &> /dev/null; then
+    # jq가 있으면 사용
+    IRSA_ACCOUNT=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.account // empty' 2>/dev/null || echo "")
+    IRSA_TICKET=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.ticket // empty' 2>/dev/null || echo "")
+    IRSA_TRADE=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.trade // empty' 2>/dev/null || echo "")
+    IRSA_CS=$(terraform output -json 2>/dev/null | jq -r '.backend_irsa_roles.value.cs // empty' 2>/dev/null || echo "")
+else
+    # jq가 없으면 terraform output을 텍스트로 파싱
+    echo "  ⚠️  jq가 없어서 IRSA 값 추출을 시도합니다..."
+    
+    # backend_irsa_roles output을 텍스트로 가져와서 파싱
+    IRSA_OUTPUT=$(terraform output backend_irsa_roles 2>/dev/null || echo "")
+    
+    if [ -n "$IRSA_OUTPUT" ]; then
+        # account 추출 (ARN 패턴 찾기)
+        IRSA_ACCOUNT=$(echo "$IRSA_OUTPUT" | grep -i 'account' | grep -o 'arn:aws:iam::[0-9]*:role/[^"]*' | head -1 || echo "")
+        IRSA_TICKET=$(echo "$IRSA_OUTPUT" | grep -i 'ticket' | grep -o 'arn:aws:iam::[0-9]*:role/[^"]*' | head -1 || echo "")
+        IRSA_TRADE=$(echo "$IRSA_OUTPUT" | grep -i 'trade' | grep -o 'arn:aws:iam::[0-9]*:role/[^"]*' | head -1 || echo "")
+        IRSA_CS=$(echo "$IRSA_OUTPUT" | grep -i '"cs"' | grep -o 'arn:aws:iam::[0-9]*:role/[^"]*' | head -1 || echo "")
+        
+        # sed로도 시도 (다양한 형식 지원)
+        if [ -z "$IRSA_ACCOUNT" ]; then
+            IRSA_ACCOUNT=$(echo "$IRSA_OUTPUT" | sed -n 's/.*account[^"]*"\(arn:aws:iam::[^"]*\)".*/\1/p' | head -1 || echo "")
+        fi
+        if [ -z "$IRSA_TICKET" ]; then
+            IRSA_TICKET=$(echo "$IRSA_OUTPUT" | sed -n 's/.*ticket[^"]*"\(arn:aws:iam::[^"]*\)".*/\1/p' | head -1 || echo "")
+        fi
+        if [ -z "$IRSA_TRADE" ]; then
+            IRSA_TRADE=$(echo "$IRSA_OUTPUT" | sed -n 's/.*trade[^"]*"\(arn:aws:iam::[^"]*\)".*/\1/p' | head -1 || echo "")
+        fi
+        if [ -z "$IRSA_CS" ]; then
+            IRSA_CS=$(echo "$IRSA_OUTPUT" | sed -n 's/.*"cs"[^"]*"\(arn:aws:iam::[^"]*\)".*/\1/p' | head -1 || echo "")
+        fi
+    fi
+fi
 
 # 값 확인
 echo "추출된 값:"
