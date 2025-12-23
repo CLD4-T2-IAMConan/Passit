@@ -11,6 +11,7 @@
 # export EKS_CLUSTER_NAME=your-cluster-name
 
 set -e
+set -o pipefail
 
 ENVIRONMENT=${1:-dev}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,6 +19,8 @@ TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
 
 if [ ! -d "$TERRAFORM_DIR" ]; then
     echo "Error: $TERRAFORM_DIR 디렉토리가 존재하지 않습니다."
+    echo ""
+    echo "사용 가능한 환경: dev, prod"
     exit 1
 fi
 
@@ -27,7 +30,22 @@ echo "Environment: $ENVIRONMENT"
 echo "=========================================="
 
 # Terraform 디렉토리로 이동
-cd "$TERRAFORM_DIR"
+cd "$TERRAFORM_DIR" || exit 1
+
+# Terraform 초기화 확인
+if [ ! -d ".terraform" ]; then
+    echo ""
+    echo "Warning: Terraform이 초기화되지 않았습니다."
+    echo "terraform init을 먼저 실행하세요."
+    echo ""
+    read -p "지금 terraform init을 실행하시겠습니까? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        terraform init
+    else
+        exit 1
+    fi
+fi
 
 # AWS 자격 증명 확인
 if ! aws sts get-caller-identity > /dev/null 2>&1; then
@@ -47,14 +65,25 @@ aws sts get-caller-identity
 # 클러스터 이름 가져오기
 echo ""
 echo "Terraform output에서 클러스터 정보 가져오는 중..."
+
+# Terraform state 확인
+if ! terraform state list > /dev/null 2>&1; then
+    echo "Error: Terraform state를 읽을 수 없습니다."
+    echo "다음을 확인하세요:"
+    echo "  1. terraform init이 실행되었는지"
+    echo "  2. terraform apply가 성공적으로 완료되었는지"
+    echo "  3. AWS 자격 증명이 올바른지 (S3 backend 사용 시)"
+    exit 1
+fi
+
 CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null || echo "")
 
 if [ -z "$CLUSTER_NAME" ]; then
     echo "Warning: Terraform output에서 클러스터 이름을 가져올 수 없습니다."
     echo "직접 클러스터 이름을 입력하거나, terraform apply를 먼저 실행하세요."
     echo ""
-    read -p "EKS 클러스터 이름을 입력하세요: " CLUSTER_NAME
-    
+    read -p "EKS 클러스터 이름을 입력하세요 (예: passit-dev-eks): " CLUSTER_NAME
+
     if [ -z "$CLUSTER_NAME" ]; then
         echo "Error: 클러스터 이름이 필요합니다."
         exit 1
@@ -62,9 +91,10 @@ if [ -z "$CLUSTER_NAME" ]; then
 fi
 
 # AWS 리전 가져오기
-REGION=$(terraform output -raw region 2>/dev/null || echo "ap-northeast-2")
+REGION=$(terraform output -raw region 2>/dev/null || echo "")
 if [ -z "$REGION" ]; then
     REGION=${AWS_REGION:-ap-northeast-2}
+    echo "Warning: Terraform output에서 region을 가져올 수 없어 기본값 사용: $REGION"
 fi
 
 echo ""

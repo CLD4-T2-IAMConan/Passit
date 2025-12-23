@@ -23,6 +23,16 @@ provider "aws" {
   region = var.region
 }
 
+# Remote State - Shared 환경의 outputs 참조
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+  config = {
+    bucket = "passit-terraform-state-dev"
+    key    = "shared/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
 # EKS 인증 토큰
 data "aws_eks_cluster_auth" "this" {
   name = module.eks.cluster_name
