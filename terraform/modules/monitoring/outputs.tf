@@ -46,10 +46,10 @@ output "prometheus_service_account_name" {
 #   value       = aws_grafana_workspace.this.id
 # }
 #
-# output "grafana_workspace_endpoint" {
-#   description = "Endpoint URL of the Amazon Managed Grafana workspace"
-#   value       = aws_grafana_workspace.this.endpoint
-# }
+output "grafana_workspace_endpoint" {
+  description = "Endpoint URL of the Amazon Managed Grafana workspace"
+  value       = aws_grafana_workspace.this.endpoint
+}
 #
 # ############################
 # # CloudWatch Logs
