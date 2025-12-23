@@ -3,7 +3,8 @@
 # 기존 AWS 리소스를 Terraform state에 import하는 스크립트
 # 주의: 이 스크립트는 기존 리소스들을 state에 가져옵니다
 
-set -e
+# set -e 제거 (일부 import 실패해도 계속 진행)
+# set -e
 
 ENVIRONMENT=${1:-dev}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -120,6 +121,61 @@ import_resource \
     "module.security.aws_iam_policy.app_pod" \
     "arn:aws:iam::727646470302:policy/passit-app-pod-dev" \
     "App Pod IAM Policy"
+
+# Backend Service IRSA Roles (account, ticket, trade, chat, cs)
+echo "📦 Importing: Backend Service IRSA Roles"
+for service in account ticket trade chat cs; do
+    import_resource \
+        "module.cicd.aws_iam_role.backend_service[\"${service}\"]" \
+        "passit-${service}-dev-irsa" \
+        "Backend Service IRSA Role (${service})"
+done
+echo ""
+
+# Cluster Autoscaler IAM Policy & Role
+import_resource \
+    "module.autoscaling.aws_iam_policy.cluster_autoscaler" \
+    "arn:aws:iam::727646470302:policy/passit-dev-cluster-autoscaler" \
+    "Cluster Autoscaler IAM Policy"
+
+import_resource \
+    "module.autoscaling.aws_iam_role.cluster_autoscaler" \
+    "passit-dev-cluster-autoscaler" \
+    "Cluster Autoscaler IAM Role"
+
+# EKS Access Entries
+echo "📦 Importing: EKS Access Entries"
+echo "   ⚠️  EKS Access Entry는 cluster_name:principal_arn 형식으로 import합니다"
+echo ""
+
+# cluster_creator (EKS 모듈이 자동 생성)
+import_resource \
+    "module.eks.module.eks.aws_eks_access_entry.this[\"cluster_creator\"]" \
+    "passit-dev-eks:arn:aws:iam::727646470302:user/t2-krystal" \
+    "EKS Access Entry (cluster_creator)"
+
+# access_entries에 정의된 사용자들
+import_resource \
+    "module.eks.module.eks.aws_eks_access_entry.this[\"iamconan\"]" \
+    "passit-dev-eks:arn:aws:iam::727646470302:user/iamconan" \
+    "EKS Access Entry (iamconan)"
+
+import_resource \
+    "module.eks.module.eks.aws_eks_access_entry.this[\"daeun\"]" \
+    "passit-dev-eks:arn:aws:iam::727646470302:user/t2-daeun" \
+    "EKS Access Entry (daeun)"
+
+import_resource \
+    "module.eks.module.eks.aws_eks_access_entry.this[\"jinho\"]" \
+    "passit-dev-eks:arn:aws:iam::727646470302:user/t2-jinho" \
+    "EKS Access Entry (jinho)"
+
+import_resource \
+    "module.eks.module.eks.aws_eks_access_entry.this[\"krystal\"]" \
+    "passit-dev-eks:arn:aws:iam::727646470302:user/t2-krystal" \
+    "EKS Access Entry (krystal)"
+
+echo ""
 
 # ElastiCache
 import_resource \

@@ -78,11 +78,37 @@ S3_BUCKET_TICKET=$(terraform output -raw s3_ticket_bucket_id 2>/dev/null || echo
 # IRSA Role ARN 추출 (jq 없이도 작동하도록)
 echo "  🔍 IRSA Role ARN 추출 중..."
 
-# 먼저 terraform output 시도
-IRSA_OUTPUT_RAW=$(terraform output backend_irsa_roles 2>&1)
-IRSA_OUTPUT_ERROR=$?
+# terraform output에 타임아웃 설정 (10초)
+IRSA_OUTPUT_RAW=""
+IRSA_OUTPUT_ERROR=1
 
-# output이 없거나 에러가 있으면 state에서 직접 추출 시도 (타임아웃 설정)
+# timeout 명령어가 있으면 사용
+if command -v timeout &> /dev/null || command -v gtimeout &> /dev/null; then
+    TIMEOUT_CMD=$(command -v timeout 2>/dev/null || command -v gtimeout 2>/dev/null)
+    echo "  ⏱️  타임아웃 10초로 terraform output 실행 중..."
+    IRSA_OUTPUT_RAW=$($TIMEOUT_CMD 10 terraform output backend_irsa_roles 2>&1)
+    IRSA_OUTPUT_ERROR=$?
+    
+    # 타임아웃 체크
+    if [ $IRSA_OUTPUT_ERROR -eq 124 ] || echo "$IRSA_OUTPUT_RAW" | grep -q "timeout\|terminated"; then
+        echo "  ⚠️  terraform output이 타임아웃되었습니다 (10초 초과)."
+        IRSA_OUTPUT_ERROR=1
+        IRSA_OUTPUT_RAW=""
+    fi
+else
+    # timeout이 없으면 빠르게 실패하도록 시도 (5초 대기 후 건너뛰기)
+    echo "  ⚠️  timeout 명령어가 없습니다. 빠른 체크만 수행합니다..."
+    echo "  💡 IRSA Role은 나중에 수동으로 추가하세요."
+    echo "     cd terraform/envs/${ENVIRONMENT} && terraform output backend_irsa_roles"
+    echo ""
+    IRSA_ACCOUNT=""
+    IRSA_TICKET=""
+    IRSA_TRADE=""
+    IRSA_CS=""
+    IRSA_OUTPUT_ERROR=1
+fi
+
+# output이 없거나 에러가 있으면 건너뛰기
 if [ $IRSA_OUTPUT_ERROR -ne 0 ] || [ -z "$IRSA_OUTPUT_RAW" ] || echo "$IRSA_OUTPUT_RAW" | grep -q "Error\|No outputs"; then
     echo "  ⚠️  terraform output이 실패했습니다."
     echo "  💡 IRSA Role은 나중에 수동으로 추가하세요."
@@ -90,6 +116,9 @@ if [ $IRSA_OUTPUT_ERROR -ne 0 ] || [ -z "$IRSA_OUTPUT_RAW" ] || echo "$IRSA_OUTP
     echo "     serviceAccount:"
     echo "       annotations:"
     echo "         eks.amazonaws.com/role-arn: <IRSA_ROLE_ARN>"
+    echo ""
+    echo "     또는 다음 명령어로 확인:"
+    echo "     cd terraform/envs/${ENVIRONMENT} && terraform output backend_irsa_roles"
     echo ""
     IRSA_ACCOUNT=""
     IRSA_TICKET=""
