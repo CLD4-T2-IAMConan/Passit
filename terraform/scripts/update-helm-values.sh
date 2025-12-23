@@ -43,13 +43,8 @@ fi
 
 # Terraform output 값 추출
 echo "📋 Terraform output 값 추출 중..."
-cd "$TERRAFORM_DIR"
+cd ${TERRAFORM_DIR}
 
-# Terraform 초기화 확인
-if [ ! -f "terraform.tfstate" ] && [ ! -f ".terraform/terraform.tfstate" ]; then
-    echo "⚠️  Terraform state가 없습니다. terraform apply를 먼저 실행하세요."
-    exit 1
-fi
 
 # Output 값 추출
 RDS_ENDPOINT=$(terraform output -raw rds_cluster_endpoint 2>/dev/null || echo "")
