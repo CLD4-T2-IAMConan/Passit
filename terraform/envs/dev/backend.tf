@@ -1,4 +1,4 @@
-# backend.tf 예시
+# Backend Configuration (S3 + DynamoDB)
 terraform {
   backend "s3" {
     bucket         = "passit-terraform-state-dev"
