@@ -9,9 +9,10 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
-    targetRevision: develop
-    path: service-account/helm
+    # ⭐ 직접 service-account repository 참조 (submodule 대신)
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-account.git
+    targetRevision: main  # service-account repo의 기본 브랜치
+    path: helm
     helm:
       valueFiles:
         - values-dev.yaml
