@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `activities` (
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_related_user_id` (`related_user_id`),
     INDEX `idx_activity_type` (`activity_type`),
-    INDEX `idx_created_at` (`created_at`),
+    INDEX `idx_created_at` (`created_at`)
     
     -- 외래 키 (선택적)
     -- FOREIGN KEY (user_id) REFERENCES users(user_id),

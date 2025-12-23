@@ -77,6 +77,16 @@ output "ebs_kms_key_arn" {
   value       = aws_kms_key.ebs.arn
 }
 
+output "s3_kms_key_id" {
+  description = "KMS Key ID for S3 buckets"
+  value       = aws_kms_key.s3.key_id
+}
+
+output "s3_kms_key_arn" {
+  description = "KMS Key ARN for S3 buckets"
+  value       = aws_kms_key.s3.arn
+}
+
 # Secrets Manager
 output "db_secret_arn" {
   description = "Database credentials Secret ARN (passit/{env}/db)"

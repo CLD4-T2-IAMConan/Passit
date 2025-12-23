@@ -30,6 +30,12 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "CIDR blocks that can access the public API server endpoint"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
 
 # Tag-related variables
 variable "team" {

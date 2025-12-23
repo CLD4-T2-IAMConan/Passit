@@ -3,6 +3,7 @@
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
+  default     = "727646470302"
 }
 
 variable "environment" {
@@ -43,4 +44,10 @@ variable "elasticache_security_group_id" {
   description = "ElastiCache Security Group ID (optional, for cross-references)"
   type        = string
   default     = ""
+}
+
+variable "allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for ALB access (for dev environment)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
