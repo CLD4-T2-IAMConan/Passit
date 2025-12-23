@@ -147,7 +147,8 @@ module "bastion" {
   # Security Group References
   rds_security_group_id         = local.rds_security_group_id
   elasticache_security_group_id = local.elasticache_security_group_id
-  eks_cluster_security_group_id = module.eks.cluster_security_group_id
+  # eks_cluster_security_group_id는 EKS 클러스터 생성 후 주석 해제
+  # eks_cluster_security_group_id = module.eks.cluster_security_group_id
 
   depends_on = [module.network, module.security, module.eks]
 }

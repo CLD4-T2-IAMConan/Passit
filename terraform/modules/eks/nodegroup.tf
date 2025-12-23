@@ -10,7 +10,7 @@ locals {
   }
 
   # Managed Node Groups
-  managed_node_groups = {
+  eks_managed_node_groups = {
     default = {
       # Node Group 이름은 EKS 모듈이 자동 생성 (name 필드 제거하여 IAM Role 이름 길이 제한 회피)
 
