@@ -45,7 +45,7 @@ echo ""
 
 # 1. EKS 클러스터 연결 확인
 echo "📋 1. EKS 클러스터 연결 확인 중..."
-cd "$TERRAFORM_DIR"
+cd ${TERRAFORM_DIR}
 
 CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null || echo "passit-${ENVIRONMENT}-eks")
 

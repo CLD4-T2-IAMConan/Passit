@@ -1,5 +1,5 @@
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
+import apiClient from "../api/client";
+import { ENDPOINTS } from "../api/endpoints";
 
 /**
  * 사용자 관련 API 서비스
