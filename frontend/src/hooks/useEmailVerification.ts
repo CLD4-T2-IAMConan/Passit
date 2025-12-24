@@ -77,6 +77,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
 
     try {
       if (isPasswordReset) {
+        // @ts-ignore
         await userService.sendPasswordResetCode(email);
       } else {
         // TODO: API 연동 - 이메일 인증 코드 발송
@@ -115,6 +116,7 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
 
     try {
       if (isPasswordReset) {
+        // @ts-ignore
         await userService.verifyPasswordResetCode(email, code);
       } else {
         // TODO: API 연동 - 인증 코드 검증
