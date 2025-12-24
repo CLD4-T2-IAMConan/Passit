@@ -9,9 +9,9 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-chat/.git
     targetRevision: develop
-    path: service-chat/helm
+    path: helm
     helm:
       valueFiles:
         - values-dev.yaml
