@@ -6,6 +6,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
+import { useEffect, useState } from "react";
+import { userService } from "./api/services/userService";
 
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
@@ -87,6 +89,23 @@ const theme = createTheme({
 });
 
 function App() {
+  const [me, setMe] = useState(null);
+  const [loadingMe, setLoadingMe] = useState(true);
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const res = await userService.getMe();
+        setMe(res); // res.userId, res.role 등
+      } catch (e) {
+        setMe(null);
+      } finally {
+        setLoadingMe(false);
+      }
+    };
+    fetchMe();
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
@@ -287,8 +306,8 @@ function App() {
                 />
 
                 {/* 채팅 */}
-                <Route path="/chat" element={<ChatListPage />} />
-                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                <Route path="/chat" element={<ChatListPage user={me} />} />
+                <Route path="/chat/:chatroomId" element={<ChatRoomPage user={me} />} />
 
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
