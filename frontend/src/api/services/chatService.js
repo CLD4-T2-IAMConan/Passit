@@ -23,7 +23,7 @@ export const createChatRoom = async ({ ticketId, buyerId }) => {
 // 과거 메시지 조회 // 완료
 export const getMessages = async (chatroomId) => {
   console.log("여기는 들어오니?");
-  const res = await chatApiClient.get(`chat/rooms/${chatroomId}/messages`, {});
+  const res = await chatApiClient.get(`/chat/rooms/${chatroomId}/messages`, {});
   console.log("여기는?", res.data.data);
   return res.data;
 };

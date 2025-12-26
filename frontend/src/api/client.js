@@ -39,7 +39,7 @@ const createApiClient = (baseURL) => {
       const { status, data } = error.response;
 
       if (status === 401) {
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject({
