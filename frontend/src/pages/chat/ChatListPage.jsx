@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import ChatRoomList from "../../components/chat/ChatRoomList";
 import { getChatRooms, createChatRoom, deleteChatRoom  } from "../../api/services/chat/chat.api";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import { userService } from "../../api/services/userService";
 const ChatListPage = () => {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const location = useLocation();
     const navigate = useNavigate();
+    const [userId, setUserId] = useState(null);
 
-    const userId = 101; // buyerId=101, sellerId=99 왔다갔다 하면서 테스트
+    // const userId = 101; // buyerId=101, sellerId=99 왔다갔다 하면서 테스트
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
@@ -60,6 +61,20 @@ const ChatListPage = () => {
 };
 
     useEffect(() => {
+    const fetchMe = async () => {
+        try {
+        const me = await userService.getMe();
+        setUserId(me.userId); // ← 서버 응답 필드명에 맞게
+        } catch (e) {
+        console.error("내 정보 조회 실패", e);
+        }
+    };
+
+    fetchMe();
+    }, []);
+
+    useEffect(() => {
+        if (!userId) return;
         loadChatRooms();
     }, [userId]); // userId가 바뀌면 다시 호출
 
