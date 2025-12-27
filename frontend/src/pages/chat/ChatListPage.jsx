@@ -15,13 +15,11 @@ const ChatListPage = () => {
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
-    const buyerId = location.state?.buyerId ?? 101; // 로그인 사용자
 
     // 유저 정보(getMe) 가져오기
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                console.log("여기는 오나~");
                 const userData = await userService.getMe();
                 console.log(userData.data);
                 setUserId(userData.data.userId); // 받아온 데이터에서 userId 추출
@@ -38,7 +36,6 @@ const ChatListPage = () => {
             setLoading(true);
             const response = await getChatRooms(userId);
             setRooms(response.data);
-            console.log(response.data);
         } catch (err) {
             console.error("채팅방 목록 조회 실패:", err);
         } finally {
@@ -51,12 +48,12 @@ const ChatListPage = () => {
         try {
             const newRoom = await createChatRoom({
                 ticketId: ticketId,
-                buyerId: buyerId,
+                buyerId: userId,
             });
             console.log("📌 채팅방 생성 성공:", newRoom);
             // 생성 직후 채팅방으로 이동시키기
             navigate(`/chat/rooms/${newRoom.chatroomId}`, {
-                state: { isNewRoom: true, buyerId: buyerId },
+                state: { isNewRoom: true, buyerId: userId },
             });
         } catch (e) {
             console.error("채팅방 생성 실패", e);

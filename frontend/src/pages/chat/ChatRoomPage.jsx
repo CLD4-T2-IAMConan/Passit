@@ -4,14 +4,29 @@ import ChatRoom from "../../components/chat/ChatRoom";
 import MessageInput from "../../components/chat/MessageInput";
 import useChatWebSocket from "../../hooks/chat/useChatWebSocket";
 import { getMessages } from "../../api/services/chatService";
+import { userService } from "../../api/services/userService";
 
 const ChatRoomPage = ({ user }) => {
     const { chatroomId } = useParams();
     const location = useLocation();
     const [messages, setMessages] = useState([]);
-
-    const userId = user?.userId;
+    const [userId, setUserId] = useState(null);
+    
     const isNewRoom = location.state?.isNewRoom === true;
+
+    // 유저 정보(getMe) 가져오기
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userData = await userService.getMe();
+                console.log(userData.data);
+                setUserId(userData.data.userId); // 받아온 데이터에서 userId 추출
+            } catch (err) {
+                console.error("유저 정보 로드 실패:", err);
+            }
+        };
+        fetchUser();
+    }, []);
 
   // WebSocket
     const { sendMessage, connect, disconnect, stompClient } = useChatWebSocket({
