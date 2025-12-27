@@ -2,18 +2,33 @@ import React, { useEffect, useState } from "react";
 import ChatRoomList from "../../components/chat/ChatRoomList";
 import { getChatRooms, createChatRoom, deleteChatRoom } from "../../api/services/chatService";
 import { useLocation, useNavigate } from "react-router-dom";
+import { userService } from "../../api/services/userService";
 
-const ChatListPage = ({ user }) => {
+const ChatListPage = () => {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState(null);
+
     const location = useLocation();
     const navigate = useNavigate();
-    const userId = user?.userId;
 
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
     const ticketId = location.state?.ticketId ?? 33;
     const buyerId = location.state?.buyerId ?? 101; // 로그인 사용자
+
+    // 유저 정보(getMe) 가져오기
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userData = await userService.getMe();
+                setUserId(userData.userId); // 받아온 데이터에서 userId 추출
+            } catch (err) {
+                console.error("유저 정보 로드 실패:", err);
+            }
+        };
+        fetchUser();
+    }, []);
 
     // 채팅방 목록 조회 // 완료
     const loadChatRooms = async () => {
@@ -65,7 +80,7 @@ const ChatListPage = ({ user }) => {
     }, [userId]); // userId가 바뀌면 다시 호출
 
     const handleSelectRoom = (roomId) => {
-        window.location.href = `/chat/rooms/${roomId}`; // 라우팅 방식에 따라 변경 가능
+        navigate(`/chat/rooms/${roomId}`); // 라우팅 방식에 따라 변경 가능
     };
 
     return (

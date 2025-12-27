@@ -6,8 +6,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
-import { useEffect, useState } from "react";
-import { userService } from "./api/services/userService";
 
 import ChatListPage from "./pages/chat/ChatListPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
@@ -89,27 +87,6 @@ const theme = createTheme({
 });
 
 function App() {
-  const [me, setMe] = useState(null);
-  const [loadingMe, setLoadingMe] = useState(true);
-
-  // 회원 정보 (userId)를 App.js에서 한번 불러오고 서비스마다 이걸 공유해서 사용
-  useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        const res = await userService.getMe();
-        setMe(res); // res.userId, res.role 등
-      } catch (e) {
-        setMe(null);
-      } finally {
-        setLoadingMe(false);
-      }
-    };
-    fetchMe();
-  }, []);
-
-  if (loadingMe) {
-    return <LoadingSpinner fullPage message="사용자 정보 확인 중..." />;
-  }
 
   return (
     <ErrorBoundary>
@@ -317,8 +294,8 @@ function App() {
                 <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
                 <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
-                <Route path="/chat/rooms" element={<ChatListPage user={me}/>} />
-                <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage user={me}/>} />
+                <Route path="/chat/rooms" element={<ChatListPage />} />
+                <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage />} />
                 <Route path="/sell" element={<TicketCreatePage />} />
                 <Route path="/tickets" element={<TicketListPage />} />
               </Routes>

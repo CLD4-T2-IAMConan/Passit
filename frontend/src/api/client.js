@@ -80,17 +80,13 @@ const createApiClient = (baseURL) => {
   return instance;
 };
 
-/**
- * 서비스별 API 클라이언트
- */
+//서비스별 API 클라이언트
 export const accountApiClient = createApiClient(API_SERVICES.ACCOUNT);
 export const csApiClient = createApiClient(API_SERVICES.CS);
 export const chatApiClient = createApiClient(API_SERVICES.CHAT);
 // export const service3ApiClient = createApiClient(API_SERVICES.SERVICE3);
 
-/**
- * 기본 클라이언트 (계정 서비스)
- */
+// 기본 클라이언트 (계정 서비스)
 const apiClient = accountApiClient;
 
 //  named + default
