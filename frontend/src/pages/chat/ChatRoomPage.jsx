@@ -28,7 +28,7 @@ const ChatRoomPage = ({ user }) => {
         fetchUser();
     }, []);
 
-  // WebSocket
+    // WebSocket
     const { sendMessage, connect, disconnect, stompClient } = useChatWebSocket({
         chatroomId,
         onMessage: (msg) => {
@@ -41,7 +41,7 @@ const ChatRoomPage = ({ user }) => {
         },
     });
 
-  // 기존 메시지 불러오기
+    // 기존 메시지 불러오기
     useEffect(() => {
         const fetchMessages = async () => {
             if (!chatroomId) return;
@@ -56,7 +56,7 @@ const ChatRoomPage = ({ user }) => {
         fetchMessages();
     }, [chatroomId]);
 
-  // WebSocket 연결 + 새 방 시스템 메시지
+    // WebSocket 연결 + 새 방 시스템 메시지
     useEffect(() => {
         if (!chatroomId) return;
         connect({
@@ -78,7 +78,7 @@ const ChatRoomPage = ({ user }) => {
         return () => disconnect();
     }, [chatroomId, isNewRoom]);
 
-  // 일반 메시지 전송, messageId, sentAt은 서버에서 처리하는 값들
+    // 일반 메시지 전송, messageId, sentAt은 서버에서 처리하는 값들
     const handleSend = (text) => {
         const newMessage = {
             chatroomId: Number(chatroomId),
@@ -86,12 +86,12 @@ const ChatRoomPage = ({ user }) => {
             type: "TEXT",
             content: text,
         };
-        setMessages((prev) => [...prev, newMessage]); // 먼저 UI에 반영하고
+        // setMessages((prev) => [...prev, newMessage]); // 먼저 UI에 반영하고
         sendMessage(newMessage); // 서버로 전송
     };
 
     return (
-        <div style={{ padding: "16px" }}>
+        <div style={{ paddingTop: "70px", padding: "16px" }}>
             <ChatRoom messages={messages} currentUserId={userId} />
             <MessageInput onSend={handleSend} />
         </div>

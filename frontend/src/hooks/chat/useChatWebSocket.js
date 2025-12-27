@@ -40,7 +40,7 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
             {},
             JSON.stringify(payload)
         );
-        console.log('이거 확인', JSON.stringify(payload));
+        // console.log('이거 확인', JSON.stringify(payload));
     };
 
     return {
