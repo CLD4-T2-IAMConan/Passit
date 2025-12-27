@@ -21,8 +21,10 @@ const ChatListPage = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
+                console.log("여기는 오나~");
                 const userData = await userService.getMe();
-                setUserId(userData.userId); // 받아온 데이터에서 userId 추출
+                console.log(userData.data);
+                setUserId(userData.data.userId); // 받아온 데이터에서 userId 추출
             } catch (err) {
                 console.error("유저 정보 로드 실패:", err);
             }
