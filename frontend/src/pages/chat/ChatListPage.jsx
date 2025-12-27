@@ -14,7 +14,7 @@ const ChatListPage = () => {
 
     // 티켓 상세 페이지에서 받을 값
     // location.state 를 사용할 준비는 해두고 fallback 값은 임시 하드코딩
-    const ticketId = location.state?.ticketId ?? 33;
+    const ticketId = location.state?.ticketId ?? 100;
 
     // 유저 정보(getMe) 가져오기
     useEffect(() => {

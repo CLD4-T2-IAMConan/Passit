@@ -14,7 +14,7 @@
 
 /* 상대가 보낸 메시지 */
 .bubble-wrapper.other {
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-direction: row; /* 말풍선 | 시간 */
 }
 

@@ -91,7 +91,7 @@
         start_period: 40s
 
     service-chat:
-      image: ghcr.io/cld4-t2-iamconan/service-chat:sha-187a9c8
+      image: ghcr.io/cld4-t2-iamconan/service-chat:sha-75f644e
       container_name: passit-service-chat
       platform: linux/amd64
       ports:
