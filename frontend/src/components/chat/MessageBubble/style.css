@@ -1,15 +1,36 @@
 /* 기본 버블 공통 스타일 */
 .bubble-wrapper {
     display: flex;
-    margin-bottom: 8px;
+    align-items: flex-end;
+    gap: 6px;
+    margin-bottom: 5px;
 }
 
+/* 내가 보낸 메시지 */
 .bubble-wrapper.mine {
-    justify-content: flex-end;
+    justify-content: flex-start;
+    flex-direction: row-reverse; /* 시간 | 말풍선 */
 }
 
+/* 상대가 보낸 메시지 */
 .bubble-wrapper.other {
-    justify-content: flex-start;
+    justify-content: flex-end;
+    flex-direction: row; /* 말풍선 | 시간 */
+}
+
+/* 시간 */
+.message-time {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+}
+
+.bubble-wrapper.mine .message-time {
+    text-align: right;
+}
+
+.bubble-wrapper.other .message-time {
+    text-align: left;
 }
 
 .bubble {
