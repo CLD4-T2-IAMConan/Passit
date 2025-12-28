@@ -92,7 +92,7 @@ const ChatRoomPage = ({ user }) => {
 
     return (
         <div style={{ paddingTop: "70px", padding: "16px" }}>
-            <ChatRoom messages={messages} currentUserId={userId} />
+            <ChatRoom messages={messages} currentUserId={userId} chatroomId={chatroomId} />
             <MessageInput onSend={handleSend} />
         </div>
     );

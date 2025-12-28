@@ -39,3 +39,16 @@ export const getChatRoomDetail = async (roomId) => {
   const res = await chatApiClient.get(`/rooms/${roomId}`);
   return res.data;
 };
+
+// 시스템 액션 처리 (양도 요청 / 수락 / 거절)
+export const sendSystemAction = async ({ chatroomId, actionCode, userId }) => {
+  const body = { chatroomId, actionCode };
+  const res = await chatApiClient.post(
+      `/chat/rooms/system-action`,
+      body,
+      {
+        params: { userId },
+      }
+  );
+  return res.data;
+};

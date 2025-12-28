@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 import MessageBubble from "../MessageBubble";
 import "./style.css";
 
-const ChatRoom = ({ messages, currentUserId }) => {
+const ChatRoom = ({ messages, currentUserId, chatroomId }) => {
     const scrollRef = useRef(null);
 
     // 새로운 메시지가 오면 맨 아래로 스크롤
@@ -35,6 +35,7 @@ const ChatRoom = ({ messages, currentUserId }) => {
                         key={msg.messageId}
                         message={msg}
                         userId={currentUserId}
+                        chatroomId={chatroomId}
                     />
                 ))}
         </div>
