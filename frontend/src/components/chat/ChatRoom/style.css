@@ -4,6 +4,7 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 16px;
+    margin-top: 55px;
 
     display: flex;
     flex-direction: column;
