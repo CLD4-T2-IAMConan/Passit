@@ -32,7 +32,7 @@ const ChatRoomPage = ({ user }) => {
     const { sendMessage, connect, disconnect, stompClient } = useChatWebSocket({
         chatroomId,
         onMessage: (msg) => {
-            console.log("📨 WS 메시지:", msg);
+            console.log("WS 메시지:", msg);
             setMessages((prev) => {
                 const exists = prev.some((m) => m.messageId === msg.messageId);
                 if (exists) return prev; // 이미 있으면 추가 X

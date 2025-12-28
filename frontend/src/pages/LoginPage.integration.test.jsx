@@ -13,7 +13,7 @@ jest.mock('../services/userService', () => ({
   },
 }));
 
-import { userService } from '../services/userService';
+// import { userService } from '../services/userService';
 
 /**
  * LoginPage 통합 테스트
