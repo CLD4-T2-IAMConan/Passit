@@ -11,6 +11,7 @@ const ChatRoomPage = ({ user }) => {
     const location = useLocation();
     const [messages, setMessages] = useState([]);
     const [userId, setUserId] = useState(null);
+    const [roomStatus, setRoomStatus] = useState(null);
     
     const isNewRoom = location.state?.isNewRoom === true;
 
@@ -93,7 +94,7 @@ const ChatRoomPage = ({ user }) => {
     return (
         <div style={{ paddingTop: "70px", padding: "16px" }}>
             <ChatRoom messages={messages} currentUserId={userId} chatroomId={chatroomId} />
-            <MessageInput onSend={handleSend} />
+            <MessageInput onSend={handleSend} roomStatus={roomStatus} />
         </div>
     );
 };

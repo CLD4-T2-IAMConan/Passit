@@ -53,8 +53,8 @@
     color: black;
 }
 
-/* --- SYSTEM MESSAGE --- */
-.system-message {
+/* --- SYSTEM INFO MESSAGE --- */
+.system-info-message {
     text-align: center;
     color: #777;
     font-size: 13px;

@@ -3,7 +3,7 @@ import "./style.css";
 
 const SystemInfoMessage = ({ message }) => {
     return (
-        <div className="system-message">
+        <div className="system-info-message">
             {message.content}
         </div>
     );

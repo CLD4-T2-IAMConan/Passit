@@ -10,7 +10,7 @@ const MessageBubble = ({ message, userId, chatroomId }) => {
         case "TEXT":
             return <TextMessage message={message} isMine={isMine} />;
 
-        case "SYSTEM_MESSAGE":
+        case "SYSTEM_INFO_MESSAGE":
             return <SystemInfoMessage message={message} />;
 
         case "SYSTEM_ACTION_MESSAGE":
