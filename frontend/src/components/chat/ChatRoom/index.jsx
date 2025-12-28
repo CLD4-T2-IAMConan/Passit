@@ -13,11 +13,30 @@ const ChatRoom = ({ messages, currentUserId }) => {
         }
     }, [messages]);
 
+    const canSeeMessage = (message, currentUserId) => {
+        const target = message.metadata?.visibleTarget;
+        // visibleTarget 없으면 모두에게 공개
+        if (!target) return true;
+        if (target === "BUYER") {
+            return currentUserId === message.metadata?.buyerId;
+        }
+        if (target === "SELLER") {
+            return currentUserId === message.metadata?.sellerId;
+        }
+        return true;
+    };
+
     return (
         <div ref={scrollRef} className="chatroom-container">
-            {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} userId={currentUserId} />
-            ))}
+            {messages
+                .filter((msg) => canSeeMessage(msg, currentUserId))
+                .map((msg) => (
+                    <MessageBubble
+                        key={msg.messageId}
+                        message={msg}
+                        userId={currentUserId}
+                    />
+                ))}
         </div>
     );
 };
