@@ -369,7 +369,7 @@ variable "bastion_instance_type" {
 variable "bastion_key_name" {
   description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
   type        = string
-  default     = ""
+  default     = "passit-dev-bastion"
 }
 
 variable "allowed_cidr_blocks_bastion" {

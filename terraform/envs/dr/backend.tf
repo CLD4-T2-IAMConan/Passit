@@ -7,7 +7,6 @@
 #     key            = "dr/terraform.tfstate"
 #     region         = "ap-northeast-2"
 #     dynamodb_table = "passit-terraform-locks-dr"
-#     encrypt        = true
 #   }
 # }
 

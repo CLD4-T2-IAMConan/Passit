@@ -76,6 +76,52 @@ output "rds_reader_endpoint" {
   value       = module.data.rds_reader_endpoint
 }
 
+output "valkey_primary_endpoint" {
+  description = "Valkey (ElastiCache) primary endpoint"
+  value       = module.data.valkey_primary_endpoint
+}
+
+output "valkey_reader_endpoint" {
+  description = "Valkey (ElastiCache) reader endpoint"
+  value       = module.data.valkey_reader_endpoint
+}
+
+output "valkey_port" {
+  description = "Valkey (ElastiCache) port"
+  value       = module.data.valkey_port
+}
+
+output "s3_uploads_bucket_id" {
+  description = "S3 uploads bucket ID"
+  value       = module.data.s3_uploads_bucket_id
+}
+
+output "s3_logs_bucket_id" {
+  description = "S3 logs bucket ID"
+  value       = module.data.s3_logs_bucket_id
+}
+
+output "s3_backup_bucket_id" {
+  description = "S3 backup bucket ID"
+  value       = module.data.s3_backup_bucket_id
+}
+
+output "s3_bucket_ids" {
+  description = "All S3 bucket IDs"
+  value       = module.data.s3_bucket_ids
+}
+
+# Service-specific S3 buckets (from cicd module)
+output "s3_profile_bucket_id" {
+  description = "Account 서비스 프로필 이미지용 S3 버킷"
+  value       = module.cicd.s3_bucket_profile
+}
+
+output "s3_ticket_bucket_id" {
+  description = "Ticket 서비스 티켓 이미지용 S3 버킷"
+  value       = module.cicd.s3_bucket_ticket
+}
+
 # ============================================
 # CI/CD Information
 # ============================================
