@@ -113,8 +113,8 @@ describe("LoginForm", () => {
       expect(onSuccess).toHaveBeenCalledTimes(1);
     });
     expect(onSuccess).toHaveBeenCalledWith({
-        email: "test@example.com",
-      });
+      email: "test@example.com",
+    });
   });
 
   test("로그인 실패시 에러 메시지를 표시한다", async () => {

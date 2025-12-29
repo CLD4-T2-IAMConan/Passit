@@ -14,7 +14,6 @@ jest.mock("../services/userService", () => ({
   },
 }));
 
-
 /**
  * LoginPage 통합 테스트
  *
