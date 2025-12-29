@@ -46,6 +46,7 @@ const renderWithProviders = (ui, options) => {
 describe("LoginForm", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLogin.mockReset();
   });
 
   test("로그인 폼이 올바르게 렌더링된다", () => {
@@ -183,6 +184,10 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     const onSuccess = jest.fn();
 
+    mockLogin.mockResolvedValueOnce({
+      user: { email: "test@example.com" },
+    });
+
     renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
     const emailInput = screen.getByLabelText(/이메일/i);
@@ -190,8 +195,8 @@ describe("LoginForm", () => {
 
     // Act
     await user.type(emailInput, "test@example.com");
-    await user.type(passwordInput, "password123");
-    await user.keyboard("{Enter}");
+    await user.type(passwordInput, "password123{Enter}");
+    // await user.keyboard("{Enter}");
 
     // Assert
     await waitFor(() => {
