@@ -77,6 +77,22 @@ export const ticketService = {
     const response = await ticketApiClient.delete(ENDPOINTS.TICKETS.DELETE(ticketId));
     return response.data;
   },
+
+  /**
+   * 찜하기 추가/제거 (토글) - 로그인 필요
+   */
+  toggleFavorite: async (ticketId) => {
+    const response = await ticketApiClient.post(`/api/tickets/${ticketId}/favorite`);
+    return response.data;
+  },
+
+  /**
+   * 찜하기 여부 확인 - 로그인 필요
+   */
+  checkFavorite: async (ticketId) => {
+    const response = await ticketApiClient.get(`/api/tickets/${ticketId}/favorite`);
+    return response.data;
+  },
 };
 
 export default ticketService;

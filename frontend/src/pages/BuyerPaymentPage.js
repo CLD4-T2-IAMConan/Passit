@@ -18,6 +18,7 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { ConfirmationNumber } from "@mui/icons-material";
 // 🚨 [추가] userService import
 import userService from "../services/userService";
 
@@ -50,6 +51,7 @@ const BuyerPaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false); // 이미지 로드 실패 상태
 
   // 🚨 [추가] 인증된 사용자 정보를 위한 상태
   const [currentUser, setCurrentUser] = useState(undefined); // undefined: 로딩 중
@@ -128,6 +130,7 @@ const BuyerPaymentPage = () => {
   // 5. 버튼 핸들러 (결제 로직)
   // ----------------------------------------------------
   const handlePayClick = () => {
+    setImageLoadError(false); // 모달 열 때 이미지 로드 에러 상태 리셋
     setIsPaymentModalOpen(true);
   };
 
@@ -288,14 +291,31 @@ const BuyerPaymentPage = () => {
                   borderRadius: "12px",
                   overflow: "hidden",
                   border: "1px solid #e0e0e0",
+                  bgcolor: "grey.300",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
                 }}
               >
-                {/* 🚨 이미지 URL이 필요합니다. 임시 URL을 사용하거나 백엔드 데이터에 맞춰 수정하세요. */}
-                <img
-                  src={ticket.imageUrl || "https://via.placeholder.com/150"}
-                  alt={ticket.eventName}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                {(ticket.image1 || ticket.imageUrl) && !imageLoadError ? (
+                  <Box
+                    component="img"
+                    src={ticket.image1 || ticket.imageUrl}
+                    alt={ticket.eventName}
+                    onError={() => {
+                      // 이미지 로드 실패 시 상태 업데이트
+                      setImageLoadError(true);
+                    }}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <ConfirmationNumber sx={{ fontSize: 60, color: "grey.400" }} />
+                )}
               </Box>
 
               {/* 📝 우측: 티켓 정보 및 금액 */}
@@ -312,7 +332,16 @@ const BuyerPaymentPage = () => {
                     {ticket.eventName}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    공연일자: {ticket.eventDate}
+                    공연일자:{" "}
+                    {ticket.eventDate
+                      ? new Date(ticket.eventDate).toLocaleString("ko-KR", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "날짜 미정"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     좌석정보: {ticket.seatInfo || "정보 없음"}

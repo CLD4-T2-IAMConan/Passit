@@ -68,7 +68,7 @@ const AdminCategoryManagementPage = lazy(() => import("./pages/admin/AdminCatego
 
 // PrivateRoute
 const PrivateRoute = lazy(() => import("./components/auth/PrivateRoute"));
-const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage"));
+const TicketDetailPage = lazy(() => import("./pages/TicketDetailPage.jsx"));
 const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
 const BuyerPaymentPage = lazy(() => import("./pages/BuyerPaymentPage"));
 const PaymentResultPage = lazy(() => import("./pages/PaymentResultPage"));
