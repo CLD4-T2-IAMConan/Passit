@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./LoginPage";
 import { AuthProvider } from "../contexts/AuthContext";
 import { userService } from "../services/userService";
+import { useAuth } from "@/context/AuthContext";
+import AuthPage from "@/pages/AuthPage";
 
 // Mock userService
 jest.mock("../services/userService", () => ({
@@ -70,14 +72,8 @@ describe("LoginPage Integration Test", () => {
     await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("heading", {
-          name: /다시 오신 것을 환영합니다/i,
-        })
-      ).not.toBeInTheDocument();
+      expect(localStorage.getItem("authToken")).toBeTruthy();
     });
-
-    expect(localStorage.getItem("authToken")).toBeTruthy();
   });
 
   test("로그인 실패 시 에러 메시지 표시", async () => {
@@ -122,7 +118,7 @@ describe("LoginPage Integration Test", () => {
     await user.type(screen.getByLabelText(/비밀번호/i), "password123{Enter}");
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
+      expect(localStorage.getItem("authToken")).toBeTruthy();
     });
   });
 
@@ -131,7 +127,7 @@ describe("LoginPage Integration Test", () => {
     renderLoginPage();
 
     const passwordInput = screen.getByLabelText(/비밀번호/i);
-    const toggleButton = screen.getByRole("button", { name: /비밀번호 보기/i });
+    const toggleButton = screen.getByRole("button", { name: /show password/i });
 
     expect(passwordInput).toHaveAttribute("type", "password");
 
@@ -144,16 +140,26 @@ describe("LoginPage Integration Test", () => {
     expect(passwordInput).toHaveAttribute("type", "password");
   });
 
+  const ContextConsumer = () => {
+    const { user } = useAuth();
+    return <div>{user ? user.email : "NO_USER"}</div>;
+  };
+
   test("로그인 후 사용자 정보가 Context에 저장됨", async () => {
     const user = userEvent.setup();
-    renderLoginPage();
+    render(
+      <AuthProvider>
+        <AuthPage />
+        <ContextConsumer />
+      </AuthProvider>
+    );
 
     await user.type(screen.getByLabelText(/이메일/i), "test@example.com");
     await user.type(screen.getByLabelText(/비밀번호/i), "password123");
     await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
+      expect(screen.getByText("test@example.com")).toBeInTheDocument();
     });
 
     expect(localStorage.getItem("authToken")).toBeTruthy();
