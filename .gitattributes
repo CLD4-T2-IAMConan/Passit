@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Shell scripts should always use LF
+*.sh text eol=lf
+
+# Batch scripts should always use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Python scripts should use LF
+*.py text eol=lf

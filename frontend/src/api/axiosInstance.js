@@ -1,13 +1,15 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8084",
+const instance = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8085",
   withCredentials: false,
 });
 
 // 요청 인터셉터
-axiosInstance.interceptors.request.use(
+instance.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     console.log("📤 [Request]", config.method, config.url);
     return config;
   },
@@ -15,7 +17,7 @@ axiosInstance.interceptors.request.use(
 );
 
 // 응답 인터셉터
-axiosInstance.interceptors.response.use(
+instance.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("❌ [Axios Error]", error);
@@ -23,4 +25,7 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export { axiosInstance };
+//  named export
+export const axiosInstance = instance;
+//  default export
+export default instance;

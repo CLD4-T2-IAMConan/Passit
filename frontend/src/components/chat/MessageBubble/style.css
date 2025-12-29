@@ -1,3 +1,4 @@
+/* 기본 버블 공통 스타일 */
 .bubble-wrapper {
     display: flex;
     margin-bottom: 8px;
@@ -29,4 +30,44 @@
 .bubble.other {
     background: #e6e6e6;
     color: black;
+}
+
+/* --- SYSTEM MESSAGE --- */
+.system-message {
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    margin: 12px 0;
+}
+
+/* --- SYSTEM ACTION MESSAGE --- */
+.system-action-box {
+    background: #f4f4f5;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.system-action-text {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.action-btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    background: #ddd;
+    color: #333;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.action-btn.primary {
+    background: #4f8cff;
+    color: white;
 }

@@ -19,6 +19,8 @@ import {
   useTheme,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
+import HistoryIcon from "@mui/icons-material/History";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "../contexts/AuthContext";
@@ -41,6 +43,16 @@ const MyPageLayout = () => {
       text: "회원정보",
       icon: <PersonIcon />,
       path: "/mypage/profile",
+    },
+    {
+      text: "활동 내역",
+      icon: <HistoryIcon />,
+      path: "/mypage/activities",
+    },
+    {
+      text: "My 티켓",
+      icon: <ConfirmationNumberIcon />,
+      path: "/mypage/my-tickets",
     },
   ];
 
