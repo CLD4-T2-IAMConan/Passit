@@ -30,8 +30,8 @@ describe("LoginPage Integration Test", () => {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<AuthPage />} />
+            <Route path="/login" element={<AuthPage />} />
             <Route path="/dashboard" element={<MockDashboard />} />
             <Route path="/signup" element={<MockSignupPage />} />
           </Routes>
@@ -72,7 +72,7 @@ describe("LoginPage Integration Test", () => {
     await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     await waitFor(() => {
-      expect(localStorage.getItem("authToken")).toBeTruthy();
+      expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
     });
   });
 
@@ -135,7 +135,7 @@ describe("LoginPage Integration Test", () => {
     expect(passwordInput).toHaveAttribute("type", "text");
 
     await user.click(
-      screen.getByRole("button", { name: /비밀번호 숨기기/i })
+      screen.getByRole("button", { name: /hide password/i })
     );
     expect(passwordInput).toHaveAttribute("type", "password");
   });
@@ -147,11 +147,19 @@ describe("LoginPage Integration Test", () => {
 
   test("로그인 후 사용자 정보가 Context에 저장됨", async () => {
     const user = userEvent.setup();
+
+    userService.login.mockResolvedValueOnce({
+      user: { id: 1, email: "test@example.com", role: "USER" },
+      token: "fake-token",
+    });
+
     render(
-      <AuthProvider>
-        <AuthPage />
-        <ContextConsumer />
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AuthPage />
+          <ContextConsumer />
+        </AuthProvider>
+      </BrowserRouter>
     );
 
     await user.type(screen.getByLabelText(/이메일/i), "test@example.com");
