@@ -84,7 +84,9 @@ const ActivityPage = () => {
 
         // 좋아요 및 판매 활동의 경우 티켓 정보 가져오기
         const ticketActivities = activitiesData.filter(
-          (a) => (a.activityType === "LIKE" || a.activityType === "SALE") && a.relatedUserId
+          (a) =>
+            (a.activityType === "LIKE" || a.activityType === "SALE") &&
+            a.relatedUserId
         );
         if (ticketActivities.length > 0) {
           fetchTicketInfo(ticketActivities);
@@ -92,7 +94,9 @@ const ActivityPage = () => {
       }
     } catch (err) {
       console.error("활동 내역 조회 에러:", err);
-      setError(err.response?.data?.error || "활동 내역을 불러오는데 실패했습니다");
+      setError(
+        err.response?.data?.error || "활동 내역을 불러오는데 실패했습니다"
+      );
     } finally {
       setLoading(false);
     }
@@ -121,7 +125,9 @@ const ActivityPage = () => {
     const ticketMap = { ...ticketInfoMap };
     for (const ticketId of ticketIds) {
       try {
-        const response = await apiClient.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
+        const response = await apiClient.get(
+          ENDPOINTS.TICKETS.DETAIL(ticketId)
+        );
         if (response.data) {
           ticketMap[ticketId] = response.data;
         }
@@ -309,24 +315,32 @@ const ActivityPage = () => {
                             }}
                           />
                           <Typography variant="caption" color="text.secondary">
-                            {new Date(activity.createdAt).toLocaleString("ko-KR", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(activity.createdAt).toLocaleString(
+                              "ko-KR",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </Typography>
                         </Box>
 
                         {/* 좋아요 및 판매의 경우 티켓 정보 표시 */}
-                        {(activity.activityType === "LIKE" || activity.activityType === "SALE") &&
+                        {(activity.activityType === "LIKE" ||
+                          activity.activityType === "SALE") &&
                           activity.relatedUserId && (
                             <Box mb={1}>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {ticketInfo?.eventName ? (
                                   <>
-                                    티켓: <strong>{ticketInfo.eventName}</strong>
+                                    티켓:{" "}
+                                    <strong>{ticketInfo.eventName}</strong>
                                   </>
                                 ) : (
                                   <>티켓 ID: {activity.relatedUserId}</>
@@ -338,11 +352,22 @@ const ActivityPage = () => {
                         {activity.rating && (
                           <Box mb={1}>
                             <Box display="flex" alignItems="center" gap={1}>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 평점:
                               </Typography>
-                              <Rating value={activity.rating} readOnly size="small" />
-                              <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
+                              <Rating
+                                value={activity.rating}
+                                readOnly
+                                size="small"
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ ml: 0.5 }}
+                              >
                                 ({activity.rating}/5)
                               </Typography>
                             </Box>
@@ -353,7 +378,9 @@ const ActivityPage = () => {
                           <>
                             {(activity.rating ||
                               activity.activityType === "LIKE" ||
-                              activity.activityType === "SALE") && <Divider sx={{ my: 1 }} />}
+                              activity.activityType === "SALE") && (
+                              <Divider sx={{ my: 1 }} />
+                            )}
                             <Typography
                               variant="body1"
                               sx={{

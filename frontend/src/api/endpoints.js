@@ -89,14 +89,14 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/support/tickets/${id}`,
   },
 
-  // 공지 (Notice)
-  NOTICE: {
-    USER_LIST: "/cs/notices",
-    DETAIL: (noticeId) => `/cs/notices/${noticeId}`,
+// 공지 (Notice)
+NOTICE: {
+  USER_LIST: "/cs/notices",
+  DETAIL: (noticeId) => `/cs/notices/${noticeId}`,
 
-    // 관리자 (너희 백엔드가 /admin/notices 인지 /cs/admin/notices 인지에 따라 조정)
-    ADMIN_CREATE: "/admin/notices",
-  },
+  // 관리자 (너희 백엔드가 /admin/notices 인지 /cs/admin/notices 인지에 따라 조정)
+  ADMIN_CREATE: "/admin/notices",
+},
 
   // 신고 (Reports)
   REPORTS: {
@@ -124,16 +124,16 @@ export const ENDPOINTS = {
   },
 
   // FAQ
-  FAQ: {
-    USER_LIST: "/api/faqs",
-    DETAIL: (faqId) => `/api/faqs/${faqId}`,
+    FAQ: {
+      USER_LIST: "/api/faqs",
+      DETAIL: (faqId) => `/api/faqs/${faqId}`,
 
-    ADMIN_LIST: "/api/admin/faqs",
-    ADMIN_CREATE: "/api/admin/faqs",
-    ADMIN_DETAIL: (faqId) => `/api/admin/faqs/${faqId}`,
-    ADMIN_UPDATE: (faqId) => `/api/admin/faqs/${faqId}`,
-    ADMIN_DELETE: (faqId) => `/api/admin/faqs/${faqId}`,
-  },
+      ADMIN_LIST: "/api/admin/faqs",
+      ADMIN_CREATE: "/api/admin/faqs",
+      ADMIN_DETAIL: (faqId) => `/api/admin/faqs/${faqId}`,
+      ADMIN_UPDATE: (faqId) => `/api/admin/faqs/${faqId}`,
+      ADMIN_DELETE: (faqId) => `/api/admin/faqs/${faqId}`,
+    },
 
   // 활동 내역 관련
   ACTIVITIES: {

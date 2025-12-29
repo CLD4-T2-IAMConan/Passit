@@ -15,7 +15,7 @@ CREATE TABLE payments (
     -- ERD에 따라 DECIMAL(10, 0)으로 명시)
     price DECIMAL(10, 0) NOT NULL,
 
-    payment_status VARCHAR(50) NOT NULL COMMENT '(WAIT_PAY, PAID, CANCELLED)',
+    payment_status ENUM('WAIT_PAY', 'PAID', 'FAILED', 'CANCELLED') NOT NULL,
     payment_date DATETIME NOT NULL,
 
     completion_date DATETIME NULL,

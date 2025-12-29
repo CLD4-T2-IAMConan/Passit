@@ -1,12 +1,12 @@
 .chatroom-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .chatroom-list-empty {
-  padding: 16px;
-  text-align: center;
-  color: #777;
-  font-size: 15px;
+    padding: 16px;
+    text-align: center;
+    color: #777;
+    font-size: 15px;
 }

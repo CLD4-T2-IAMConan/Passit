@@ -177,10 +177,20 @@ const AdminLayout = ({ children }) => {
             {user?.name?.charAt(0) || "A"}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={600} noWrap sx={{ lineHeight: 1.2 }}>
+            <Typography
+              variant="body2"
+              fontWeight={600}
+              noWrap
+              sx={{ lineHeight: 1.2 }}
+            >
               {user?.name || "관리자"}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1.2 }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{ lineHeight: 1.2 }}
+            >
               {user?.email || ""}
             </Typography>
           </Box>
@@ -203,7 +213,12 @@ const AdminLayout = ({ children }) => {
         }}
       >
         <Toolbar>
-          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2 }}
+          >
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>

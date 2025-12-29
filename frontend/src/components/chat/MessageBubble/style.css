@@ -1,73 +1,73 @@
 /* 기본 버블 공통 스타일 */
 .bubble-wrapper {
-  display: flex;
-  margin-bottom: 8px;
+    display: flex;
+    margin-bottom: 8px;
 }
 
 .bubble-wrapper.mine {
-  justify-content: flex-end;
+    justify-content: flex-end;
 }
 
 .bubble-wrapper.other {
-  justify-content: flex-start;
+    justify-content: flex-start;
 }
 
 .bubble {
-  max-width: 70%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 15px;
-  line-height: 1.4;
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.4;
 }
 
 /* 내가 보낸 메시지 */
 .bubble.mine {
-  background: #4f8cff;
-  color: white;
+    background: #4f8cff;
+    color: white;
 }
 
 /* 상대방 메시지 */
 .bubble.other {
-  background: #e6e6e6;
-  color: black;
+    background: #e6e6e6;
+    color: black;
 }
 
 /* --- SYSTEM MESSAGE --- */
 .system-message {
-  text-align: center;
-  color: #777;
-  font-size: 13px;
-  margin: 12px 0;
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    margin: 12px 0;
 }
 
 /* --- SYSTEM ACTION MESSAGE --- */
 .system-action-box {
-  background: #f4f4f5;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin: 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    background: #f4f4f5;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .system-action-text {
-  color: #444;
-  font-size: 14px;
-  line-height: 1.5;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .action-btn {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  background: #ddd;
-  color: #333;
-  cursor: pointer;
-  font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    background: #ddd;
+    color: #333;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .action-btn.primary {
-  background: #4f8cff;
-  color: white;
+    background: #4f8cff;
+    color: white;
 }

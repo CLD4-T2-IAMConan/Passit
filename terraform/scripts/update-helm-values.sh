@@ -81,10 +81,8 @@ IRSA_OUTPUT_ERROR=1
 if command -v timeout &> /dev/null || command -v gtimeout &> /dev/null; then
     TIMEOUT_CMD=$(command -v timeout 2>/dev/null || command -v gtimeout 2>/dev/null)
     echo "  ⏱️  타임아웃 10초로 terraform output 실행 중..."
-    set +e
     IRSA_OUTPUT_RAW=$($TIMEOUT_CMD 10 terraform output backend_irsa_roles 2>&1)
     IRSA_OUTPUT_ERROR=$?
-    set -e
     
     # 타임아웃 체크
     if [ $IRSA_OUTPUT_ERROR -eq 124 ] || echo "$IRSA_OUTPUT_RAW" | grep -q "timeout\|terminated"; then

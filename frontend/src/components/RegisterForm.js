@@ -106,7 +106,10 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
       setError("");
       alert("인증 코드가 이메일로 발송되었습니다.");
     } catch (err) {
-      setError(err.message || "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
+      setError(
+        err.message ||
+          "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
+      );
     } finally {
       setSendingEmail(false);
     }
@@ -221,10 +224,16 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
       if (result.success) {
         onRegisterSuccess(result.user);
       } else {
-        setError(result.error || "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
+        setError(
+          result.error ||
+            "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
+        );
       }
     } catch (err) {
-      setError(err.message || "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
+      setError(
+        err.message ||
+          "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
+      );
     } finally {
       setLoading(false);
     }
@@ -299,7 +308,9 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
 
           {/* Step 0: 가입 방법 선택 */}
           {currentStep === 0 && (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}
+            >
               <Button
                 fullWidth
                 variant="contained"
@@ -329,7 +340,11 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
               </Button>
 
               <Divider>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.875rem" }}
+                >
                   또는
                 </Typography>
               </Divider>
@@ -395,7 +410,11 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     InputProps={{
                       endAdornment: emailVerified ? (
                         <InputAdornment position="end">
-                          <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
+                          <Typography
+                            variant="body2"
+                            color="success.main"
+                            sx={{ fontWeight: 600 }}
+                          >
                             ✓ 인증완료
                           </Typography>
                         </InputAdornment>
@@ -415,7 +434,10 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     {sendingEmail ? (
                       <CircularProgress size={20} />
                     ) : timer > 0 ? (
-                      `${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`
+                      `${Math.floor(timer / 60)}:${String(timer % 60).padStart(
+                        2,
+                        "0"
+                      )}`
                     ) : emailSent ? (
                       "재발송"
                     ) : (
@@ -452,7 +474,11 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {verifyingCode ? <CircularProgress size={20} color="inherit" /> : "확인"}
+                      {verifyingCode ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        "확인"
+                      )}
                     </Button>
                   </Box>
                   <Typography
@@ -514,7 +540,10 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
@@ -554,10 +583,16 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         edge="end"
                       >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -639,7 +674,11 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     fontSize: { xs: "0.938rem", sm: "1rem" },
                   }}
                 >
-                  {loading ? <CircularProgress size={24} color="inherit" /> : "회원가입"}
+                  {loading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "회원가입"
+                  )}
                 </Button>
               )}
             </Box>

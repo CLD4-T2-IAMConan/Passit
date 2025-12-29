@@ -49,7 +49,9 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 정보
    */
   getUserByEmail: async (email) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.BY_EMAIL(email));
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.USERS.BY_EMAIL(email)
+    );
     return response.data;
   },
 
@@ -59,7 +61,9 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 목록
    */
   getUsersByStatus: async (status) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.BY_STATUS(status));
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.USERS.BY_STATUS(status)
+    );
     return response.data;
   },
 
@@ -69,7 +73,10 @@ export const adminService = {
    * @returns {Promise<Object>} 생성된 회원 정보
    */
   createUser: async (userData) => {
-    const response = await apiClient.post(ENDPOINTS.ADMIN.USERS.CREATE, userData);
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.USERS.CREATE,
+      userData
+    );
     return response.data;
   },
 
@@ -80,7 +87,10 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   updateUser: async (userId, updates) => {
-    const response = await apiClient.put(ENDPOINTS.ADMIN.USERS.UPDATE(userId), updates);
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.USERS.UPDATE(userId),
+      updates
+    );
     return response.data;
   },
 
@@ -91,7 +101,10 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   updateUserRole: async (userId, role) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.UPDATE_ROLE(userId), { role });
+    const response = await apiClient.patch(
+      ENDPOINTS.ADMIN.USERS.UPDATE_ROLE(userId),
+      { role }
+    );
     return response.data;
   },
 
@@ -101,7 +114,9 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   suspendUser: async (userId) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.SUSPEND(userId));
+    const response = await apiClient.patch(
+      ENDPOINTS.ADMIN.USERS.SUSPEND(userId)
+    );
     return response.data;
   },
 
@@ -111,7 +126,9 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   activateUser: async (userId) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.ACTIVATE(userId));
+    const response = await apiClient.patch(
+      ENDPOINTS.ADMIN.USERS.ACTIVATE(userId)
+    );
     return response.data;
   },
 
@@ -121,7 +138,9 @@ export const adminService = {
    * @returns {Promise<void>}
    */
   deleteUser: async (userId) => {
-    const response = await apiClient.delete(ENDPOINTS.ADMIN.USERS.DELETE(userId));
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.USERS.DELETE(userId)
+    );
     return response.data;
   },
 
@@ -131,7 +150,9 @@ export const adminService = {
    * @returns {Promise<void>}
    */
   hardDeleteUser: async (userId) => {
-    const response = await apiClient.delete(ENDPOINTS.ADMIN.USERS.HARD_DELETE(userId));
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.USERS.HARD_DELETE(userId)
+    );
     return response.data;
   },
 };
