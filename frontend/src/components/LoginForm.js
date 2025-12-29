@@ -41,9 +41,7 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      if (!formData.email && !formData.password) {
-        setError("email and password are required");
-      } else if (!formData.email) {
+      if (!formData.email) {
         setError("email is required");
       } else {
         setError("password is required");
