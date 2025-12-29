@@ -19,7 +19,7 @@ import {
   DialogActions,
 } from "@mui/material";
 // 🚨 [추가] userService import
-import { userService } from "../api/services/userService";
+import userService from "../services/userService";
 
 // ⚠️ 임시 설정
 const API_BASE_URL = "http://localhost:8083";

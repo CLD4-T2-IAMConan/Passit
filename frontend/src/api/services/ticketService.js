@@ -5,7 +5,7 @@ import { ENDPOINTS } from "../endpoints";
  *  ticket 서비스 전용 API Client (8082)
  */
 const ticketApiClient = axios.create({
-  baseURL: "http://localhost:8082/api",
+  baseURL: "http://localhost:8082", // /api는 endpoints.js에 포함되어 있음
 });
 
 /**

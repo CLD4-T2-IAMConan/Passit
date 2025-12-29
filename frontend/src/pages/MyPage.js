@@ -23,7 +23,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuth } from "../contexts/AuthContext";
-import { userService } from "../api/services/userService";
+import userService from "../services/userService";
 
 const MyPage = () => {
   const navigate = useNavigate();

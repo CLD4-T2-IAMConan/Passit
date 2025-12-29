@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { AuthProvider } from "./contexts/AuthContext";
+import { LoadingProvider } from "./contexts/LoadingContext";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./App.css";
@@ -13,6 +14,7 @@ import TicketCreatePage from "./pages/TicketCreatePage";
 import TicketListPage from "./pages/TicketListPage";
 import MyTicketListPage from "./pages/MyTicketListPage";
 import TicketEditPage from "./pages/TicketEditPage";
+import DealListPage from "./pages/trade/DealListPage";
 
 // 네비게이션
 import NavBar from "./components/NavBar";
@@ -71,7 +73,7 @@ const DealAcceptPage = lazy(() => import("./pages/DealAcceptPage"));
 const BuyerPaymentPage = lazy(() => import("./pages/BuyerPaymentPage"));
 const PaymentResultPage = lazy(() => import("./pages/PaymentResultPage"));
 
-// 테마
+// Flat Design 테마
 const theme = createTheme({
   typography: {
     fontFamily: [
@@ -84,6 +86,80 @@ const theme = createTheme({
       "sans-serif",
     ].join(","),
   },
+  shape: {
+    borderRadius: 12, // 모든 컴포넌트에 기본 radius 적용
+  },
+  shadows: [
+    "none", // elevation 0
+    "none", // elevation 1
+    "0 1px 3px rgba(0,0,0,0.06)", // elevation 2 (매우 약한 그림자만)
+    "0 2px 4px rgba(0,0,0,0.08)", // elevation 3
+    "0 3px 6px rgba(0,0,0,0.08)", // elevation 4
+    ...Array(20).fill("0 4px 8px rgba(0,0,0,0.1)"), // elevation 5-24
+  ],
+  components: {
+    MuiPaper: {
+      defaultProps: {
+        elevation: 0, // 기본 elevation 제거
+      },
+      styleOverrides: {
+        root: {
+          border: "1px solid",
+          borderColor: "rgba(0, 0, 0, 0.08)",
+        },
+        elevation1: {
+          boxShadow: "none",
+          border: "1px solid rgba(0, 0, 0, 0.08)",
+        },
+        elevation2: {
+          boxShadow: "none",
+          border: "1px solid rgba(0, 0, 0, 0.08)",
+        },
+        elevation3: {
+          boxShadow: "none",
+          border: "1px solid rgba(0, 0, 0, 0.08)",
+        },
+      },
+    },
+    MuiCard: {
+      defaultProps: {
+        elevation: 0,
+      },
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          border: "1px solid",
+          borderColor: "rgba(0, 0, 0, 0.08)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: "none",
+          fontWeight: 600,
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+          },
+        },
+        contained: {
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+  },
 });
 
 function App() {
@@ -91,8 +167,9 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AuthProvider>
-          <Router>
+        <LoadingProvider>
+          <AuthProvider>
+            <Router>
             <Suspense fallback={<LoadingSpinner fullPage message="페이지를 불러오는 중..." />}>
               {/* 네비게이션 */}
               <NavBar />
@@ -286,26 +363,42 @@ function App() {
                   }
                 />
 
+                {/* 티켓 */}
+                <Route path="/tickets" element={<TicketListPage />} />
+                <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
+                <Route
+                  path="/sell"
+                  element={
+                    <PrivateRoute>
+                      <TicketCreatePage />
+                    </PrivateRoute>
+                  }
+                />
+
+                {/* 거래 */}
+                <Route
+                  path="/deals"
+                  element={
+                    <PrivateRoute>
+                      <DealListPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
+                <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
+                <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
+
                 {/* 채팅 */}
                 <Route path="/chat" element={<ChatListPage />} />
                 <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
 
+                {/* 404 */}
                 <Route path="*" element={<Navigate to="/" />} />
-                <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
-                <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
-                <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
-                <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
-                <Route path="*" element={<Navigate to="/" />} />
-                <Route path="/chat/rooms" element={<ChatListPage />} />
-                <Route path="/chat/rooms/:chatroomId" element={<ChatRoomPage />} />
-                <Route path="/chat" element={<ChatListPage />} />
-                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
-                <Route path="/sell" element={<TicketCreatePage />} />
-                <Route path="/tickets" element={<TicketListPage />} />
               </Routes>
             </Suspense>
-          </Router>
-        </AuthProvider>
+            </Router>
+          </AuthProvider>
+        </LoadingProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
