@@ -16,12 +16,6 @@ jest.mock("../services/userService", () => ({
 
 /**
  * LoginPage 통합 테스트
- *
- * 테스트 범위:
- * - 페이지 전체 렌더링
- * - API 연동 (모킹)
- * - 라우팅
- * - 전역 상태 업데이트 (AuthContext)
  */
 
 // Mock 대시보드 컴포넌트
@@ -45,10 +39,7 @@ describe("LoginPage Integration Test", () => {
   };
 
   beforeEach(() => {
-    // Mock 리셋
     jest.clearAllMocks();
-
-    // localStorage 초기화
     localStorage.clear();
   });
 
@@ -56,8 +47,8 @@ describe("LoginPage Integration Test", () => {
     renderLoginPage();
 
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /email/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
@@ -65,19 +56,15 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    // 이메일과 비밀번호 입력
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/email/i), "test@example.com");
+    await user.type(screen.getByPlaceholderText(/password/i), "password123");
 
-    // 로그인 버튼 클릭
     await user.click(screen.getByRole("button", { name: /login/i }));
 
-    // 대시보드로 이동 확인
     await waitFor(() => {
       expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
     });
 
-    // localStorage에 토큰 저장 확인
     expect(localStorage.getItem("authToken")).toBeTruthy();
   });
 
@@ -85,15 +72,11 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    // 잘못된 비밀번호로 로그인 시도
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "wrongpassword");
+    await user.type(screen.getByPlaceholderText(/email/i), "test@example.com");
+    await user.type(screen.getByPlaceholderText(/password/i), "wrongpassword");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
-    // 에러 메시지 표시 확인
     expect(await screen.findByText(/인증 실패/i)).toBeInTheDocument();
-
-    // 여전히 로그인 페이지에 있는지 확인
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
   });
 
@@ -101,8 +84,8 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "nonexistent@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/email/i), "nonexistent@example.com");
+    await user.type(screen.getByPlaceholderText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
     expect(await screen.findByText(/사용자를 찾을 수 없습니다/i)).toBeInTheDocument();
@@ -112,10 +95,8 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    // 빈 상태로 제출
     await user.click(screen.getByRole("button", { name: /login/i }));
 
-    // 유효성 검사 에러 메시지 확인
     expect(await screen.findByText(/email is required/i)).toBeInTheDocument();
     expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
   });
@@ -124,8 +105,8 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "invalid-email");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/email/i), "invalid-email");
+    await user.type(screen.getByPlaceholderText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
     expect(await screen.findByText(/invalid email format/i)).toBeInTheDocument();
@@ -135,13 +116,12 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/email/i), "test@example.com");
+    await user.type(screen.getByPlaceholderText(/password/i), "password123");
 
     const submitButton = screen.getByRole("button", { name: /login/i });
     await user.click(submitButton);
 
-    // 로딩 중 버튼 비활성화 확인 (짧은 시간)
     expect(submitButton).toBeDisabled();
     expect(screen.getByText(/logging in/i)).toBeInTheDocument();
   });
@@ -162,8 +142,8 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    const emailInput = screen.getByRole("textbox", { name: /email/i });
-    const passwordInput = screen.getByLabelText(/password/i);
+    const emailInput = screen.getByPlaceholderText(/email/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
 
     await user.type(emailInput, "test@example.com");
     await user.type(passwordInput, "password123");
@@ -178,17 +158,14 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByPlaceholderText(/password/i);
     const toggleButton = screen.getByRole("button", { name: /show password/i });
 
-    // 초기 상태는 password type
     expect(passwordInput).toHaveAttribute("type", "password");
 
-    // 토글 클릭 - 표시
     await user.click(toggleButton);
     expect(passwordInput).toHaveAttribute("type", "text");
 
-    // 다시 토글 - 숨김
     await user.click(screen.getByRole("button", { name: /hide password/i }));
     expect(passwordInput).toHaveAttribute("type", "password");
   });
@@ -197,17 +174,14 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/email/i), "test@example.com");
+    await user.type(screen.getByPlaceholderText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
-    // Dashboard로 이동 후 사용자 정보 표시 확인
     await waitFor(() => {
-      const dashboard = screen.getByText("Dashboard Page");
-      expect(dashboard).toBeInTheDocument();
+      expect(screen.getByText("Dashboard Page")).toBeInTheDocument();
     });
 
-    // AuthContext에서 사용자 정보 사용 가능한지 확인 (실제로는 Dashboard에서 표시)
     expect(localStorage.getItem("authToken")).toContain("mock-jwt-token");
   });
 });
