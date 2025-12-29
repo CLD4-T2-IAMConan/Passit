@@ -18,7 +18,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { API_SERVICES } from "../config/apiConfig";
 import { ENDPOINTS } from "../api/endpoints";
 
-const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
+const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -40,28 +40,39 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email) {
-      setError("Email is required");
-      return;
-    }
-
-    if (!formData.password) {
-      setError("Password is required");
+    if (!formData.email || !formData.password) {
+      if (!formData.email && !formData.password) {
+        setError("email and password are required");
+      } else if (!formData.email) {
+        setError("email is required");
+      } else {
+        setError("password is required");
+      }
       return;
     }
     
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) {
+      setError("Invalid email format");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
       const result = await login(formData.email, formData.password, rememberMe);
       // 성공 시
-      onLoginSuccess();
+      onSuccess?.(result.user);
+      onLoginSuccess?.(result.user);
       } catch (err) {
-        setError(
+        const message =
           err?.response?.data?.message ||
-          "Invalid email or password"
-        );
+          "Invalid email or password";
+
+        setError(message);
+        onError?.(message);
       } finally {
         setLoading(false);
     }
@@ -251,7 +262,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ?  "Logging in..." : "로그인"}
+            {loading ?  "logging in" : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>

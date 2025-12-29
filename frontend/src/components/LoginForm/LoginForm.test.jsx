@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
-import { LoginForm } from "./LoginForm";
+import LoginForm from "./LoginForm";
 import { AuthProvider } from "../../contexts/AuthContext";
 
 // Mock userService
