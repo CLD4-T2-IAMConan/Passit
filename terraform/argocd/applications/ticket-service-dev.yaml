@@ -20,7 +20,7 @@ spec:
         image:
           repository: ghcr.io/cld4-t2-iamconan/ticket-service
         imagePullSecrets:
-          - name: ghcr-secret
+          - name: ghcr-pull-secret
 
   destination:
     server: https://kubernetes.default.svc

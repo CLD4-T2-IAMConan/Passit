@@ -21,7 +21,7 @@ spec:
           repository: ghcr.io/cld4-t2-iamconan/service-account
           tag: sha-ada8abf
         imagePullSecrets:
-          - name: ghcr-secret
+          - name: ghcr-pull-secret
 
   destination:
     server: https://kubernetes.default.svc
