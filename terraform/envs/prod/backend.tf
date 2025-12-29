@@ -1,9 +1,9 @@
 # Backend Configuration (S3 + DynamoDB)
-# terraform {
-#   backend "s3" {
-#     bucket         = "passit-terraform-state-prod"
-#     key            = "prod/terraform.tfstate"
-#     region         = "ap-northeast-2"
-#     dynamodb_table = "passit-terraform-locks-prod"
-#   }
-# }
+terraform {
+  backend "s3" {
+    bucket         = "passit-terraform-state-prod"
+    key            = "prod/terraform.tfstate"
+    region         = "ap-northeast-2"
+    dynamodb_table = "passit-terraform-locks-prod"
+  }
+}

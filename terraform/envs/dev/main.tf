@@ -198,6 +198,12 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+  # Passit User Configuration
+  create_passit_user     = var.create_passit_user
+  passit_user_name       = var.passit_user_name
+  passit_user_password   = var.passit_user_password
+  bastion_instance_id    = module.bastion.bastion_instance_id
+
   # Existing Resources
   existing_db_subnet_group_name            = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name

@@ -396,3 +396,22 @@ variable "rds_database_name" {
   type        = string
   default     = "passit"
 }
+
+variable "create_passit_user" {
+  description = "Whether to automatically create passit_user in RDS"
+  type        = bool
+  default     = true
+}
+
+variable "passit_user_name" {
+  description = "Username for passit_user"
+  type        = string
+  default     = "passit_user"
+}
+
+variable "passit_user_password" {
+  description = "Password for passit_user (should match Secrets Manager if using)"
+  type        = string
+  default     = "passit_password"
+  sensitive   = true
+}
