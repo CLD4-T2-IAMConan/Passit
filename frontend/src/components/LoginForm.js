@@ -39,21 +39,31 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!formData.password) {
+      setError("Password is required");
+      return;
+    }
+    
     setError("");
     setLoading(true);
 
     try {
       const result = await login(formData.email, formData.password, rememberMe);
-
-      if (result.success) {
-        onLoginSuccess(result.user);
-      } else {
-        setError(result.error || "이메일 또는 비밀번호를 확인해주세요");
-      }
-    } catch (err) {
-      setError(err.message || "이메일 또는 비밀번호를 확인해주세요");
-    } finally {
-      setLoading(false);
+      // 성공 시
+      onLoginSuccess();
+      } catch (err) {
+        setError(
+          err?.response?.data?.message ||
+          "Invalid email or password"
+        );
+      } finally {
+        setLoading(false);
     }
   };
 
@@ -174,7 +184,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" aria-label={showPassword ? "Hide password" : "Show password"}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -241,7 +251,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "로그인"}
+            {loading ?  "Logging in..." : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>
