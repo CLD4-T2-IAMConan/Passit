@@ -51,3 +51,15 @@ variable "allowed_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "github_org" {
+  description = "GitHub organization or user name for OIDC trust policy"
+  type        = string
+  default     = ""
+}
+
+variable "github_repo" {
+  description = "GitHub repository name for OIDC trust policy"
+  type        = string
+  default     = ""
+}

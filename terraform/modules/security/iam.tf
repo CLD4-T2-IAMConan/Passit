@@ -100,7 +100,7 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.project_name}/*:*"
+            "token.actions.githubusercontent.com:sub" = var.github_org != "" && var.github_repo != "" ? "repo:${var.github_org}/${var.github_repo}:*" : "repo:${var.project_name}/*:*"
           }
         }
       }
@@ -153,6 +153,35 @@ data "aws_iam_policy_document" "github_actions" {
     resources = [
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}",
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowS3ForTerraformState"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:ListBucket",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.project_name}-terraform-state-${var.environment}",
+      "arn:aws:s3:::${var.project_name}-terraform-state-${var.environment}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowDynamoDBForTerraformLocks"
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${var.region}:${var.account_id}:table/${var.project_name}-terraform-locks-${var.environment}"
     ]
   }
 }

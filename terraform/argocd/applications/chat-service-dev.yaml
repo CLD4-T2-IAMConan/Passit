@@ -9,12 +9,34 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/service-chat/.git
-    targetRevision: develop
+    # ⭐ 직접 service-chat repository 참조 (submodule 대신)
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-chat.git
+    targetRevision: main  # service-chat repo의 기본 브랜치
     path: helm
     helm:
       valueFiles:
         - values-dev.yaml
+      values: |
+        image:
+          repository: ghcr.io/cld4-t2-iamconan/service-chat
+          tag: latest
+        imagePullSecrets:
+          - name: ghcr-pull-secret
+        ingress:
+          enabled: true
+          className: alb
+          annotations:
+            kubernetes.io/ingress.class: alb
+            alb.ingress.kubernetes.io/scheme: internet-facing
+            alb.ingress.kubernetes.io/target-type: ip
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+          hosts:
+            - host: chat-service.passit.com
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls: []
 
   destination:
     server: https://kubernetes.default.svc
