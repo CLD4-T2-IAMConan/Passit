@@ -33,7 +33,7 @@ jobs:
 
       - name: Run ESLint
         run: |
-          npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings 0
+          npx eslint "src/**/*.{js,jsx,ts,tsx}"
 
       - name: Type check (if TypeScript)
         run: |

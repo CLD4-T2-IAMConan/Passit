@@ -111,9 +111,9 @@ describe("LoginForm", () => {
     // Assert
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledTimes(1);
-      expect(onSuccess).toHaveBeenCalledWith({
-        email: "test@example.com",
-      });
+    });
+    expect(onSuccess).toHaveBeenCalledWith({
+      email: "test@example.com",
     });
   });
 

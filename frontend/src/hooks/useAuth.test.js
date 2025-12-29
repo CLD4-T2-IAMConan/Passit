@@ -194,10 +194,10 @@ describe("useAuth", () => {
     // Assert
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
-      expect(result.current.isAuthenticated).toBe(true);
-      expect(result.current.user).toBeTruthy();
-      expect(result.current.user.email).toBe("test@example.com");
     });
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.user).toBeTruthy();
+    expect(result.current.user.email).toBe("test@example.com");
   });
 
   test("사용자 정보 업데이트가 작동한다", async () => {
