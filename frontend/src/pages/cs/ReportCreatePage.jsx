@@ -50,7 +50,9 @@ export default function ReportCreatePage() {
     <div style={{ padding: 16, maxWidth: 520 }}>
       <h2>신고 등록</h2>
 
-      {errorMsg && <div style={{ marginTop: 12, color: "crimson" }}>{errorMsg}</div>}
+      {errorMsg && (
+        <div style={{ marginTop: 12, color: "crimson" }}>{errorMsg}</div>
+      )}
 
       <form onSubmit={onSubmit} style={{ marginTop: 12 }}>
         <div style={{ marginBottom: 12 }}>
@@ -63,7 +65,9 @@ export default function ReportCreatePage() {
             <option value="USER">USER</option>
             <option value="TICKET">TICKET</option>
           </select>
-          <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>백엔드 enum에 맞게 값 수정</div>
+          <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
+            백엔드 enum에 맞게 값 수정
+          </div>
         </div>
 
         <div style={{ marginBottom: 12 }}>

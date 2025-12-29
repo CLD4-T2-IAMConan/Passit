@@ -206,7 +206,12 @@ const MyPage = () => {
       >
         <Container maxWidth="lg">
           <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
-            <IconButton edge="start" color="inherit" onClick={() => navigate("/")} sx={{ mr: 2 }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => navigate("/")}
+              sx={{ mr: 2 }}
+            >
               <ArrowBackIcon />
             </IconButton>
             <Typography variant="h6" component="h1" sx={{ fontWeight: 700 }}>
@@ -287,7 +292,11 @@ const MyPage = () => {
 
           <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
             {!editMode ? (
-              <Button variant="contained" onClick={() => setEditMode(true)} sx={{ px: 4 }}>
+              <Button
+                variant="contained"
+                onClick={() => setEditMode(true)}
+                sx={{ px: 4 }}
+              >
                 수정하기
               </Button>
             ) : (
@@ -326,7 +335,11 @@ const MyPage = () => {
             정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요
           </Typography>
 
-          <Button variant="outlined" onClick={() => setPasswordDialogOpen(true)} sx={{ px: 4 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setPasswordDialogOpen(true)}
+            sx={{ px: 4 }}
+          >
             비밀번호 변경
           </Button>
         </Paper>
@@ -423,7 +436,11 @@ const MyPage = () => {
           >
             취소
           </Button>
-          <Button onClick={handlePasswordSubmit} variant="contained" disabled={loading}>
+          <Button
+            onClick={handlePasswordSubmit}
+            variant="contained"
+            disabled={loading}
+          >
             변경하기
           </Button>
         </DialogActions>
@@ -452,9 +469,15 @@ const MyPage = () => {
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
               주의: 이 작업은 되돌릴 수 없습니다
             </Typography>
-            <Typography variant="body2">• 모든 개인 정보가 삭제됩니다</Typography>
-            <Typography variant="body2">• 거래 내역이 삭제됩니다</Typography>
-            <Typography variant="body2">• 등록한 티켓이 삭제됩니다</Typography>
+            <Typography variant="body2">
+              • 모든 개인 정보가 삭제됩니다
+            </Typography>
+            <Typography variant="body2">
+              • 거래 내역이 삭제됩니다
+            </Typography>
+            <Typography variant="body2">
+              • 등록한 티켓이 삭제됩니다
+            </Typography>
           </Alert>
 
           <Typography variant="body2" sx={{ mb: 2 }}>

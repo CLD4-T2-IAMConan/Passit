@@ -71,12 +71,12 @@ const ProfilePage = () => {
         const response = await userService.getMe();
         const fullUserInfo = response.data;
         setUserInfo(fullUserInfo);
-
+        
         // 소셜 로그인 사용자는 비밀번호 확인 스킵
         if (fullUserInfo.provider != null) {
           setPasswordVerified(true);
         }
-
+        
         // 프로필 데이터 설정
         setProfileData({
           name: fullUserInfo.name || "",
@@ -400,7 +400,11 @@ const ProfilePage = () => {
 
         <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
           {!editMode ? (
-            <Button variant="contained" onClick={() => setEditMode(true)} sx={{ px: 4 }}>
+            <Button
+              variant="contained"
+              onClick={() => setEditMode(true)}
+              sx={{ px: 4 }}
+            >
               수정하기
             </Button>
           ) : (
@@ -441,7 +445,11 @@ const ProfilePage = () => {
             : "정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요"}
         </Typography>
 
-        <Button variant="outlined" onClick={() => setPasswordDialogOpen(true)} sx={{ px: 4 }}>
+        <Button
+          variant="outlined"
+          onClick={() => setPasswordDialogOpen(true)}
+          sx={{ px: 4 }}
+        >
           비밀번호 변경
         </Button>
       </Paper>
@@ -481,7 +489,9 @@ const ProfilePage = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>{isSocialUser ? "비밀번호 설정" : "비밀번호 변경"}</DialogTitle>
+        <DialogTitle>
+          {isSocialUser ? "비밀번호 설정" : "비밀번호 변경"}
+        </DialogTitle>
         <DialogContent>
           {passwordError && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -545,7 +555,11 @@ const ProfilePage = () => {
           >
             취소
           </Button>
-          <Button onClick={handlePasswordSubmit} variant="contained" disabled={loading}>
+          <Button
+            onClick={handlePasswordSubmit}
+            variant="contained"
+            disabled={loading}
+          >
             변경하기
           </Button>
         </DialogActions>
@@ -574,9 +588,15 @@ const ProfilePage = () => {
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
               주의: 이 작업은 되돌릴 수 없습니다
             </Typography>
-            <Typography variant="body2">• 모든 개인 정보가 삭제됩니다</Typography>
-            <Typography variant="body2">• 거래 내역이 삭제됩니다</Typography>
-            <Typography variant="body2">• 등록한 티켓이 삭제됩니다</Typography>
+            <Typography variant="body2">
+              • 모든 개인 정보가 삭제됩니다
+            </Typography>
+            <Typography variant="body2">
+              • 거래 내역이 삭제됩니다
+            </Typography>
+            <Typography variant="body2">
+              • 등록한 티켓이 삭제됩니다
+            </Typography>
           </Alert>
 
           <Typography variant="body2" sx={{ mb: 2 }}>

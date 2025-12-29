@@ -30,7 +30,10 @@ export const ticketService = {
    * 티켓 목록 조회 + 필터링 (공개 API)
    */
   getTickets: async (params = {}) => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.LIST, { params });
+    const response = await ticketApiClient.get(
+      ENDPOINTS.TICKETS.LIST,
+      { params }
+    );
     return response.data;
   },
 
@@ -38,7 +41,9 @@ export const ticketService = {
    * 티켓 상세 조회 (공개 API)
    */
   getTicketDetail: async (ticketId) => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
+    const response = await ticketApiClient.get(
+      ENDPOINTS.TICKETS.DETAIL(ticketId)
+    );
     return response.data;
   },
 
@@ -46,7 +51,9 @@ export const ticketService = {
    * 내 티켓 조회 (판매자 / JWT 필요)
    */
   getMyTickets: async () => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.MY);
+    const response = await ticketApiClient.get(
+      ENDPOINTS.TICKETS.MY
+    );
     return response.data;
   },
 
@@ -54,9 +61,13 @@ export const ticketService = {
    * 티켓 등록 (판매자 / JWT 필요)
    */
   createTicket: async (formData) => {
-    const response = await ticketApiClient.post(ENDPOINTS.TICKETS.CREATE, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await ticketApiClient.post(
+      ENDPOINTS.TICKETS.CREATE,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return response.data;
   },
 
@@ -64,9 +75,13 @@ export const ticketService = {
    * 티켓 수정 (판매자 / JWT 필요)
    */
   updateTicket: async (ticketId, formData) => {
-    const response = await ticketApiClient.put(ENDPOINTS.TICKETS.UPDATE(ticketId), formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await ticketApiClient.put(
+      ENDPOINTS.TICKETS.UPDATE(ticketId),
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     return response.data;
   },
 
@@ -74,7 +89,9 @@ export const ticketService = {
    * 티켓 삭제 (판매자 / JWT 필요)
    */
   deleteTicket: async (ticketId) => {
-    const response = await ticketApiClient.delete(ENDPOINTS.TICKETS.DELETE(ticketId));
+    const response = await ticketApiClient.delete(
+      ENDPOINTS.TICKETS.DELETE(ticketId)
+    );
     return response.data;
   },
 };

@@ -83,12 +83,19 @@ export default function AdminNoticeCreatePage() {
 
               <Stack direction="row" spacing={2}>
                 <FormControlLabel
-                  control={<Switch checked={form.is_visible} onChange={onToggle("is_visible")} />}
+                  control={
+                    <Switch
+                      checked={form.is_visible}
+                      onChange={onToggle("is_visible")}
+                    />
+                  }
                   label={form.is_visible ? "공개" : "비공개"}
                 />
 
                 <FormControlLabel
-                  control={<Switch checked={form.is_pinned} onChange={onToggle("is_pinned")} />}
+                  control={
+                    <Switch checked={form.is_pinned} onChange={onToggle("is_pinned")} />
+                  }
                   label={form.is_pinned ? "상단고정" : "상단고정 해제"}
                 />
               </Stack>

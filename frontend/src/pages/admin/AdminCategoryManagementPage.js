@@ -68,7 +68,9 @@ const AdminCategoryManagementPage = () => {
       }
     } catch (err) {
       setError(
-        err.response?.data?.error || err.message || "카테고리 목록을 불러오는데 실패했습니다"
+        err.response?.data?.error ||
+          err.message ||
+          "카테고리 목록을 불러오는데 실패했습니다"
       );
     } finally {
       setLoading(false);
@@ -132,7 +134,11 @@ const AdminCategoryManagementPage = () => {
         fetchCategories();
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "카테고리 생성에 실패했습니다");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "카테고리 생성에 실패했습니다"
+      );
     }
   };
 
@@ -148,28 +154,41 @@ const AdminCategoryManagementPage = () => {
         name: formData.name.trim(),
         parentId: formData.parentId || null,
       };
-      const response = await categoryService.updateCategory(selectedCategory.id, requestData);
+      const response = await categoryService.updateCategory(
+        selectedCategory.id,
+        requestData
+      );
       if (response.success) {
         setSuccess("카테고리가 수정되었습니다");
         setEditModalOpen(false);
         fetchCategories();
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "카테고리 수정에 실패했습니다");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "카테고리 수정에 실패했습니다"
+      );
     }
   };
 
   // 카테고리 삭제
   const handleDelete = async () => {
     try {
-      const response = await categoryService.deleteCategory(selectedCategory.id);
+      const response = await categoryService.deleteCategory(
+        selectedCategory.id
+      );
       if (response.success) {
         setSuccess("카테고리가 삭제되었습니다");
         setDeleteConfirmOpen(false);
         fetchCategories();
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "카테고리 삭제에 실패했습니다");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "카테고리 삭제에 실패했습니다"
+      );
     }
   };
 
@@ -181,7 +200,10 @@ const AdminCategoryManagementPage = () => {
   // 수정 시 선택 가능한 부모 목록 (순환 참조 방지)
   const getAvailableParents = (currentCategory) => {
     return flatCategories.filter(
-      (cat) => cat.id !== currentCategory.id && !isDescendant(cat, currentCategory) && cat.depth < 3 // 소분류는 부모가 될 수 없음
+      (cat) =>
+        cat.id !== currentCategory.id &&
+        !isDescendant(cat, currentCategory) &&
+        cat.depth < 3 // 소분류는 부모가 될 수 없음
     );
   };
 
@@ -233,7 +255,10 @@ const AdminCategoryManagementPage = () => {
           <TableCell sx={{ pl: `${indent + 24}px` }}>
             <Stack direction="row" spacing={1} alignItems="center">
               {level > 0 && (
-                <SubdirectoryArrowRightIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                <SubdirectoryArrowRightIcon
+                  fontSize="small"
+                  sx={{ color: "text.secondary" }}
+                />
               )}
               <Typography variant="body2">{category.name}</Typography>
             </Stack>
@@ -249,11 +274,19 @@ const AdminCategoryManagementPage = () => {
           <TableCell align="right" sx={{ pr: 2 }}>
             <Stack direction="row" spacing={1} justifyContent="flex-end">
               <Tooltip title="수정">
-                <IconButton size="small" onClick={() => handleEditOpen(category)} color="primary">
+                <IconButton
+                  size="small"
+                  onClick={() => handleEditOpen(category)}
+                  color="primary"
+                >
                   <EditIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={canDelete ? "삭제" : "하위 카테고리가 있어 삭제할 수 없습니다"}>
+              <Tooltip
+                title={
+                  canDelete ? "삭제" : "하위 카테고리가 있어 삭제할 수 없습니다"
+                }
+              >
                 <span>
                   <IconButton
                     size="small"
@@ -268,18 +301,24 @@ const AdminCategoryManagementPage = () => {
             </Stack>
           </TableCell>
         </TableRow>
-        {category.children && category.children.map((child) => renderCategoryRow(child, level + 1))}
+        {category.children &&
+          category.children.map((child) => renderCategoryRow(child, level + 1))}
       </React.Fragment>
     );
   };
 
   // 부모 선택 옵션 렌더링 (재귀)
-  const renderParentOptions = (categories, level = 0, excludeCategory = null) => {
+  const renderParentOptions = (
+    categories,
+    level = 0,
+    excludeCategory = null
+  ) => {
     let options = [];
     categories.forEach((cat) => {
       // 순환 참조 방지: 자기 자신과 자손은 제외
       const isExcluded =
-        excludeCategory && (cat.id === excludeCategory.id || isDescendant(cat, excludeCategory));
+        excludeCategory &&
+        (cat.id === excludeCategory.id || isDescendant(cat, excludeCategory));
 
       if (!isExcluded && cat.depth < 3) {
         options.push(
@@ -290,7 +329,9 @@ const AdminCategoryManagementPage = () => {
         );
       }
       if (cat.children && cat.children.length > 0) {
-        options = options.concat(renderParentOptions(cat.children, level + 1, excludeCategory));
+        options = options.concat(
+          renderParentOptions(cat.children, level + 1, excludeCategory)
+        );
       }
     });
     return options;
@@ -300,11 +341,20 @@ const AdminCategoryManagementPage = () => {
     <AdminLayout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mb: 2 }}
+          >
             <Typography variant="h4" fontWeight="bold">
               카테고리 관리
             </Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateOpen}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateOpen}
+            >
               카테고리 추가
             </Button>
           </Stack>
@@ -332,7 +382,9 @@ const AdminCategoryManagementPage = () => {
               ) : categories.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} align="center">
-                    <Typography color="text.secondary">등록된 카테고리가 없습니다</Typography>
+                    <Typography color="text.secondary">
+                      등록된 카테고리가 없습니다
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -355,7 +407,9 @@ const AdminCategoryManagementPage = () => {
               <TextField
                 label="카테고리 이름"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 fullWidth
                 required
               />
@@ -398,7 +452,9 @@ const AdminCategoryManagementPage = () => {
               <TextField
                 label="카테고리 이름"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 fullWidth
                 required
               />
@@ -429,7 +485,10 @@ const AdminCategoryManagementPage = () => {
         </Dialog>
 
         {/* 삭제 확인 모달 */}
-        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <Dialog
+          open={deleteConfirmOpen}
+          onClose={() => setDeleteConfirmOpen(false)}
+        >
           <DialogTitle>카테고리 삭제</DialogTitle>
           <DialogContent>
             <Typography>

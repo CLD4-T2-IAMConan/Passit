@@ -18,7 +18,11 @@ export default function AdminFaqCreatePage() {
       <h2>FAQ 등록</h2>
 
       <form onSubmit={onSubmit} style={{ display: "grid", gap: 12, maxWidth: 720 }}>
-        <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="질문" />
+        <input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="질문"
+        />
         <textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}

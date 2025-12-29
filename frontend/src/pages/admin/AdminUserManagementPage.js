@@ -219,251 +219,273 @@ const AdminUserManagementPage = () => {
           회원 관리
         </Typography>
 
-        {/* 검색 및 필터 */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              label="검색 (이름, 이메일, 닉네임)"
-              variant="outlined"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              sx={{ flex: 1 }}
-            />
-            <FormControl sx={{ minWidth: 150 }}>
-              <InputLabel>상태</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label="상태"
-              >
-                <MenuItem value="">전체</MenuItem>
-                <MenuItem value="ACTIVE">활성</MenuItem>
-                <MenuItem value="SUSPENDED">정지</MenuItem>
-                <MenuItem value="DELETED">삭제</MenuItem>
-              </Select>
-            </FormControl>
-            <Button variant="contained" onClick={handleSearch} sx={{ height: 56 }}>
-              검색
-            </Button>
-          </Stack>
-        </Paper>
-
-        {/* 회원 목록 테이블 */}
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                <TableCell>ID</TableCell>
-                <TableCell>이메일</TableCell>
-                <TableCell>이름</TableCell>
-                <TableCell>닉네임</TableCell>
-                <TableCell>상태</TableCell>
-                <TableCell>가입일</TableCell>
-                <TableCell align="center">작업</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    로딩 중...
-                  </TableCell>
-                </TableRow>
-              ) : users.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    회원이 없습니다
-                  </TableCell>
-                </TableRow>
-              ) : (
-                users.map((user) => (
-                  <TableRow key={user.userId} hover>
-                    <TableCell>{user.userId}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.nickname || "-"}</TableCell>
-                    <TableCell>
-                      <Chip label={user.status} color={getStatusColor(user.status)} size="small" />
-                    </TableCell>
-                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleViewUser(user.userId)}
-                        title="상세보기"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      {user.status === "ACTIVE" && (
-                        <IconButton
-                          size="small"
-                          color="warning"
-                          onClick={() => handleSuspendUser(user.userId)}
-                          title="정지"
-                        >
-                          <BlockIcon />
-                        </IconButton>
-                      )}
-                      {user.status === "SUSPENDED" && (
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={() => handleActivateUser(user.userId)}
-                          title="활성화"
-                        >
-                          <CheckCircleIcon />
-                        </IconButton>
-                      )}
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteUser(user.userId)}
-                        title="삭제"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          <TablePagination
-            component="div"
-            count={totalElements}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage="페이지당 행 수:"
+      {/* 검색 및 필터 */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField
+            label="검색 (이름, 이메일, 닉네임)"
+            variant="outlined"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            sx={{ flex: 1 }}
           />
-        </TableContainer>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>상태</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="상태"
+            >
+              <MenuItem value="">전체</MenuItem>
+              <MenuItem value="ACTIVE">활성</MenuItem>
+              <MenuItem value="SUSPENDED">정지</MenuItem>
+              <MenuItem value="DELETED">삭제</MenuItem>
+            </Select>
+          </FormControl>
+          <Button variant="contained" onClick={handleSearch} sx={{ height: 56 }}>
+            검색
+          </Button>
+        </Stack>
+      </Paper>
 
-        {/* 회원 상세/수정 모달 */}
-        <Dialog
-          open={detailModalOpen}
-          onClose={() => setDetailModalOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>{editMode ? "회원 정보 수정" : "회원 상세 정보"}</DialogTitle>
-          <DialogContent>
-            {selectedUser && (
-              <Stack spacing={2} sx={{ mt: 2 }}>
-                <TextField label="이메일" value={selectedUser.email} disabled fullWidth />
-                {editMode ? (
-                  <>
-                    <TextField
-                      label="이름"
-                      value={editData.name}
-                      onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                      fullWidth
-                    />
-                    <TextField
-                      label="닉네임"
-                      value={editData.nickname}
-                      onChange={(e) => setEditData({ ...editData, nickname: e.target.value })}
-                      fullWidth
-                    />
-                    <TextField
-                      label="프로필 이미지 URL"
-                      value={editData.profileImageUrl}
-                      onChange={(e) =>
-                        setEditData({
-                          ...editData,
-                          profileImageUrl: e.target.value,
-                        })
-                      }
-                      fullWidth
-                    />
-                  </>
-                ) : (
-                  <>
-                    <TextField label="이름" value={selectedUser.name} disabled fullWidth />
-                    <TextField
-                      label="닉네임"
-                      value={selectedUser.nickname || "-"}
-                      disabled
-                      fullWidth
-                    />
-                    <Box>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
-                        상태
-                      </Typography>
-                      <Chip
-                        label={selectedUser.status}
-                        color={getStatusColor(selectedUser.status)}
-                      />
-                    </Box>
-                    <TextField
-                      label="가입일"
-                      value={new Date(selectedUser.createdAt).toLocaleString()}
-                      disabled
-                      fullWidth
-                    />
-                    <TextField
-                      label="최종 수정일"
-                      value={new Date(selectedUser.updatedAt).toLocaleString()}
-                      disabled
-                      fullWidth
-                    />
-                    {selectedUser.lastLoginAt && (
-                      <TextField
-                        label="마지막 접속일"
-                        value={new Date(selectedUser.lastLoginAt).toLocaleString()}
-                        disabled
-                        fullWidth
-                      />
-                    )}
-                  </>
-                )}
-              </Stack>
-            )}
-          </DialogContent>
-          <DialogActions>
-            {editMode ? (
-              <>
-                <Button onClick={() => setEditMode(false)}>취소</Button>
-                <Button variant="contained" onClick={handleUpdateUser}>
-                  저장
-                </Button>
-              </>
+      {/* 회원 목록 테이블 */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableCell>ID</TableCell>
+              <TableCell>이메일</TableCell>
+              <TableCell>이름</TableCell>
+              <TableCell>닉네임</TableCell>
+              <TableCell>상태</TableCell>
+              <TableCell>가입일</TableCell>
+              <TableCell align="center">작업</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  로딩 중...
+                </TableCell>
+              </TableRow>
+            ) : users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  회원이 없습니다
+                </TableCell>
+              </TableRow>
             ) : (
-              <>
-                <Button onClick={() => setDetailModalOpen(false)}>닫기</Button>
-                <Button variant="contained" onClick={() => setEditMode(true)}>
-                  수정
-                </Button>
-              </>
+              users.map((user) => (
+                <TableRow key={user.userId} hover>
+                  <TableCell>{user.userId}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.nickname || "-"}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={user.status}
+                      color={getStatusColor(user.status)}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => handleViewUser(user.userId)}
+                      title="상세보기"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                    {user.status === "ACTIVE" && (
+                      <IconButton
+                        size="small"
+                        color="warning"
+                        onClick={() => handleSuspendUser(user.userId)}
+                        title="정지"
+                      >
+                        <BlockIcon />
+                      </IconButton>
+                    )}
+                    {user.status === "SUSPENDED" && (
+                      <IconButton
+                        size="small"
+                        color="success"
+                        onClick={() => handleActivateUser(user.userId)}
+                        title="활성화"
+                      >
+                        <CheckCircleIcon />
+                      </IconButton>
+                    )}
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDeleteUser(user.userId)}
+                      title="삭제"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
-          </DialogActions>
-        </Dialog>
+          </TableBody>
+        </Table>
+        <TablePagination
+          component="div"
+          count={totalElements}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="페이지당 행 수:"
+        />
+      </TableContainer>
 
-        {/* 성공 메시지 */}
-        <Snackbar
-          open={!!success}
-          autoHideDuration={3000}
-          onClose={() => setSuccess(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert severity="success" onClose={() => setSuccess(null)}>
-            {success}
-          </Alert>
-        </Snackbar>
+      {/* 회원 상세/수정 모달 */}
+      <Dialog
+        open={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {editMode ? "회원 정보 수정" : "회원 상세 정보"}
+        </DialogTitle>
+        <DialogContent>
+          {selectedUser && (
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <TextField
+                label="이메일"
+                value={selectedUser.email}
+                disabled
+                fullWidth
+              />
+              {editMode ? (
+                <>
+                  <TextField
+                    label="이름"
+                    value={editData.name}
+                    onChange={(e) =>
+                      setEditData({ ...editData, name: e.target.value })
+                    }
+                    fullWidth
+                  />
+                  <TextField
+                    label="닉네임"
+                    value={editData.nickname}
+                    onChange={(e) =>
+                      setEditData({ ...editData, nickname: e.target.value })
+                    }
+                    fullWidth
+                  />
+                  <TextField
+                    label="프로필 이미지 URL"
+                    value={editData.profileImageUrl}
+                    onChange={(e) =>
+                      setEditData({
+                        ...editData,
+                        profileImageUrl: e.target.value,
+                      })
+                    }
+                    fullWidth
+                  />
+                </>
+              ) : (
+                <>
+                  <TextField
+                    label="이름"
+                    value={selectedUser.name}
+                    disabled
+                    fullWidth
+                  />
+                  <TextField
+                    label="닉네임"
+                    value={selectedUser.nickname || "-"}
+                    disabled
+                    fullWidth
+                  />
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" mb={1}>
+                      상태
+                    </Typography>
+                    <Chip
+                      label={selectedUser.status}
+                      color={getStatusColor(selectedUser.status)}
+                    />
+                  </Box>
+                  <TextField
+                    label="가입일"
+                    value={new Date(selectedUser.createdAt).toLocaleString()}
+                    disabled
+                    fullWidth
+                  />
+                  <TextField
+                    label="최종 수정일"
+                    value={new Date(selectedUser.updatedAt).toLocaleString()}
+                    disabled
+                    fullWidth
+                  />
+                  {selectedUser.lastLoginAt && (
+                    <TextField
+                      label="마지막 접속일"
+                      value={new Date(selectedUser.lastLoginAt).toLocaleString()}
+                      disabled
+                      fullWidth
+                    />
+                  )}
+                </>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {editMode ? (
+            <>
+              <Button onClick={() => setEditMode(false)}>취소</Button>
+              <Button variant="contained" onClick={handleUpdateUser}>
+                저장
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => setDetailModalOpen(false)}>닫기</Button>
+              <Button variant="contained" onClick={() => setEditMode(true)}>
+                수정
+              </Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
 
-        {/* 에러 메시지 */}
-        <Snackbar
-          open={!!error}
-          autoHideDuration={5000}
-          onClose={() => setError(null)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert severity="error" onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        </Snackbar>
+      {/* 성공 메시지 */}
+      <Snackbar
+        open={!!success}
+        autoHideDuration={3000}
+        onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      </Snackbar>
+
+      {/* 에러 메시지 */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={5000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      </Snackbar>
       </Container>
     </AdminLayout>
   );

@@ -85,20 +85,21 @@ variable "prometheus_service_account_name" {
   default     = "amp-ingest-sa"
 }
 
+
 ############################
-# grafana
+# Grafana (AMG)
 ############################
 
-variable "grafana_admin_user" {
-  type      = string
-  sensitive = true
+variable "grafana_workspace_name" {
+  description = "Amazon Managed Grafana workspace name"
+  type        = string
 }
 
-variable "grafana_admin_password" {
-  type      = string
-  sensitive = true
+variable "grafana_authentication_providers" {
+  description = "Grafana authentication providers (e.g. AWS_SSO)"
+  type        = list(string)
+  default     = ["AWS_SSO"]
 }
-
 
 ############################
 # Fluent Bit

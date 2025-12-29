@@ -33,8 +33,8 @@ const InquiryListPage = () => {
       const data = Array.isArray(res?.data)
         ? res.data
         : Array.isArray(res?.data?.data)
-          ? res.data.data
-          : [];
+        ? res.data.data
+        : [];
 
       setItems(data);
     } catch (err) {
@@ -60,7 +60,10 @@ const InquiryListPage = () => {
           <Button variant="outlined" onClick={fetchList}>
             새로고침
           </Button>
-          <Button variant="contained" onClick={() => navigate("/cs/inquiries/new")}>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/cs/inquiries/new")}
+          >
             문의하기
           </Button>
         </Stack>
@@ -117,8 +120,8 @@ const InquiryListPage = () => {
                         it?.createdAt
                           ? `작성일: ${it.createdAt}`
                           : it?.createdDate
-                            ? `작성일: ${it.createdDate}`
-                            : ""
+                          ? `작성일: ${it.createdDate}`
+                          : ""
                       }
                     />
                   </ListItem>

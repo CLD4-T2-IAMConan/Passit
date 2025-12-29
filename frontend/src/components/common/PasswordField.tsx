@@ -11,7 +11,7 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { usePasswordStrength } from "../../hooks/usePasswordStrength";
 
-interface PasswordFieldProps extends Omit<TextFieldProps, "type" | "label"> {
+interface PasswordFieldProps extends Omit<TextFieldProps, 'type' | 'label'> {
   label?: string;
   showLabel?: boolean;
   showStrengthIndicator?: boolean;
