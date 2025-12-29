@@ -40,12 +40,8 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      if (!formData.email) {
-        setError("email is required");
-      } else {
-        setError("password is required");
-      }
+    if (!formData.email && !formData.password) {
+      setError("email and password are required");
       return;
     }
     

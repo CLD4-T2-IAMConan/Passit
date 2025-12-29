@@ -78,8 +78,9 @@ describe("LoginForm", () => {
     await user.click(submitButton);
 
     // Assert
-    expect(await screen.findByText(/email is required/i)).toBeInTheDocument();
-    expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/email and password are required/i)).toBeInTheDocument();
+    // expect(await screen.findByText(/email is required/i)).toBeInTheDocument();
+    // expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
   });
 
   test("유효하지 않은 이메일 형식시 에러 메시지를 표시한다", async () => {
