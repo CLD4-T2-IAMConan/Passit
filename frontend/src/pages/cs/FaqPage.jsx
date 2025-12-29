@@ -32,9 +32,7 @@ export default function FaqPage() {
       {item && (
         <>
           <h3>{item.question ?? item.title ?? `FAQ #${faqId}`}</h3>
-          <p style={{ whiteSpace: "pre-wrap" }}>
-            {item.answer ?? item.content ?? ""}
-          </p>
+          <p style={{ whiteSpace: "pre-wrap" }}>{item.answer ?? item.content ?? ""}</p>
         </>
       )}
     </div>

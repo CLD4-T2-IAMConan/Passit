@@ -54,9 +54,7 @@ const ResetPasswordPage = () => {
                   mb: { xs: 2, md: 3 },
                 }}
               >
-                <CheckCircleIcon
-                  sx={{ fontSize: { xs: 28, md: 32 }, color: "primary.main" }}
-                />
+                <CheckCircleIcon sx={{ fontSize: { xs: 28, md: 32 }, color: "primary.main" }} />
                 <Typography
                   variant="h5"
                   sx={{
@@ -105,10 +103,7 @@ const ResetPasswordPage = () => {
                 "이메일로 받은 인증 코드를 입력하세요",
                 "새로운 비밀번호를 설정하세요",
               ].map((step, index) => (
-                <Box
-                  key={index}
-                  sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
-                >
+                <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Box
                     sx={{
                       width: 24,

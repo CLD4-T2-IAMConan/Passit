@@ -143,11 +143,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
           </Button>
 
           <Divider sx={{ my: 3 }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: "0.875rem" }}
-            >
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
               또는
             </Typography>
           </Divider>
@@ -178,10 +174,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -248,11 +241,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "로그인"
-            )}
+            {loading ? <CircularProgress size={24} color="inherit" /> : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>

@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField, TextFieldProps, Box, Typography } from "@mui/material";
 
-interface FormFieldProps extends Omit<TextFieldProps, 'label'> {
+interface FormFieldProps extends Omit<TextFieldProps, "label"> {
   label?: string;
   showLabel?: boolean;
   errorMessage?: string;

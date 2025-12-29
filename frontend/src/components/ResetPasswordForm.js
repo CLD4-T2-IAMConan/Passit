@@ -95,10 +95,7 @@ const ResetPasswordForm = () => {
       alert("인증 코드가 이메일로 발송되었습니다.");
       setCurrentStep(2);
     } catch (err) {
-      setError(
-        err.message ||
-          "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
-      );
+      setError(err.message || "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
     } finally {
       setSendingEmail(false);
     }
@@ -115,10 +112,7 @@ const ResetPasswordForm = () => {
     setError("");
 
     try {
-      await userService.verifyPasswordResetCode(
-        formData.email,
-        formData.verificationCode
-      );
+      await userService.verifyPasswordResetCode(formData.email, formData.verificationCode);
 
       setEmailVerified(true);
       setTimer(0);
@@ -155,10 +149,7 @@ const ResetPasswordForm = () => {
       alert("비밀번호가 변경되었습니다. 로그인해주세요.");
       navigate("/auth");
     } catch (err) {
-      setError(
-        err.message ||
-          "비밀번호 변경 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
-      );
+      setError(err.message || "비밀번호 변경 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
     } finally {
       setLoading(false);
     }
@@ -286,11 +277,7 @@ const ResetPasswordForm = () => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {verifyingCode ? (
-                      <CircularProgress size={20} color="inherit" />
-                    ) : (
-                      "확인"
-                    )}
+                    {verifyingCode ? <CircularProgress size={20} color="inherit" /> : "확인"}
                   </Button>
                 </Box>
                 <Box
@@ -306,8 +293,7 @@ const ResetPasswordForm = () => {
                   </Typography>
                   {timer > 0 && (
                     <Typography variant="caption" color="primary">
-                      {Math.floor(timer / 60)}:
-                      {String(timer % 60).padStart(2, "0")}
+                      {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, "0")}
                     </Typography>
                   )}
                 </Box>
@@ -339,10 +325,7 @@ const ResetPasswordForm = () => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
@@ -382,16 +365,10 @@ const ResetPasswordForm = () => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         edge="end"
                       >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -429,11 +406,7 @@ const ResetPasswordForm = () => {
                 fontSize: { xs: "0.938rem", sm: "1rem" },
               }}
             >
-              {sendingEmail ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "인증 코드 받기"
-              )}
+              {sendingEmail ? <CircularProgress size={24} color="inherit" /> : "인증 코드 받기"}
             </Button>
           ) : currentStep === 2 ? (
             <Button
@@ -447,11 +420,7 @@ const ResetPasswordForm = () => {
                 fontSize: { xs: "0.938rem", sm: "1rem" },
               }}
             >
-              {verifyingCode ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "다음"
-              )}
+              {verifyingCode ? <CircularProgress size={24} color="inherit" /> : "다음"}
             </Button>
           ) : (
             <Button
@@ -465,11 +434,7 @@ const ResetPasswordForm = () => {
                 fontSize: { xs: "0.938rem", sm: "1rem" },
               }}
             >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "비밀번호 변경"
-              )}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "비밀번호 변경"}
             </Button>
           )}
         </Box>
