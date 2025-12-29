@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./LoginPage";
 import { AuthProvider } from "../contexts/AuthContext";
 import { userService } from "../services/userService";
-import { useAuth } from "@/context/AuthContext";
-import AuthPage from "@/pages/AuthPage";
+import { useAuth } from "../contexts/AuthContext";
+import AuthPage from "./AuthPage";
 
 // Mock userService
 jest.mock("../services/userService", () => ({
