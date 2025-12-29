@@ -56,7 +56,7 @@ describe("LoginPage Integration Test", () => {
     renderLoginPage();
 
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /email/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe("LoginPage Integration Test", () => {
     renderLoginPage();
 
     // 이메일과 비밀번호 입력
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
 
     // 로그인 버튼 클릭
@@ -86,7 +86,7 @@ describe("LoginPage Integration Test", () => {
     renderLoginPage();
 
     // 잘못된 비밀번호로 로그인 시도
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await user.type(screen.getByLabelText(/password/i), "wrongpassword");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -101,7 +101,7 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByLabelText(/email/i), "nonexistent@example.com");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "nonexistent@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -124,7 +124,7 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByLabelText(/email/i), "invalid-email");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "invalid-email");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
@@ -135,7 +135,7 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
 
     const submitButton = screen.getByRole("button", { name: /login/i });
@@ -162,7 +162,7 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    const emailInput = screen.getByLabelText(/email/i);
+    const emailInput = screen.getByRole("textbox", { name: /email/i });
     const passwordInput = screen.getByLabelText(/password/i);
 
     await user.type(emailInput, "test@example.com");
@@ -197,7 +197,7 @@ describe("LoginPage Integration Test", () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByRole("textbox", { name: /email/i }), "test@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /login/i }));
 
