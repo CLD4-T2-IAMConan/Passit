@@ -46,9 +46,9 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm />);
 
     // Assert
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/이메일/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/비밀번호/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /로그인/i })).toBeInTheDocument();
   });
 
   test("이메일과 비밀번호를 입력할 수 있다", async () => {
@@ -56,8 +56,8 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginForm />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const emailInput = screen.getByLabelText(/이메일/i);
+    const passwordInput = screen.getByLabelText(/비밀번호/i);
 
     // Act
     await user.type(emailInput, "test@example.com");
@@ -74,7 +74,7 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm />);
 
     // Act
-    const submitButton = screen.getByRole("button", { name: /login/i });
+    const submitButton = screen.getByRole("button", { name: /로그인/i });
     await user.click(submitButton);
 
     // Assert
@@ -88,9 +88,9 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm />);
 
     // Act
-    await user.type(screen.getByLabelText(/email/i), "invalid-email");
-    await user.type(screen.getByLabelText(/password/i), "password123");
-    await user.click(screen.getByRole("button", { name: /login/i }));
+    await user.type(screen.getByLabelText(/이메일/i), "invalid-email");
+    await user.type(screen.getByLabelText(/비밀번호/i), "password123");
+    await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     // Assert
     expect(await screen.findByText(/invalid email format/i)).toBeInTheDocument();
@@ -104,9 +104,9 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
     // Act
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
-    await user.click(screen.getByRole("button", { name: /login/i }));
+    await user.type(screen.getByLabelText(/이메일/i), "test@example.com");
+    await user.type(screen.getByLabelText(/비밀번호/i), "password123");
+    await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     // Assert
     await waitFor(() => {
@@ -125,9 +125,9 @@ describe("LoginForm", () => {
     renderWithProviders(<LoginForm onError={onError} />);
 
     // Act
-    await user.type(screen.getByLabelText(/email/i), "wrong@example.com");
-    await user.type(screen.getByLabelText(/password/i), "wrongpassword");
-    await user.click(screen.getByRole("button", { name: /login/i }));
+    await user.type(screen.getByLabelText(/이메일/i), "wrong@example.com");
+    await user.type(screen.getByLabelText(/비밀번호/i), "wrongpassword");
+    await user.click(screen.getByRole("button", { name: /로그인/i }));
 
     // Assert
     expect(await screen.findByText(/invalid email or password/i)).toBeInTheDocument();
@@ -141,11 +141,11 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginForm />);
 
-    const submitButton = screen.getByRole("button", { name: /login/i });
+    const submitButton = screen.getByRole("button", { name: /로그인/i });
 
     // Act
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.type(screen.getByLabelText(/password/i), "password123");
+    await user.type(screen.getByLabelText(/이메일/i), "test@example.com");
+    await user.type(screen.getByLabelText(/비밀번호/i), "password123");
     await user.click(submitButton);
 
     // Assert
@@ -160,8 +160,8 @@ describe("LoginForm", () => {
 
     renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const emailInput = screen.getByLabelText(/이메일/i);
+    const passwordInput = screen.getByLabelText(/비밀번호/i);
 
     // Act
     await user.type(emailInput, "test@example.com");
@@ -179,7 +179,7 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginForm />);
 
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/비밀번호/i);
     const toggleButton = screen.getByRole("button", { name: /show password/i });
 
     // Act - 비밀번호 입력
