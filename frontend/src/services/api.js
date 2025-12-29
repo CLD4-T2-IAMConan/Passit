@@ -6,8 +6,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-export default api;
-
 // (선택) 요청/응답 디버깅
 api.interceptors.request.use(
   (config) => config,

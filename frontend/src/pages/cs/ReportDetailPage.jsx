@@ -37,9 +37,15 @@ export default function ReportDetailPage() {
       <h2>신고 상세</h2>
 
       <div style={{ marginTop: 12 }}>
-        <div><strong>상태</strong> : {report.status}</div>
-        <div><strong>대상 타입</strong> : {report.targetType}</div>
-        <div><strong>대상 ID</strong> : {report.targetId}</div>
+        <div>
+          <strong>상태</strong> : {report.status}
+        </div>
+        <div>
+          <strong>대상 타입</strong> : {report.targetType}
+        </div>
+        <div>
+          <strong>대상 ID</strong> : {report.targetId}
+        </div>
         <div style={{ marginTop: 8 }}>
           <strong>신고 사유</strong>
           <div style={{ marginTop: 4 }}>{report.reason}</div>

@@ -18,7 +18,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { API_SERVICES } from "../config/apiConfig";
 import { ENDPOINTS } from "../api/endpoints";
 
-const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
+const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -39,21 +39,36 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email && !formData.password) {
+      setError("email and password are required");
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) {
+      setError("Invalid email format");
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
       const result = await login(formData.email, formData.password, rememberMe);
+      // 성공 시
+      onSuccess?.(result.user);
+      onLoginSuccess?.(result.user);
+      } catch (err) {
+        const message =
+          err?.response?.data?.message ||
+          "Invalid email or password";
 
-      if (result.success) {
-        onLoginSuccess(result.user);
-      } else {
-        setError(result.error || "이메일 또는 비밀번호를 확인해주세요");
-      }
-    } catch (err) {
-      setError(err.message || "이메일 또는 비밀번호를 확인해주세요");
-    } finally {
-      setLoading(false);
+        setError(message);
+        onError?.(message);
+      } finally {
+        setLoading(false);
     }
   };
 
@@ -143,11 +158,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
           </Button>
 
           <Divider sx={{ my: 3 }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: "0.875rem" }}
-            >
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
               또는
             </Typography>
           </Divider>
@@ -178,10 +189,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" aria-label={showPassword ? "Hide password" : "Show password"}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -248,11 +256,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "로그인"
-            )}
+            {loading ?  "logging in" : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>

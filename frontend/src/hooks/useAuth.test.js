@@ -1,4 +1,10 @@
 // Mock userService directly - this will be used by AuthContext
+import React from "react";
+import { renderHook, waitFor, act } from "@testing-library/react";
+import { useAuth } from "./useAuth";
+import { AuthProvider } from "../contexts/AuthContext";
+import * as userServiceModule from "../services/userService";
+
 jest.mock("../services/userService", () => {
   const mockUserService = {
     login: jest.fn(),
@@ -16,12 +22,6 @@ jest.mock("../services/userService", () => {
     default: mockUserService,
   };
 });
-
-import React from "react";
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { useAuth } from "./useAuth";
-import { AuthProvider } from "../contexts/AuthContext";
-import * as userServiceModule from "../services/userService";
 
 // Wrapper component to provide AuthContext
 const wrapper = ({ children }) => <AuthProvider>{children}</AuthProvider>;
@@ -194,10 +194,10 @@ describe("useAuth", () => {
     // Assert
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
-      expect(result.current.isAuthenticated).toBe(true);
-      expect(result.current.user).toBeTruthy();
-      expect(result.current.user.email).toBe("test@example.com");
     });
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.user).toBeTruthy();
+    expect(result.current.user.email).toBe("test@example.com");
   });
 
   test("사용자 정보 업데이트가 작동한다", async () => {

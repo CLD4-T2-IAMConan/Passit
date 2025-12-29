@@ -30,5 +30,3 @@ yarn-error.log*
 # /src/assets/images/*
 
 .env
-.package-lock.json
-package-lock.json
