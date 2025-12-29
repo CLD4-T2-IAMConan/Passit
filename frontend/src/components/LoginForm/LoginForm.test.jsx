@@ -23,11 +23,7 @@ jest.mock("../../contexts/AuthContext", () => ({
 
 // Wrapper with all necessary providers
 const AllTheProviders = ({ children }) => {
-  return (
-    <BrowserRouter>
-      {children}
-    </BrowserRouter>
-  );
+  return <BrowserRouter>{children}</BrowserRouter>;
 };
 
 const renderWithProviders = (ui, options) => {

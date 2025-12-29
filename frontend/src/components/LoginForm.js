@@ -44,7 +44,7 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
       setError("email and password are required");
       return;
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(formData.email)) {
@@ -60,15 +60,13 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
       // 성공 시
       onSuccess?.(result.user);
       onLoginSuccess?.(result.user);
-      } catch (err) {
-        const message =
-          err?.response?.data?.message ||
-          "Invalid email or password";
+    } catch (err) {
+      const message = err?.response?.data?.message || "Invalid email or password";
 
-        setError(message);
-        onError?.(message);
-      } finally {
-        setLoading(false);
+      setError(message);
+      onError?.(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,7 +187,11 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" aria-label={showPassword ? "Hide password" : "Show password"}>
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -256,7 +258,7 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ?  "logging in" : "로그인"}
+            {loading ? "logging in" : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>

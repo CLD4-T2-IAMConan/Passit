@@ -64,9 +64,7 @@ describe("LoginPage Integration Test", () => {
   test("로그인 페이지가 올바르게 렌더링된다", () => {
     renderLoginPage();
 
-    expect(
-      screen.getByRole("heading", { name: /다시 오신 것을 환영합니다/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /다시 오신 것을 환영합니다/i })).toBeInTheDocument();
 
     expect(screen.getByLabelText(/이메일/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/비밀번호/i)).toBeInTheDocument();
@@ -95,9 +93,7 @@ describe("LoginPage Integration Test", () => {
   test("로그인 실패 시 에러 메시지 표시", async () => {
     const user = userEvent.setup();
 
-    userService.login.mockRejectedValueOnce(
-      new Error("Invalid email or password")
-    );
+    userService.login.mockRejectedValueOnce(new Error("Invalid email or password"));
 
     renderLoginPage();
 
@@ -105,9 +101,7 @@ describe("LoginPage Integration Test", () => {
     await user.type(screen.getByLabelText(/비밀번호/i), "wrongpassword");
     await user.click(screen.getByRole("button", { name: /로그인/i }));
 
-    expect(
-      await screen.findByRole("alert")
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 
   test("회원가입 링크 클릭 시 회원가입 페이지로 이동", async () => {
@@ -150,9 +144,7 @@ describe("LoginPage Integration Test", () => {
     await user.click(toggleButton);
     expect(passwordInput).toHaveAttribute("type", "text");
 
-    await user.click(
-      screen.getByRole("button", { name: /hide password/i })
-    );
+    await user.click(screen.getByRole("button", { name: /hide password/i }));
     expect(passwordInput).toHaveAttribute("type", "password");
   });
 
