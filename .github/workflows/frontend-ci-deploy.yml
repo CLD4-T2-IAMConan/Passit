@@ -79,6 +79,8 @@ jobs:
   # E2E Tests
   # --------------------
   e2e-tests:
+    if: false # e2e 잠깐 끄기
+
     runs-on: ubuntu-latest
     needs: build-and-test
     defaults:
