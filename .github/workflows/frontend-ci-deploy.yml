@@ -39,8 +39,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          CI: true
-          ESLINT_NO_DEV_ERRORS: true
+          CI: false
 
       - name: Upload test coverage
         if: always()
