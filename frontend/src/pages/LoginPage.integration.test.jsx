@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./LoginPage";
 import { AuthProvider } from "../contexts/AuthContext";
+import { userService } from "../services/userService";
 
 // Mock userService
 jest.mock("../services/userService", () => ({
@@ -13,7 +14,6 @@ jest.mock("../services/userService", () => ({
   },
 }));
 
-import { userService } from "../services/userService";
 
 /**
  * LoginPage 통합 테스트
