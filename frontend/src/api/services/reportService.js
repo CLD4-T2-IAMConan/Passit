@@ -11,10 +11,7 @@ export const reportService = {
    * @param {string} payload.reason
    */
   createReport: (payload) => {
-    return axiosInstance.post(
-      ENDPOINTS.REPORTS.CREATE,
-      payload
-    );
+    return axiosInstance.post(ENDPOINTS.REPORTS.CREATE, payload);
   },
 
   /**
@@ -22,9 +19,7 @@ export const reportService = {
    * @param {number} userId
    */
   getMyReports: (userId) => {
-    return axiosInstance.get(
-      ENDPOINTS.REPORTS.MY_LIST(userId)
-    );
+    return axiosInstance.get(ENDPOINTS.REPORTS.MY_LIST(userId));
   },
 
   /**
@@ -32,9 +27,7 @@ export const reportService = {
    * @param {number} reportId
    */
   getMyReportDetail: (reportId) => {
-    return axiosInstance.get(
-      ENDPOINTS.REPORTS.MY_DETAIL(reportId)
-    );
+    return axiosInstance.get(ENDPOINTS.REPORTS.MY_DETAIL(reportId));
   },
 
   /**
@@ -46,10 +39,7 @@ export const reportService = {
    * @param {number} params.target_user_id
    */
   getAdminReports: (params = {}) => {
-    return axiosInstance.get(
-      ENDPOINTS.REPORTS.ADMIN_LIST,
-      { params }
-    );
+    return axiosInstance.get(ENDPOINTS.REPORTS.ADMIN_LIST, { params });
   },
 
   /**
@@ -57,9 +47,7 @@ export const reportService = {
    * @param {number} reportId
    */
   getAdminReportDetail: (reportId) => {
-    return axiosInstance.get(
-      ENDPOINTS.REPORTS.ADMIN_DETAIL(reportId)
-    );
+    return axiosInstance.get(ENDPOINTS.REPORTS.ADMIN_DETAIL(reportId));
   },
 
   /**
@@ -68,10 +56,7 @@ export const reportService = {
    * @param {string} status
    */
   updateReportStatus: (reportId, status) => {
-    return axiosInstance.patch(
-      ENDPOINTS.REPORTS.UPDATE_STATUS(reportId),
-      { status }
-    );
+    return axiosInstance.patch(ENDPOINTS.REPORTS.UPDATE_STATUS(reportId), { status });
   },
 };
 

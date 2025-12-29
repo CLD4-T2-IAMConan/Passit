@@ -89,7 +89,10 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
       if (onSuccess) onSuccess();
       return { success: true, error: null };
     } catch (err) {
-      const error = err instanceof Error ? err.message : "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요";
+      const error =
+        err instanceof Error
+          ? err.message
+          : "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요";
       return {
         success: false,
         error,
@@ -136,7 +139,8 @@ export const useEmailVerification = (): UseEmailVerificationReturn => {
       if (onSuccess) onSuccess();
       return { success: true, error: null };
     } catch (err) {
-      const error = err instanceof Error ? err.message : "인증 코드를 확인하는 중 문제가 발생했어요";
+      const error =
+        err instanceof Error ? err.message : "인증 코드를 확인하는 중 문제가 발생했어요";
       return {
         success: false,
         error,

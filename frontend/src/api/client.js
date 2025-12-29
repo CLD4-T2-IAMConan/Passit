@@ -95,4 +95,4 @@ const apiClient = accountApiClient;
 
 //  named + default
 export { apiClient };
-export default apiClient
+export default apiClient;

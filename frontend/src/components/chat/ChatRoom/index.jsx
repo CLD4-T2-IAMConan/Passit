@@ -4,22 +4,22 @@ import MessageBubble from "../MessageBubble";
 import "./style.css";
 
 const ChatRoom = ({ messages, currentUserId }) => {
-    const scrollRef = useRef(null);
+  const scrollRef = useRef(null);
 
-    // 새로운 메시지가 오면 맨 아래로 스크롤
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [messages]);
+  // 새로운 메시지가 오면 맨 아래로 스크롤
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
-    return (
-        <div ref={scrollRef} className="chatroom-container">
-            {messages.map((msg, idx) => (
-                <MessageBubble key={idx} message={msg} userId={currentUserId} />
-            ))}
-        </div>
-    );
+  return (
+    <div ref={scrollRef} className="chatroom-container">
+      {messages.map((msg, idx) => (
+        <MessageBubble key={idx} message={msg} userId={currentUserId} />
+      ))}
+    </div>
+  );
 };
 
 export default ChatRoom;
