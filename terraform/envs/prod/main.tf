@@ -203,7 +203,6 @@ module "monitoring" {
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
 
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
