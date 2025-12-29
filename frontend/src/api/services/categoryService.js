@@ -23,9 +23,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 카테고리 정보
    */
   getCategoryById: async (id) => {
-    const response = await csApiClient.get(
-      ENDPOINTS.ADMIN.CATEGORIES.DETAIL(id)
-    );
+    const response = await csApiClient.get(ENDPOINTS.ADMIN.CATEGORIES.DETAIL(id));
     return response.data;
   },
 
@@ -35,10 +33,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 생성된 카테고리 정보
    */
   createCategory: async (data) => {
-    const response = await csApiClient.post(
-      ENDPOINTS.ADMIN.CATEGORIES.CREATE,
-      data
-    );
+    const response = await csApiClient.post(ENDPOINTS.ADMIN.CATEGORIES.CREATE, data);
     return response.data;
   },
 
@@ -49,10 +44,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 수정된 카테고리 정보
    */
   updateCategory: async (id, data) => {
-    const response = await csApiClient.put(
-      ENDPOINTS.ADMIN.CATEGORIES.UPDATE(id),
-      data
-    );
+    const response = await csApiClient.put(ENDPOINTS.ADMIN.CATEGORIES.UPDATE(id), data);
     return response.data;
   },
 
@@ -62,9 +54,7 @@ export const categoryService = {
    * @returns {Promise<void>}
    */
   deleteCategory: async (id) => {
-    const response = await csApiClient.delete(
-      ENDPOINTS.ADMIN.CATEGORIES.DELETE(id)
-    );
+    const response = await csApiClient.delete(ENDPOINTS.ADMIN.CATEGORIES.DELETE(id));
     return response.data;
   },
 };

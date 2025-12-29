@@ -36,8 +36,5 @@ export const getAdminInquiryDetail = (inquiryId) => {
 
 // 관리자 답변 등록/수정
 export const answerInquiry = (inquiryId, data) => {
-  return api.patch(
-    ENDPOINTS.INQUIRIES.ADMIN_ANSWER(inquiryId),
-    data
-  );
+  return api.patch(ENDPOINTS.INQUIRIES.ADMIN_ANSWER(inquiryId), data);
 };

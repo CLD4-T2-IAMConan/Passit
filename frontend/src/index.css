@@ -10,13 +10,18 @@
 
 body {
   margin: 0;
-  font-family: "Wanted Sans Variable", "Wanted Sans", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-family:
+    "Wanted Sans Variable",
+    "Wanted Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }

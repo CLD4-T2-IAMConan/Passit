@@ -17,87 +17,11 @@ module "eks" {
   enable_irsa = true
 
   # Cluster creator admin permissions
-  enable_cluster_creator_admin_permissions = true
+  # Disabled because access entries are already configured for team members
+  enable_cluster_creator_admin_permissions = false
 
   # Access entries for additional users
   access_entries = {
-    iamconan = {
-      principal_arn     = "arn:aws:iam::727646470302:user/iamconan"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-    # 팀원 추가 - 아래에 필요한 사용자 추가
-    daeun = {
-      principal_arn     = "arn:aws:iam::727646470302:user/t2-daeun"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-
-    jinho = {
-      principal_arn     = "arn:aws:iam::727646470302:user/t2-jinho"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-
-    krystal = {
-      principal_arn     = "arn:aws:iam::727646470302:user/t2-krystal"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-
-    gypark = {
-      principal_arn     = "arn:aws:iam::727646470302:user/t2-gypark"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-
-    yejin = {
-      principal_arn     = "arn:aws:iam::727646470302:user/t2-yejin"
-      type              = "STANDARD"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
   }
 
   # Disable CloudWatch Logs (권한 문제)

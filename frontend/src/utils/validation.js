@@ -4,15 +4,16 @@
  * @returns {boolean} 유효하면 true, 아니면 false
  */
 export const validateEmail = (email) => {
-  if (!email || typeof email !== 'string') {
+  if (!email || typeof email !== "string") {
     return false;
   }
 
   // 이메일 정규식: 기본적인 이메일 형식 검증
-  const emailRegex = /^[a-zA-Z0-9]([a-zA-Z0-9._+-])*@[a-zA-Z0-9]([a-zA-Z0-9-])*(\.[a-zA-Z0-9]([a-zA-Z0-9-])*)+$/;
+  const emailRegex =
+    /^[a-zA-Z0-9]([a-zA-Z0-9._+-])*@[a-zA-Z0-9]([a-zA-Z0-9-])*(\.[a-zA-Z0-9]([a-zA-Z0-9-])*)+$/;
 
   // 연속된 점이 있는지 체크
-  if (email.includes('..')) {
+  if (email.includes("..")) {
     return false;
   }
 
@@ -28,12 +29,12 @@ export const validateEmail = (email) => {
  * @returns {boolean} 유효하면 true, 아니면 false
  */
 export const validatePassword = (password) => {
-  if (!password || typeof password !== 'string') {
+  if (!password || typeof password !== "string") {
     return false;
   }
 
   // 공백만 있는 경우 제외
-  if (password.trim() === '') {
+  if (password.trim() === "") {
     return false;
   }
 
@@ -59,12 +60,12 @@ export const validatePassword = (password) => {
  * @returns {boolean} 유효하면 true, 아니면 false
  */
 export const validatePhone = (phone) => {
-  if (!phone || typeof phone !== 'string') {
+  if (!phone || typeof phone !== "string") {
     return false;
   }
 
   // 하이픈 제거
-  const cleanPhone = phone.replace(/-/g, '');
+  const cleanPhone = phone.replace(/-/g, "");
 
   // 전화번호 정규식: 010, 011, 016, 017, 018, 019로 시작하는 10-11자리 숫자
   const phoneRegex = /^(010|011|016|017|018|019)\d{7,8}$/;

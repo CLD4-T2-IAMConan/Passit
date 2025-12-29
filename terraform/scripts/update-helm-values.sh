@@ -10,6 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
 
+echo "DEBUG:"
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+echo "PROJECT_ROOT=$PROJECT_ROOT"
+
 if [ ! -d "$TERRAFORM_DIR" ]; then
     echo "❌ Error: $TERRAFORM_DIR 디렉토리가 존재하지 않습니다."
     exit 1

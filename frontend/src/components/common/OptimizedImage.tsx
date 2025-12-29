@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Skeleton, BoxProps } from "@mui/material";
 
-interface OptimizedImageProps extends Omit<BoxProps, 'component'> {
+interface OptimizedImageProps extends Omit<BoxProps, "component"> {
   src: string;
   alt: string;
   width?: string | number;
