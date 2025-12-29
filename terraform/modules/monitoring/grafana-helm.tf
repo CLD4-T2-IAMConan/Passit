@@ -24,18 +24,7 @@ variable "grafana_chart_version" {
   default     = "7.3.9"
 }
 
-# admin 계정 정보 (terraform.tfvars에서 주입)
-variable "grafana_admin_user" {
-  description = "Grafana admin username (from terraform.tfvars)"
-  type        = string
-  sensitive   = true
-}
 
-variable "grafana_admin_password" {
-  description = "Grafana admin password (from terraform.tfvars)"
-  type        = string
-  sensitive   = true
-}
 
 ############################
 # Data / Locals
@@ -46,12 +35,6 @@ data "aws_eks_cluster" "this" {
 }
 
 locals {
-  # OIDC issuer hostpath
-  oidc_issuer = replace(
-    data.aws_eks_cluster.this.identity[0].oidc[0].issuer,
-    "https://",
-    ""
-  )
 
   # AMP workspace endpoint
   amp_query_endpoint = trim(

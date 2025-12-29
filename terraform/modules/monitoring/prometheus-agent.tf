@@ -27,38 +27,7 @@ resource "kubernetes_service_account_v1" "adot" {
   ]
 }
 
-############################
-# RBAC (kubelet / cadvisor 접근)
-############################
-resource "kubernetes_cluster_role_v1" "adot" {
-  metadata {
-    name = "${var.project_name}-${var.environment}-adot"
-  }
 
-  rule {
-    api_groups = [""]
-    resources  = ["nodes", "nodes/proxy", "pods", "services", "endpoints", "namespaces"]
-    verbs      = ["get", "list", "watch"]
-  }
-}
-
-resource "kubernetes_cluster_role_binding_v1" "adot" {
-  metadata {
-    name = "${var.project_name}-${var.environment}-adot"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = kubernetes_cluster_role_v1.adot.metadata[0].name
-  }
-
-  subject {
-    kind      = "ServiceAccount"
-    name      = kubernetes_service_account_v1.adot.metadata[0].name
-    namespace = var.prometheus_namespace
-  }
-}
 
 ############################
 # ADOT Collector (Helm)

@@ -280,6 +280,7 @@ variable "grafana_service_account_name" {
 variable "grafana_admin_user" {
   description = "Grafana admin username"
   type        = string
+  sensitive   = true
 }
 
 variable "grafana_admin_password" {
