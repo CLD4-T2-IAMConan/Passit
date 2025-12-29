@@ -3,7 +3,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import LoginForm from "./LoginForm";
-import { AuthProvider } from "../../contexts/AuthContext";
 
 // Mock userService
 jest.mock("../../services/userService", () => ({
@@ -14,11 +13,19 @@ jest.mock("../../services/userService", () => ({
   },
 }));
 
+const mockLogin = jest.fn();
+
+jest.mock("../../contexts/AuthContext", () => ({
+  useAuth: () => ({
+    login: mockLogin,
+  }),
+}));
+
 // Wrapper with all necessary providers
 const AllTheProviders = ({ children }) => {
   return (
     <BrowserRouter>
-      <AuthProvider>{children}</AuthProvider>
+      {children}
     </BrowserRouter>
   );
 };
@@ -102,6 +109,10 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     const onSuccess = jest.fn();
 
+    mockLogin.mockResolvedValueOnce({
+      user: { email: "test@example.com" },
+    });
+
     renderWithProviders(<LoginForm onSuccess={onSuccess} />);
 
     // Act
@@ -123,6 +134,12 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     const onError = jest.fn();
 
+    mockLogin.mockRejectedValueOnce({
+      response: {
+        data: { message: "Invalid email or password" },
+      },
+    });
+
     renderWithProviders(<LoginForm onError={onError} />);
 
     // Act
@@ -132,14 +149,21 @@ describe("LoginForm", () => {
 
     // Assert
     expect(await screen.findByText(/invalid email or password/i)).toBeInTheDocument();
-    await waitFor(() => {
-      expect(onError).toHaveBeenCalledTimes(1);
-    });
+    expect(onError).toHaveBeenCalledWith("Invalid email or password");
   });
 
   test("로그인 중에는 버튼이 비활성화된다", async () => {
     // Arrange
     const user = userEvent.setup();
+
+    let resolveLogin;
+    mockLogin.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveLogin = resolve;
+        })
+    );
+
     renderWithProviders(<LoginForm />);
 
     const submitButton = screen.getByRole("button", { name: /로그인/i });
