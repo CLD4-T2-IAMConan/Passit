@@ -73,19 +73,37 @@ export default function AdminReportDetailPage() {
       <h2>신고 상세 (관리자)</h2>
 
       <div style={{ marginTop: 12, lineHeight: 1.8 }}>
-        <div><b>ID</b>: {detail.reportId ?? detail.id}</div>
-        <div><b>상태</b>: {detail.status}</div>
-        <div><b>신고자</b>: {detail.reporterId ?? detail.userId}</div>
-        <div><b>대상 타입</b>: {detail.targetType}</div>
-        <div><b>대상 ID</b>: {detail.targetId}</div>
-        <div><b>사유</b>: {detail.reason}</div>
-        {detail.createdAt && <div><b>생성일</b>: {detail.createdAt}</div>}
+        <div>
+          <b>ID</b>: {detail.reportId ?? detail.id}
+        </div>
+        <div>
+          <b>상태</b>: {detail.status}
+        </div>
+        <div>
+          <b>신고자</b>: {detail.reporterId ?? detail.userId}
+        </div>
+        <div>
+          <b>대상 타입</b>: {detail.targetType}
+        </div>
+        <div>
+          <b>대상 ID</b>: {detail.targetId}
+        </div>
+        <div>
+          <b>사유</b>: {detail.reason}
+        </div>
+        {detail.createdAt && (
+          <div>
+            <b>생성일</b>: {detail.createdAt}
+          </div>
+        )}
       </div>
 
       <hr style={{ margin: "16px 0" }} />
 
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <label htmlFor="status"><b>상태 변경</b></label>
+        <label htmlFor="status">
+          <b>상태 변경</b>
+        </label>
         <select
           id="status"
           value={status}
@@ -93,7 +111,9 @@ export default function AdminReportDetailPage() {
           disabled={saving}
         >
           {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
 

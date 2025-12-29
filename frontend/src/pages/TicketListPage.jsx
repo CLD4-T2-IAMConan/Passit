@@ -123,10 +123,10 @@ const TicketListPage = () => {
             filterType === "date"
               ? "YYYY-MM-DD"
               : filterType === "status"
-              ? "AVAILABLE / SOLD"
-              : filterType === "category"
-              ? "카테고리 ID"
-              : "검색어 입력"
+                ? "AVAILABLE / SOLD"
+                : filterType === "category"
+                  ? "카테고리 ID"
+                  : "검색어 입력"
           }
         />
 
@@ -167,9 +167,7 @@ const TicketListPage = () => {
                   <TableCell>{ticket.ticketStatus}</TableCell>
                   <TableCell>{ticket.eventName}</TableCell>
                   <TableCell>{ticket.eventDate}</TableCell>
-                  <TableCell>
-                    {ticket.sellingPrice?.toLocaleString()}원
-                  </TableCell>
+                  <TableCell>{ticket.sellingPrice?.toLocaleString()}원</TableCell>
                 </TableRow>
               ))
             )}

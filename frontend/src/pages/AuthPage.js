@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Box,
-  Paper,
-  Typography,
-  useTheme,
-  useMediaQuery,
-  Alert,
-} from "@mui/material";
+import { Box, Paper, Typography, useTheme, useMediaQuery, Alert } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LoginForm from "../components/LoginForm";
 import RegisterForm from "../components/RegisterForm";
@@ -24,9 +17,7 @@ const AuthPage = () => {
     const error = searchParams.get("error");
     const message = searchParams.get("message");
     if (error === "kakao_login_failed") {
-      setErrorMessage(
-        message || "카카오 로그인에 실패했습니다. 다시 시도해주세요."
-      );
+      setErrorMessage(message || "카카오 로그인에 실패했습니다. 다시 시도해주세요.");
       // URL에서 에러 파라미터 제거
       setSearchParams({}, { replace: true });
     }
@@ -105,9 +96,7 @@ const AuthPage = () => {
                   mb: { xs: 2, md: 3 },
                 }}
               >
-                <CheckCircleIcon
-                  sx={{ fontSize: { xs: 28, md: 32 }, color: "primary.main" }}
-                />
+                <CheckCircleIcon sx={{ fontSize: { xs: 28, md: 32 }, color: "primary.main" }} />
                 <Typography
                   variant="h5"
                   sx={{
@@ -128,9 +117,7 @@ const AuthPage = () => {
                   color: "#1a1a1a",
                 }}
               >
-                {isLogin
-                  ? "다시 오신 것을 환영합니다"
-                  : "정가 거래를 시작하세요"}
+                {isLogin ? "다시 오신 것을 환영합니다" : "정가 거래를 시작하세요"}
               </Typography>
               <Typography
                 variant="body1"
@@ -162,13 +149,8 @@ const AuthPage = () => {
                   "투명한 거래 내역",
                   "불법 암표 근절",
                 ].map((feature, index) => (
-                  <Box
-                    key={index}
-                    sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
-                  >
-                    <CheckCircleIcon
-                      sx={{ fontSize: 20, color: "primary.main" }}
-                    />
+                  <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <CheckCircleIcon sx={{ fontSize: 20, color: "primary.main" }} />
                     <Typography
                       variant="body2"
                       sx={{

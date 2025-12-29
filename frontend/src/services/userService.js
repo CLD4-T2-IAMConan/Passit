@@ -1,5 +1,5 @@
-import apiClient from "../client";
-import { ENDPOINTS } from "../endpoints";
+import apiClient from "../api/client";
+import { ENDPOINTS } from "../api/endpoints";
 
 /**
  * 사용자 관련 API 서비스
@@ -11,13 +11,13 @@ export const userService = {
    */
   getMe: async () => {
     // 1. 로컬스토리지에서 직접 토큰을 꺼냅니다.
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     // 2. 요청 시 headers 옵션에 토큰을 포함시킵니다.
     const response = await apiClient.get(ENDPOINTS.USERS.ME, {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return response.data;

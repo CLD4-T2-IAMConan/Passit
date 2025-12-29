@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  MenuItem,
-  Alert,
-} from "@mui/material";
+import { Container, Typography, TextField, Button, Grid, MenuItem, Alert } from "@mui/material";
 import ticketService from "../api/services/ticketService";
 
 export default function TicketCreatePage() {
@@ -90,9 +82,7 @@ export default function TicketCreatePage() {
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}
-      {success && (
-        <Alert severity="success">티켓이 성공적으로 등록되었습니다.</Alert>
-      )}
+      {success && <Alert severity="success">티켓이 성공적으로 등록되었습니다.</Alert>}
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -230,12 +220,7 @@ export default function TicketCreatePage() {
           <Grid item xs={12}>
             <Button variant="outlined" component="label">
               이미지 1 업로드
-              <input
-                type="file"
-                name="image1"
-                hidden
-                onChange={handleFileChange}
-              />
+              <input type="file" name="image1" hidden onChange={handleFileChange} />
             </Button>
           </Grid>
 
@@ -243,12 +228,7 @@ export default function TicketCreatePage() {
           <Grid item xs={12}>
             <Button variant="outlined" component="label">
               이미지 2 업로드
-              <input
-                type="file"
-                name="image2"
-                hidden
-                onChange={handleFileChange}
-              />
+              <input type="file" name="image2" hidden onChange={handleFileChange} />
             </Button>
           </Grid>
 
