@@ -321,6 +321,12 @@ variable "github_oidc_provider_arn" {
   default     = ""
 }
 
+variable "github_actions_role_name" {
+  description = "Custom name for GitHub Actions IAM role (optional, defaults to passit-dev-github-actions-passive)"
+  type        = string
+  default     = "passit-dev-github-actions-passive"
+}
+
 # =========================
 # CI/CD - registry (GHCR)
 # =========================
