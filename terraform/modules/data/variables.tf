@@ -285,3 +285,10 @@ variable "s3_kms_key_id" {
   type        = string
   default     = ""
 }
+
+# DR 환경에서 RDS 생성을 생략하기 위한 변수
+variable "enable_rds" {
+  description = "RDS를 생성할지 여부"
+  type        = bool
+  default     = true
+}

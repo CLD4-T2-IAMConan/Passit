@@ -354,3 +354,9 @@ variable "allowed_cidr_blocks_bastion" {
   type        = list(string)
   default     = [] # prod에서는 빈 배열
 }
+
+# DR 환경에서 RDS 생성을 생략하기 위한 변수
+variable "enable_rds" {
+  description = "RDS 생성 여부 결정"
+  type        = bool
+}

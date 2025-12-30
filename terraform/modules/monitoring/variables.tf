@@ -133,3 +133,16 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+
+variable "grafana_admin_user" {
+  description = "Admin username for Grafana"
+  type        = string
+  default     = "admin"
+}
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana"
+  type        = string
+  default     = "admin1234!" # 실제 운영시에는 tfvars에서 관리하세요.
+}

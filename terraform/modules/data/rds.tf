@@ -14,7 +14,7 @@ resource "aws_db_subnet_group" "main" {
 }
 
 locals {
-  db_subnet_group_name = var.existing_db_subnet_group_name != "" ? data.aws_db_subnet_group.existing[0].name : aws_db_subnet_group.main[0].name
+  db_subnet_group_name = var.enable_rds ? (var.existing_db_subnet_group_name != "" ? data.aws_db_subnet_group.existing[0].name : aws_db_subnet_group.main[0].name) : ""
 }
 
 # 1. 시크릿 불러오기 (optional - 시크릿이 있으면 사용, 없으면 변수 사용)
@@ -44,7 +44,7 @@ data "aws_rds_cluster_parameter_group" "existing" {
 }
 
 resource "aws_rds_cluster_parameter_group" "main" {
-  count       = var.existing_rds_parameter_group_name != "" ? 0 : 1
+  count       = (var.enable_rds && var.existing_rds_parameter_group_name == "") ? 1 : 0
   name        = "${var.project_name}-${var.environment}-aurora-pg"
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
@@ -61,11 +61,16 @@ resource "aws_rds_cluster_parameter_group" "main" {
 }
 
 locals {
-  rds_parameter_group_name = var.existing_rds_parameter_group_name != "" ? data.aws_rds_cluster_parameter_group.existing[0].name : aws_rds_cluster_parameter_group.main[0].name
+  rds_parameter_group_name = var.enable_rds ? (
+      var.existing_rds_parameter_group_name != "" ?
+      data.aws_rds_cluster_parameter_group.existing[0].name :
+      aws_rds_cluster_parameter_group.main[0].name
+    ) : "" # false일 때는 빈 문자열 반환
 }
 
 # 1. Aurora 클러스터 본체
 resource "aws_rds_cluster" "main" {
+  count              = var.enable_rds ? 1 : 0
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
   engine             = "aurora-mysql"
   engine_version     = "8.0.mysql_aurora.3.08.2"
@@ -89,12 +94,12 @@ resource "aws_rds_cluster" "main" {
 
 # 2. 클러스터 인스턴스 (노드 생성)
 resource "aws_rds_cluster_instance" "main" {
-  count = var.environment == "prod" ? 2 : 1
+  count = var.enable_rds ? (var.environment == "prod" ? 2 : 1) : 0
 
   identifier         = "${var.project_name}-${var.environment}-db-${count.index}"
-  cluster_identifier = aws_rds_cluster.main.id
-  engine             = aws_rds_cluster.main.engine
-  engine_version     = aws_rds_cluster.main.engine_version
+  cluster_identifier = aws_rds_cluster.main[0].id
+  engine             = aws_rds_cluster.main[0].engine
+  engine_version     = aws_rds_cluster.main[0].engine_version
 
   # RDS 인스턴스 클래스는 변수에서 가져오기
   instance_class       = var.rds_instance_class
@@ -107,7 +112,7 @@ resource "aws_rds_cluster_instance" "main" {
 
 # 3. passit_user 자동 생성 (Bastion Host를 통해)
 resource "null_resource" "create_passit_user" {
-  count = var.create_passit_user && var.passit_user_password != "" ? 1 : 0
+  count = (var.enable_rds && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
 
   depends_on = [
     aws_rds_cluster.main,
@@ -115,7 +120,7 @@ resource "null_resource" "create_passit_user" {
   ]
 
   triggers = {
-    cluster_endpoint = aws_rds_cluster.main.endpoint
+    cluster_endpoint = aws_rds_cluster.main[0].endpoint
     db_name         = local.db_creds["DB_NAME"]
     user_name       = var.passit_user_name
     user_password   = var.passit_user_password
@@ -128,7 +133,7 @@ resource "null_resource" "create_passit_user" {
       set -e
       
       BASTION_ID="${var.bastion_instance_id}"
-      RDS_ENDPOINT="${aws_rds_cluster.main.endpoint}"
+      RDS_ENDPOINT="${aws_rds_cluster.main[0].endpoint}"
       DB_NAME="${local.db_creds["DB_NAME"]}"
       MASTER_USER="${local.db_creds["DB_USER"]}"
       MASTER_PASSWORD="${local.db_creds["DB_PASSWORD"]}"

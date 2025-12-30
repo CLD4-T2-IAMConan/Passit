@@ -4,13 +4,17 @@
 # RDS Outputs
 # ============================================
 output "rds_cluster_endpoint" {
-  description = "The cluster endpoint for RDS Aurora"
-  value       = aws_rds_cluster.main.endpoint
+  # try를 사용하여 rds가 생성되지 않았을 때(count=0) 에러 방지
+  value = var.enable_rds ? try(aws_rds_cluster.main[0].endpoint, "") : ""
 }
 
 output "rds_reader_endpoint" {
-  description = "The reader endpoint for RDS Aurora"
-  value       = aws_rds_cluster.main.reader_endpoint
+  value = var.enable_rds ? try(aws_rds_cluster.main[0].reader_endpoint, "") : ""
+}
+
+output "db_subnet_group_name" {
+  description = "The name of the RDS DB subnet group"
+  value       = local.db_subnet_group_name
 }
 
 # ============================================

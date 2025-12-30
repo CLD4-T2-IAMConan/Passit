@@ -146,6 +146,8 @@ module "data" {
   team         = var.team
   owner        = var.owner
 
+  enable_rds = var.enable_rds
+
   # Network Configuration
   vpc_id                = local.vpc_id
   private_db_subnet_ids = local.private_db_subnet_ids
@@ -269,4 +271,6 @@ module "cicd" {
   secret_elasticache_arn = module.security.elasticache_secret_arn
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
+
+  depends_on = [module.eks]
 }
