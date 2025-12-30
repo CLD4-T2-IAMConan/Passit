@@ -226,11 +226,14 @@ module "monitoring" {
   cluster_name       = module.eks.cluster_name
   oidc_provider_arn  = module.eks.oidc_provider_arn
 
+  grafana_admin_user     = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
+
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
+
 
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"

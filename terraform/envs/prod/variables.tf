@@ -262,6 +262,33 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
+# ============================================
+# Monitoring - Grafana (EKS Helm)
+# ============================================
+variable "grafana_namespace" {
+  description = "Namespace to deploy Grafana"
+  type        = string
+  default     = "monitoring"
+}
+
+variable "grafana_service_account_name" {
+  description = "ServiceAccount name for Grafana (IRSA)"
+  type        = string
+  default     = "grafana"
+}
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
+
 # =========================
 # CI/CD
 # =========================
