@@ -21,42 +21,112 @@ resource "kubernetes_service_account_v1" "adot" {
       "eks.amazonaws.com/role-arn" = aws_iam_role.amp_ingest.arn
     }
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.amp_ingest
+  ]
 }
 
-############################
-# ADOT Collector Helm Release
-############################
 
-# ADOT Collector는 현재 주석 처리 (필요시 활성화)
-# 참고: 올바른 chart 이름과 버전 확인 필요
-# resource "helm_release" "adot_collector" {
-#   name       = "adot-collector"
-#   repository = "https://aws-observability.github.io/aws-otel-helm-charts"
-#   chart      = "adot-exporter-for-eks-on-ec2"
-#
-#   namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
-#
-#   values = [
-#     yamlencode({
-#       serviceAccount = {
-#         create = false
-#         name   = kubernetes_service_account_v1.adot.metadata[0].name
-#       }
-#
-#       amp = {
-#         enabled = true
-#         remoteWriteEndpoint = aws_prometheus_workspace.this.prometheus_endpoint
-#         region = var.region
-#       }
-#
-#       metrics = {
-#         enabled = true
-#       }
-#     })
-#   ]
-#
-#   depends_on = [
-#     aws_iam_role_policy_attachment.amp_ingest,
-#     kubernetes_service_account_v1.adot
-#   ]
-# }
+
+############################
+# ADOT Collector (Helm)
+############################
+locals {
+  amp_remote_write_endpoint = "${trim(aws_prometheus_workspace.this.prometheus_endpoint, "/")}/api/v1/remote_write"
+}
+
+resource "helm_release" "adot_collector" {
+  name       = "adot-collector"
+  repository = "https://aws-observability.github.io/aws-otel-helm-charts"
+  chart      = "adot-exporter-for-eks-on-ec2"
+  version    = "0.22.0"
+
+  namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  values = [
+    yamlencode({
+      mode = "daemonset"
+
+      serviceAccount = {
+        create = false
+        name   = kubernetes_service_account_v1.adot.metadata[0].name
+      }
+
+      config = {
+        receivers = {
+          prometheus = {
+            config = {
+              scrape_interval = "30s"
+              scrape_configs = [
+                {
+                  job_name = "kubelet"
+                  kubernetes_sd_configs = [{ role = "node" }]
+                  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                  tls_config = { insecure_skip_verify = true }
+
+                  relabel_configs = [
+                    { action = "labelmap", regex = "__meta_kubernetes_node_label_(.+)" },
+                    { target_label = "__address__", replacement = "kubernetes.default.svc:443" },
+                    {
+                      source_labels = ["__meta_kubernetes_node_name"]
+                      target_label  = "__metrics_path__"
+                      replacement   = "/api/v1/nodes/$${1}/proxy/metrics"
+                    }
+                  ]
+                },
+                {
+                  job_name = "cadvisor"
+                  kubernetes_sd_configs = [{ role = "node" }]
+                  bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+                  tls_config = { insecure_skip_verify = true }
+
+                  relabel_configs = [
+                    { action = "labelmap", regex = "__meta_kubernetes_node_label_(.+)" },
+                    { target_label = "__address__", replacement = "kubernetes.default.svc:443" },
+                    {
+                      source_labels = ["__meta_kubernetes_node_name"]
+                      target_label  = "__metrics_path__"
+                      replacement   = "/api/v1/nodes/$${1}/proxy/metrics/cadvisor"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+
+        processors = {
+          batch = {}
+          memory_limiter = {
+            check_interval = "1s"
+            limit_mib      = 400
+            spike_limit_mib = 100
+          }
+        }
+
+
+        exporters = {
+          awsprometheusremotewrite = {
+            endpoint = local.amp_remote_write_endpoint
+            aws_auth = { region = var.region }
+          }
+        }
+
+        service = {
+          pipelines = {
+            metrics = {
+              receivers  = ["prometheus"]
+              processors = ["memory_limiter", "batch"]
+              exporters  = ["awsprometheusremotewrite"]
+            }
+          }
+        }
+      }
+    })
+  ]
+
+  depends_on = [
+    kubernetes_cluster_role_binding_v1.adot
+  ]
+}

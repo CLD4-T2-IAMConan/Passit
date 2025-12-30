@@ -80,7 +80,7 @@ resource "aws_rds_cluster" "main" {
 
   backup_retention_period = var.environment == "prod" ? 7 : 1
   preferred_backup_window = "03:00-04:00"
-  deletion_protection     = var.environment == "prod" ? true : false
+  deletion_protection     = false
   # Destroy 시 스냅샷 없이 삭제 (필요시 수동으로 스냅샷 생성 후 삭제)
   skip_final_snapshot     = true
 
@@ -153,25 +153,27 @@ resource "null_resource" "create_passit_user" {
       LOCAL_PORT=13306
       aws ssm start-session \
         --target "$BASTION_ID" \
-        --document-name AWS-StartPortForwardingSession \
-        --parameters "{\"portNumber\":[\"3306\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" \
+        --document-name AWS-StartPortForwardingSessionToRemoteHost \
+        --parameters "{\"host\":[\"$RDS_ENDPOINT\"],\"portNumber\":[\"3306\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" \
         --region "$REGION" > /dev/null 2>&1 &
       
       SSM_PID=$!
       echo "   포트 포워딩 시작 (PID: $SSM_PID)"
-      sleep 8
+      sleep 15
+
+      # 포트가 열릴 때까지 대기
+      for i in {1..10}; do
+        nc -z 127.0.0.1 $LOCAL_PORT && break
+        echo "   연결 대기 중... ($i/10)"
+        sleep 2
+      done
       
       # MySQL 명령 실행
-      mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" <<SQL || {
+      echo "CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD'; GRANT ALL PRIVILEGES ON \\\`$DB_NAME\\\`.* TO '$PASSIT_USER'@'%'; FLUSH PRIVILEGES; SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';" | mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" || {
         echo "❌ MySQL 명령 실행 실패"
         kill $SSM_PID 2>/dev/null || true
         exit 1
       }
-        CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD';
-        GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$PASSIT_USER'@'%';
-        FLUSH PRIVILEGES;
-        SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';
-      SQL
       
       echo "✅ passit_user 생성 완료!"
       

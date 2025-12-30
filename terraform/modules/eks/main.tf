@@ -22,6 +22,17 @@ module "eks" {
 
   # Access entries for additional users
   access_entries = {
+    t2_krystal = {
+      principal_arn = "arn:aws:iam::727646470302:user/t2-krystal"
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
   }
 
   # Disable CloudWatch Logs (권한 문제)
