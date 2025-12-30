@@ -80,6 +80,11 @@ module "security" {
   # GitHub OIDC Configuration
   github_org  = var.github_org
   github_repo = var.github_repo
+
+  # github actions IAM에 필요
+  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
+  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
