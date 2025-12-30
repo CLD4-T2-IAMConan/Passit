@@ -1,14 +1,15 @@
 import React, { useState, useRef } from "react";
-import { Box, TextField, IconButton, InputAdornment } from "@mui/material";
+import { Box, TextField, IconButton } from "@mui/material";
 import { Send as SendIcon } from "@mui/icons-material";
 
-const MessageInput = ({ onSend }) => {
+const MessageInput = ({ onSend, roomStatus }) => {
   const [text, setText] = useState("");
   const isSubmitting = useRef(false);
+  const isLocked = roomStatus === "LOCK";
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || isLocked) return;
 
     // Prevent double submission
     if (isSubmitting.current) {
@@ -54,8 +55,9 @@ const MessageInput = ({ onSend }) => {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyPress={handleKeyPress}
-        placeholder="메시지를 입력하세요"
+        placeholder={isLocked ? "채팅이 잠겨 있습니다." : "메시지를 입력하세요"}
         variant="outlined"
+        disabled={isLocked}
         sx={{
           "& .MuiOutlinedInput-root": {
             bgcolor: "background.paper",
@@ -81,18 +83,18 @@ const MessageInput = ({ onSend }) => {
       />
       <IconButton
         type="submit"
-        disabled={!text.trim()}
+        disabled={!text.trim() || isLocked}
         sx={{
-          bgcolor: text.trim() ? "primary.main" : "action.disabledBackground",
-          color: text.trim() ? "white" : "text.disabled",
+          bgcolor: text.trim() && !isLocked ? "primary.main" : "action.disabledBackground",
+          color: text.trim() && !isLocked ? "white" : "text.disabled",
           width: 48,
           height: 48,
           borderRadius: "50%",
-          boxShadow: text.trim() ? "0 2px 8px rgba(25, 118, 210, 0.3)" : "none",
+          boxShadow: text.trim() && !isLocked ? "0 2px 8px rgba(25, 118, 210, 0.3)" : "none",
           "&:hover": {
-            bgcolor: text.trim() ? "primary.dark" : "action.disabledBackground",
-            boxShadow: text.trim() ? "0 4px 12px rgba(25, 118, 210, 0.4)" : "none",
-            transform: text.trim() ? "scale(1.05)" : "none",
+            bgcolor: text.trim() && !isLocked ? "primary.dark" : "action.disabledBackground",
+            boxShadow: text.trim() && !isLocked ? "0 4px 12px rgba(25, 118, 210, 0.4)" : "none",
+            transform: text.trim() && !isLocked ? "scale(1.05)" : "none",
           },
           "&.Mui-disabled": {
             bgcolor: "action.disabledBackground",

@@ -11,6 +11,7 @@ const MessageBubble = ({ message, userId, chatroomId, roomInfo }) => {
       return <TextMessage message={message} isMine={isMine} />;
 
     case "SYSTEM_MESSAGE":
+    case "SYSTEM_INFO_MESSAGE": // 원격 브랜치 호환성
       return <SystemInfoMessage message={message} />;
 
     case "SYSTEM_ACTION_MESSAGE":

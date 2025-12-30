@@ -22,7 +22,7 @@ import {
 import ChatRoom from "../../components/chat/ChatRoom";
 import MessageInput from "../../components/chat/MessageInput";
 import useChatWebSocket from "../../hooks/chat/useChatWebSocket";
-import { getMessages, markAllMessagesAsRead } from "../../api/services/chat/chat.api";
+import { getMessages, markAllMessagesAsRead, getChatRoomDetail } from "../../api/services/chat/chat.api";
 import { useAuth } from "../../contexts/AuthContext";
 
 const ChatRoomPage = () => {
@@ -33,6 +33,7 @@ const ChatRoomPage = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [roomStatus, setRoomStatus] = useState(null);
 
   const currentUserId = user?.userId || user?.id;
   const isNewRoom = location.state?.isNewRoom === true;
@@ -54,15 +55,28 @@ const ChatRoomPage = () => {
     },
   });
 
-  // 기존 메시지 불러오기
+  // 채팅방 정보 및 메시지 불러오기
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchRoomData = async () => {
       if (!chatroomId || !currentUserId) {
         setLoading(false);
         return;
       }
       try {
         setLoading(true);
+        
+        // 채팅방 정보 가져오기 (roomStatus 포함)
+        try {
+          const roomRes = await getChatRoomDetail(chatroomId);
+          if (roomRes.data?.status) {
+            setRoomStatus(roomRes.data.status);
+          }
+        } catch (e) {
+          console.error("채팅방 정보 불러오기 실패:", e);
+          // 채팅방 정보 실패는 치명적이지 않으므로 계속 진행
+        }
+
+        // 메시지 불러오기
         const res = await getMessages(chatroomId);
         setMessages(Array.isArray(res.data) ? res.data : []);
         console.log("💬기존 메시지 불러오기:", res.data);
@@ -82,7 +96,7 @@ const ChatRoomPage = () => {
         setLoading(false);
       }
     };
-    fetchMessages();
+    fetchRoomData();
   }, [chatroomId, currentUserId]);
 
   // WebSocket 연결
@@ -92,6 +106,23 @@ const ChatRoomPage = () => {
     connect({
       onConnect: () => {
         console.log("✅ WebSocket 연결 성공");
+        // 새 방인 경우 시스템 메시지 전송 (원격 브랜치 기능)
+        if (isNewRoom && currentUserId && stompClient?.current) {
+          try {
+            stompClient.current.send(
+              `/app/chat/${chatroomId}/system`,
+              {},
+              JSON.stringify({
+                chatroomId: Number(chatroomId),
+                senderId: currentUserId,
+                type: "REQUEST_TRANSFER_INTRO",
+              })
+            );
+            console.log("✅ 새 방 시스템 메시지 전송 완료");
+          } catch (e) {
+            console.error("시스템 메시지 전송 실패:", e);
+          }
+        }
       },
       onError: (error) => {
         console.error("❌ WebSocket 연결 에러:", error);
@@ -102,7 +133,7 @@ const ChatRoomPage = () => {
       console.log("🔌 WebSocket 연결 해제 중...");
       disconnect();
     };
-  }, [chatroomId, connect, disconnect]);
+  }, [chatroomId, connect, disconnect, isNewRoom, currentUserId, stompClient]);
 
   // 일반 메시지 전송
   const handleSend = (text) => {
@@ -240,7 +271,7 @@ const ChatRoomPage = () => {
           borderColor: "#e0e0e0",
         }}
       >
-        <MessageInput onSend={handleSend} />
+        <MessageInput onSend={handleSend} roomStatus={roomStatus} />
       </Box>
     </Box>
   );
