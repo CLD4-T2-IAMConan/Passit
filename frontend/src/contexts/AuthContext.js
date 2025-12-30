@@ -1,34 +1,31 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { userService } from "../services/userService";
+/**
+ * 인증 상태 관리 Context
+ */
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
+import authService from "../services/authService";
+import { handleError } from "../utils/errorHandler";
 
 const AuthContext = createContext(null);
 
-/**
- * AuthContext Provider 컴포넌트
- */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 초기 인증 상태 확인
+  // 초기화 - localStorage에서 사용자 정보 복원
   useEffect(() => {
     const initAuth = () => {
       try {
-        const storedToken = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
+        const storedUser = authService.getCurrentUser();
+        const token = authService.getAccessToken();
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+        if (storedUser && token) {
+          setUser(storedUser);
           setIsAuthenticated(true);
         }
       } catch (error) {
         console.error("Failed to restore auth state:", error);
-        // 손상된 데이터 정리
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        authService.clearAuthData();
       } finally {
         setLoading(false);
       }
@@ -38,140 +35,114 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
-   * 로그인 처리
-   * @param {string} email - 사용자 이메일
-   * @param {string} password - 비밀번호
-   * @param {boolean} rememberMe - 로그인 유지 여부
+   * 로그인
    */
-  const login = async (email, password, rememberMe = false) => {
+  const login = useCallback(async (email, password) => {
     try {
-      const response = await userService.login({ email, password });
+      const data = await authService.login(email, password);
 
-      // LoginResponse에서 데이터 추출
-      const userData = {
-        userId: response.data.userId,
-        email: response.data.email,
-        name: response.data.name,
-        role: response.data.role,
-      };
-
-      // 상태 업데이트
-      setUser(userData);
-      setToken(response.data.accessToken);
+      setUser({
+        userId: data.userId,
+        email: data.email,
+        name: data.name,
+        nickname: data.nickname,
+        provider: data.provider,
+        role: data.role,
+      });
       setIsAuthenticated(true);
 
-      // localStorage에 저장
-      localStorage.setItem("token", response.data.accessToken);
-      localStorage.setItem("refreshToken", response.data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      if (rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-      }
-
-      return { success: true, user: userData };
+      return { success: true, data };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message || "로그인에 실패했습니다",
-      };
+      const message = handleError(error);
+      return { success: false, error: message };
     }
-  };
+  }, []);
 
   /**
-   * 회원가입 처리
-   * @param {Object} userData - 회원가입 데이터
+   * 회원가입
    */
-  const register = async (userData) => {
+  const signup = useCallback(async (signupData) => {
     try {
-      const response = await userService.register(userData);
-
-      // 회원가입 후 자동 로그인
-      setUser(response.user);
-      setToken(response.token);
-      setIsAuthenticated(true);
-
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
-
-      return { success: true, user: response.user };
+      const data = await authService.signup(signupData);
+      return { success: true, data };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message || "회원가입에 실패했습니다",
-      };
+      const message = handleError(error);
+      return { success: false, error: message };
     }
-  };
+  }, []);
 
   /**
-   * 로그아웃 처리
+   * 이메일 인증 코드 전송
    */
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("rememberMe");
-  };
-
-  /**
-   * 사용자 정보 업데이트
-   * @param {Object} updates - 업데이트할 사용자 정보
-   */
-  const updateUser = (updates) => {
-    const updatedUser = { ...user, ...updates };
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
+  const sendVerificationCode = useCallback(async (email) => {
+    try {
+      const data = await authService.sendVerificationCode(email);
+      return { success: true, data };
+    } catch (error) {
+      const message = handleError(error);
+      return { success: false, error: message };
+    }
+  }, []);
 
   /**
-   * 토큰 업데이트 (예: 토큰 갱신 시)
-   * @param {string} newToken - 새로운 토큰
+   * 이메일 인증 확인
    */
-  const updateToken = (newToken) => {
-    setToken(newToken);
-    localStorage.setItem("token", newToken);
-  };
+  const verifyEmail = useCallback(async (email, code) => {
+    try {
+      const data = await authService.verifyEmail(email, code);
+      return { success: true, data };
+    } catch (error) {
+      const message = handleError(error);
+      return { success: false, error: message };
+    }
+  }, []);
+
+  /**
+   * 로그아웃
+   */
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  }, []);
 
   /**
    * 카카오 로그인 콜백 처리
-   * @param {string} accessToken - 액세스 토큰
-   * @param {string} refreshToken - 리프레시 토큰
-   * @param {number} userId - 사용자 ID
-   * @param {string} email - 이메일
-   * @param {string} name - 이름
-   * @param {string} provider - 소셜 로그인 제공자 (KAKAO 등)
    */
-  const handleKakaoCallback = useCallback(
-    (accessToken, refreshToken, userId, email, name, provider) => {
-      try {
-        const userData = {
-          userId: parseInt(userId),
-          email: email,
-          name: decodeURIComponent(name), // URL 디코딩
-          role: "USER", // 기본값, 필요시 서버에서 받아올 수 있음
-          provider: provider || "KAKAO", // provider 정보 저장
-        };
+  const handleKakaoCallback = useCallback((queryParams) => {
+    try {
+      const data = authService.handleKakaoCallback(queryParams);
 
-        setUser(userData);
-        setToken(accessToken);
+      if (data.userId) {
+        setUser({
+          userId: data.userId,
+          email: data.email,
+          name: data.name,
+          provider: data.provider,
+        });
         setIsAuthenticated(true);
-
-        localStorage.setItem("token", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(userData));
-
-        return { success: true, user: userData };
-      } catch (error) {
-        console.error("Error in handleKakaoCallback:", error);
-        return { success: false, error: error.message };
       }
-    },
-    []
-  );
+
+      return { success: true, data };
+    } catch (error) {
+      const message = handleError(error);
+      return { success: false, error: message };
+    }
+  }, []);
+
+  /**
+   * 사용자 정보 업데이트 (프로필 수정 후)
+   */
+  const updateUser = useCallback((updates) => {
+    setUser((prev) => ({ ...prev, ...updates }));
+
+    const currentUser = authService.getCurrentUser();
+    const updatedUser = { ...currentUser, ...updates };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  }, []);
 
   /**
    * 관리자 여부 확인
@@ -180,30 +151,30 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    token,
     isAuthenticated,
     loading,
     isAdmin,
     login,
-    register,
+    signup,
+    sendVerificationCode,
+    verifyEmail,
     logout,
-    updateUser,
-    updateToken,
     handleKakaoCallback,
+    updateUser,
+    getKakaoLoginUrl: authService.getKakaoLoginUrl,
+    getAccessToken: authService.getAccessToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-/**
- * useAuth 훅 - AuthContext 사용을 위한 커스텀 훅
- */
+// 커스텀 Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within AuthProvider");
   }
-
   return context;
 };
+
+export default AuthContext;

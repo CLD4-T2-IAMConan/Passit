@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button, Stack, Typography, Box, Alert } from "@mui/material"; // Modal 제거
-import { userService } from "../api/services/userService";
+import userService from "../services/userService";
 import DealRejectModal from "../components/Ticket/DealRejectModal";
 import DealAcceptModal from "../components/Ticket/DealAcceptModal";
 import DealCancelModal from "../components/Ticket/DealCancelModal";
