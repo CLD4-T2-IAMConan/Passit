@@ -9,12 +9,34 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
-    targetRevision: develop
-    path: service-ticket/helm
+    # ⭐ 직접 service-ticket repository 참조 (submodule 대신)
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-ticket.git
+    targetRevision: main  # service-ticket repo의 기본 브랜치
+    path: helm
     helm:
       valueFiles:
         - values-dev.yaml
+      values: |
+        image:
+          repository: ghcr.io/cld4-t2-iamconan/ticket-service
+          tag: latest
+        imagePullSecrets:
+          - name: ghcr-pull-secret
+        ingress:
+          enabled: true
+          className: alb
+          annotations:
+            kubernetes.io/ingress.class: alb
+            alb.ingress.kubernetes.io/scheme: internet-facing
+            alb.ingress.kubernetes.io/target-type: ip
+            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+            alb.ingress.kubernetes.io/backend-protocol: HTTP
+          hosts:
+            - host: ticket-service.passit.com
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls: []
 
   destination:
     server: https://kubernetes.default.svc

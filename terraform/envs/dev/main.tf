@@ -76,6 +76,10 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # GitHub OIDC Configuration
+  github_org  = var.github_org
+  github_repo = var.github_repo
 }
 
 # ============================================
@@ -149,7 +153,7 @@ module "bastion" {
   elasticache_security_group_id = local.elasticache_security_group_id
   # eks_cluster_security_group_id는 EKS 클러스터 생성 후 주석 해제
   # eks_cluster_security_group_id = module.eks.cluster_security_group_id
-
+  
   depends_on = [module.network, module.security, module.eks]
 }
 
@@ -194,6 +198,12 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+  # Passit User Configuration
+  create_passit_user     = var.create_passit_user
+  passit_user_name       = var.passit_user_name
+  passit_user_password   = var.passit_user_password
+  bastion_instance_id    = module.bastion.bastion_instance_id
+
   # Existing Resources
   existing_db_subnet_group_name            = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name
@@ -216,14 +226,11 @@ module "monitoring" {
   cluster_name       = module.eks.cluster_name
   oidc_provider_arn  = module.eks.oidc_provider_arn
 
-  grafana_admin_user     = var.grafana_admin_user
-  grafana_admin_password = var.grafana_admin_password
-
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-
+  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
 
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"

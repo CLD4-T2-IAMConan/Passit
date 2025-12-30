@@ -11,7 +11,7 @@ spec:
   source:
     # ⭐ 직접 service-account repository 참조 (submodule 대신)
     repoURL: https://github.com/CLD4-T2-IAMConan/service-account.git
-    targetRevision: main  # service-account repo의 기본 브랜치
+    targetRevision: main # service-account repo의 기본 브랜치
     path: helm
     helm:
       valueFiles:

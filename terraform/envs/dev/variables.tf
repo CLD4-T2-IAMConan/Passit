@@ -261,34 +261,6 @@ variable "alarm_sns_topic_arn" {
 }
 
 # ============================================
-# Monitoring - Grafana (EKS Helm)
-# ============================================
-variable "grafana_namespace" {
-  description = "Namespace to deploy Grafana"
-  type        = string
-  default     = "monitoring"
-}
-
-variable "grafana_service_account_name" {
-  description = "ServiceAccount name for Grafana (IRSA)"
-  type        = string
-  default     = "grafana"
-}
-
-variable "grafana_admin_user" {
-  description = "Grafana admin username"
-  type        = string
-  sensitive   = true
-}
-
-variable "grafana_admin_password" {
-  description = "Grafana admin password"
-  type        = string
-  sensitive   = true
-}
-
-
-# ============================================
 # CI/CD Module Variables
 # ============================================
 variable "github_org" {
@@ -397,7 +369,7 @@ variable "bastion_instance_type" {
 variable "bastion_key_name" {
   description = "SSH key pair name for Bastion Host (optional, Session Manager is recommended)"
   type        = string
-  default     = ""
+  default     = "passit-dev-bastion"
 }
 
 variable "allowed_cidr_blocks_bastion" {
@@ -423,4 +395,23 @@ variable "rds_database_name" {
   description = "Database name for RDS"
   type        = string
   default     = "passit"
+}
+
+variable "create_passit_user" {
+  description = "Whether to automatically create passit_user in RDS"
+  type        = bool
+  default     = true
+}
+
+variable "passit_user_name" {
+  description = "Username for passit_user"
+  type        = string
+  default     = "passit_user"
+}
+
+variable "passit_user_password" {
+  description = "Password for passit_user (should match Secrets Manager if using)"
+  type        = string
+  default     = "passit_password"
+  sensitive   = true
 }

@@ -3,18 +3,12 @@ name: Code Quality
 on:
   pull_request:
     branches: [main, develop]
-    paths: ["frontend/**"]
   push:
     branches: [main, develop]
-    paths: ["frontend/**"]
 
 jobs:
   code-quality:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
     defaults:
       run:
         working-directory: frontend
@@ -26,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -48,24 +42,3 @@ jobs:
           else
             echo "No TypeScript configuration found, skipping type check"
           fi
-
-      - name: Comment code quality results on PR
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const emoji = '${{ job.status }}' === 'success' ? '✅' : '❌';
-            const status = '${{ job.status }}' === 'success' ? 'Passed' : 'Failed';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## ${emoji} Code Quality Check ${status}
-
-            - Prettier formatting: ${emoji}
-            - ESLint: ${emoji}
-            - TypeScript type check: ${emoji}
-
-            Please check the workflow logs for details if any checks failed.`
-            });

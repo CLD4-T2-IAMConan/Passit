@@ -12,6 +12,12 @@ spec:
     repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
     targetRevision: main
     path: terraform/argocd/applications
+    directory:
+      recurse: false
+      exclude: ''
+    # Submodule 비활성화
+    gitSubmodules:
+      enabled: false
 
   destination:
     server: https://kubernetes.default.svc
