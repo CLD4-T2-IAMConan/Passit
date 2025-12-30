@@ -114,6 +114,31 @@ variable "db_secret_name" {
   default     = ""
 }
 
+variable "create_passit_user" {
+  description = "Whether to automatically create passit_user in RDS"
+  type        = bool
+  default     = true
+}
+
+variable "passit_user_name" {
+  description = "Username for passit_user (default: passit_user)"
+  type        = string
+  default     = "passit_user"
+}
+
+variable "passit_user_password" {
+  description = "Password for passit_user (should match Secrets Manager if using db_secret_name)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "bastion_instance_id" {
+  description = "Bastion Host Instance ID for RDS access (required if create_passit_user is true)"
+  type        = string
+  default     = ""
+}
+
 variable "rds_instance_class" {
   description = "Instance class for Prod (e.g., db.t3.medium)"
   type        = string

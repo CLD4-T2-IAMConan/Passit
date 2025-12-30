@@ -18,7 +18,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { API_SERVICES } from "../config/apiConfig";
 import { ENDPOINTS } from "../api/endpoints";
 
-const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) => {
+const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -39,32 +39,19 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.email && !formData.password) {
-      setError("email and password are required");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(formData.email)) {
-      setError("Invalid email format");
-      return;
-    }
-
     setError("");
     setLoading(true);
 
     try {
       const result = await login(formData.email, formData.password, rememberMe);
-      // 성공 시
-      onSuccess?.(result.user);
-      onLoginSuccess?.(result.user);
-    } catch (err) {
-      const message = err?.response?.data?.message || "Invalid email or password";
 
-      setError(message);
-      onError?.(message);
+      if (result.success) {
+        onLoginSuccess(result.user);
+      } else {
+        setError(result.error || "이메일 또는 비밀번호를 확인해주세요");
+      }
+    } catch (err) {
+      setError(err.message || "이메일 또는 비밀번호를 확인해주세요");
     } finally {
       setLoading(false);
     }
@@ -187,11 +174,7 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -258,7 +241,7 @@ const LoginForm = ({ onSuccess, onError, onLoginSuccess, onSwitchToRegister }) =
               fontSize: { xs: "0.938rem", sm: "1rem" },
             }}
           >
-            {loading ? "logging in" : "로그인"}
+            {loading ? <CircularProgress size={24} color="inherit" /> : "로그인"}
           </Button>
 
           <Box sx={{ textAlign: "center", pt: 2 }}>

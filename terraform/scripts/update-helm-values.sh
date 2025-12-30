@@ -10,6 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
 
+echo "DEBUG:"
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+echo "PROJECT_ROOT=$PROJECT_ROOT"
+
 if [ ! -d "$TERRAFORM_DIR" ]; then
     echo "❌ Error: $TERRAFORM_DIR 디렉토리가 존재하지 않습니다."
     exit 1
@@ -81,10 +85,8 @@ IRSA_OUTPUT_ERROR=1
 if command -v timeout &> /dev/null || command -v gtimeout &> /dev/null; then
     TIMEOUT_CMD=$(command -v timeout 2>/dev/null || command -v gtimeout 2>/dev/null)
     echo "  ⏱️  타임아웃 10초로 terraform output 실행 중..."
-    set +e
     IRSA_OUTPUT_RAW=$($TIMEOUT_CMD 10 terraform output backend_irsa_roles 2>&1)
     IRSA_OUTPUT_ERROR=$?
-    set -e
     
     # 타임아웃 체크
     if [ $IRSA_OUTPUT_ERROR -eq 124 ] || echo "$IRSA_OUTPUT_RAW" | grep -q "timeout\|terminated"; then
