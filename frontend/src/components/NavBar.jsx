@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function NavBar() {
@@ -174,9 +175,20 @@ export default function NavBar() {
               </IconButton>
             )}
 
-            {/* Login/Logout Button */}
+            {/* Chat & Login/Logout Button */}
             {!isMobile && (
-              <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {isAuthenticated && (
+                  <IconButton
+                    onClick={() => navigate("/chat")}
+                    color={isActive("/chat") ? "primary" : "default"}
+                    sx={{
+                      "&:hover": { color: "primary.main" },
+                    }}
+                  >
+                    <ChatBubbleOutlineIcon />
+                  </IconButton>
+                )}
                 {isAuthenticated ? (
                   <Button
                     onClick={handleLogout}
@@ -256,6 +268,15 @@ export default function NavBar() {
                 <ListItemText primary="FAQ" />
               </ListItemButton>
             </ListItem>
+
+            {/* 채팅 */}
+            {isAuthenticated && (
+              <ListItem disablePadding sx={{ pt: 1 }}>
+                <ListItemButton onClick={() => go("/chat")}>
+                  <ListItemText primary="내 채팅" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
             {/* 마이페이지 */}
             {rightMenuItems.map((item) => (

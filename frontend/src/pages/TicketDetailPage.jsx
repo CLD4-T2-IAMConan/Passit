@@ -42,6 +42,8 @@ import {
 import ticketService from "../api/services/ticketService";
 import userService from "../services/userService";
 import authService from "../services/authService";
+import { useAuth } from "../contexts/AuthContext";
+import { createChatRoom } from "../api/services/chat/chat.api";
 import DealRequestModal from "../components/Ticket/DealRequestModal";
 import LoadingModal from "../components/Ticket/LoadingModal";
 import RequestSuccessModal from "../components/Ticket/RequestSuccessModal";
@@ -49,6 +51,7 @@ import RequestSuccessModal from "../components/Ticket/RequestSuccessModal";
 const TicketDetailPage = () => {
   const { ticket_id } = useParams();
   const navigate = useNavigate();
+  const { user: authUser, isAuthenticated } = useAuth();
 
   // 상태 관리
   const [ticket, setTicket] = useState(null);
@@ -252,17 +255,44 @@ const TicketDetailPage = () => {
   };
 
   // 채팅으로 이동
-  const handleChat = () => {
-    if (!currentUser) {
+  const handleChat = async () => {
+    if (!isAuthenticated || !currentUser) {
       setSubmitError("채팅 기능은 로그인이 필요합니다.");
       return;
     }
-    if (!ticket || !ticket.ownerId) {
+    if (!ticket || !ticket.ticketId) {
       setSubmitError("티켓 정보가 부족합니다.");
       return;
     }
-    // TODO: 채팅 페이지로 이동 (티켓 ID와 판매자 ID 전달)
-    navigate(`/chat?ticketId=${ticket_id}&sellerId=${ticket.ownerId}`);
+    if (ticket.ownerId === currentUser.userId) {
+      setSubmitError("자신의 티켓에는 채팅할 수 없습니다.");
+      return;
+    }
+
+    try {
+      setSubmitError(null);
+      // 채팅방 생성 API 호출
+      const newRoom = await createChatRoom({
+        ticketId: ticket.ticketId,
+        buyerId: currentUser.userId,
+      });
+
+      if (!newRoom || !newRoom.chatroomId) {
+        throw new Error("채팅방 생성 응답이 올바르지 않습니다.");
+      }
+
+      // 생성된 채팅방으로 바로 이동
+      navigate(`/chat/${newRoom.chatroomId}`, {
+        state: { isNewRoom: true, buyerId: currentUser.userId },
+      });
+    } catch (error) {
+      console.error("채팅방 생성 실패:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        "채팅방 생성에 실패했습니다. 다시 시도해주세요.";
+      setSubmitError(errorMessage);
+    }
   };
 
   // 양도 요청
@@ -535,16 +565,8 @@ const TicketDetailPage = () => {
               {/* 헤더 */}
               <Box>
                 <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                  <Chip
-                    label={getCategoryName(ticket.categoryId)}
-                    color="primary"
-                    size="small"
-                  />
-                  <Chip
-                    label={statusInfo.label}
-                    color={statusInfo.color}
-                    size="small"
-                  />
+                  <Chip label={getCategoryName(ticket.categoryId)} color="primary" size="small" />
+                  <Chip label={statusInfo.label} color={statusInfo.color} size="small" />
                   <Chip
                     label={getTradeTypeLabel(ticket.tradeType)}
                     variant="outlined"
@@ -656,13 +678,7 @@ const TicketDetailPage = () => {
                 {/* 메인 액션 버튼들 */}
                 <Stack spacing={2}>
                   {isOwner ? (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      fullWidth
-                      disabled
-                      sx={{ py: 1.5 }}
-                    >
+                    <Button variant="contained" size="large" fullWidth disabled sx={{ py: 1.5 }}>
                       내가 등록한 티켓입니다
                     </Button>
                   ) : (
@@ -715,4 +731,3 @@ const TicketDetailPage = () => {
 };
 
 export default TicketDetailPage;
-

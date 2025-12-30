@@ -142,9 +142,16 @@ const BuyerPaymentPage = () => {
       return;
     }
 
+    if (!currentUserId) {
+      alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해주세요.");
+      return;
+    }
+
+    console.log("🔵 결제 준비 시작", { payment_id, currentUserId });
+
     try {
       // 1. 백엔드에서 결제 준비 데이터 가져오기 (GET /api/payments/{id}/prepare)
-      // 🚨 [수정] 결제 준비 API 호출 시에도 currentUserId 전송을 고려할 수 있습니다.
+      console.log("📤 API 호출: /api/payments/{id}/prepare");
       const prepareResponse = await axios.get(
         `${API_BASE_URL}/api/payments/${payment_id}/prepare`,
         {
@@ -154,13 +161,24 @@ const BuyerPaymentPage = () => {
         }
       );
       const data = prepareResponse.data;
+      console.log("✅ 결제 준비 데이터 수신:", data);
 
       // 2. NICEPAY SDK가 로드되었는지 확인
+      console.log("🔍 NICEPAY SDK 확인:", typeof window.AUTHNICE);
       if (!window.AUTHNICE) {
-        throw new Error("NICEPAY SDK가 로드되지 않았습니다. index.html을 확인하세요.");
+        throw new Error(
+          "NICEPAY SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요."
+        );
       }
 
       // 3. NICEPAY 결제창 호출
+      console.log("💳 NICEPAY 결제창 호출", {
+        clientId: data.clientId,
+        orderId: data.orderId,
+        amount: data.amount,
+        goodsName: data.goodsName,
+      });
+
       window.AUTHNICE.requestPay({
         clientId: data.clientId,
         method: "card",
@@ -170,17 +188,23 @@ const BuyerPaymentPage = () => {
         returnUrl: data.returnUrl,
 
         fnError: function (result) {
-          alert(`결제 실패: ${result.msg}`);
-          console.error("NICEPAY Error:", result);
+          console.error("❌ NICEPAY 결제 실패:", result);
+          alert(`결제 실패: ${result.msg || "알 수 없는 오류"}`);
           fetchPaymentData();
         },
       });
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message;
+      console.error("❌ 결제 준비 실패:", err);
+      console.error("에러 상세:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+
+      const errorMessage = err.response?.data?.error || err.response?.data || err.message;
       alert(`결제 준비 실패: ${errorMessage}`);
-      console.error("결제 준비 실패:", err);
     }
-  }, [payment_id, fetchPaymentData, currentUserId]); // 🚨 [수정] 의존성 배열에 currentUserId 추가
+  }, [payment_id, fetchPaymentData, currentUserId]);
 
   // ----------------------------------------------------
   // 6. 렌더링 및 UI

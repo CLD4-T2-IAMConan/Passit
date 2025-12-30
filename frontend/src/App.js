@@ -170,232 +170,232 @@ function App() {
         <LoadingProvider>
           <AuthProvider>
             <Router>
-            <Suspense fallback={<LoadingSpinner fullPage message="페이지를 불러오는 중..." />}>
-              {/* 네비게이션 */}
-              <NavBar />
+              <Suspense fallback={<LoadingSpinner fullPage message="페이지를 불러오는 중..." />}>
+                {/* 네비게이션 */}
+                <NavBar />
 
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-                {/* 마이페이지 */}
-                <Route
-                  path="/mypage"
-                  element={
-                    <PrivateRoute>
-                      <MyPageLayout />
-                    </PrivateRoute>
-                  }
-                >
-                  <Route index element={<Navigate to="/mypage/profile" replace />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                  <Route path="activities" element={<ActivityPage />} />
-                  <Route path="my-tickets" element={<MyTicketListPage />} />
-                  <Route path="my-tickets/:ticketId/edit" element={<TicketEditPage />} />
-                </Route>
+                  {/* 마이페이지 */}
+                  <Route
+                    path="/mypage"
+                    element={
+                      <PrivateRoute>
+                        <MyPageLayout />
+                      </PrivateRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="/mypage/profile" replace />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="activities" element={<ActivityPage />} />
+                    <Route path="my-tickets" element={<MyTicketListPage />} />
+                    <Route path="my-tickets/:ticketId/edit" element={<TicketEditPage />} />
+                  </Route>
 
-                {/* 관리자 */}
-                <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminUserManagementPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/categories"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminCategoryManagementPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 관리자 */}
+                  <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminUserManagementPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/categories"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminCategoryManagementPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 관리자 공지 */}
-                <Route
-                  path="/admin/notices"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminNoticeListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/notices/new"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminNoticeCreatePage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/notices/:id/edit"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminNoticeEditPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 관리자 공지 */}
+                  <Route
+                    path="/admin/notices"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminNoticeListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/notices/new"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminNoticeCreatePage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/notices/:id/edit"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminNoticeEditPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* CS 공지 */}
-                <Route path="/cs/notices" element={<NoticeListPage />} />
-                <Route path="/cs/notices/:noticeId" element={<NoticePage />} />
+                  {/* CS 공지 */}
+                  <Route path="/cs/notices" element={<NoticeListPage />} />
+                  <Route path="/cs/notices/:noticeId" element={<NoticePage />} />
 
-                {/* 신고 */}
-                <Route
-                  path="/cs/reports"
-                  element={
-                    <PrivateRoute>
-                      <ReportListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/cs/reports/new"
-                  element={
-                    <PrivateRoute>
-                      <ReportCreatePage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/cs/reports/:reportId"
-                  element={
-                    <PrivateRoute>
-                      <ReportDetailPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 신고 */}
+                  <Route
+                    path="/cs/reports"
+                    element={
+                      <PrivateRoute>
+                        <ReportListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/cs/reports/new"
+                    element={
+                      <PrivateRoute>
+                        <ReportCreatePage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/cs/reports/:reportId"
+                    element={
+                      <PrivateRoute>
+                        <ReportDetailPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 관리자 신고 */}
-                <Route
-                  path="/admin/reports"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminReportListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/reports/:reportId"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminReportDetailPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 관리자 신고 */}
+                  <Route
+                    path="/admin/reports"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminReportListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/reports/:reportId"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminReportDetailPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 문의 */}
-                <Route
-                  path="/cs/inquiries"
-                  element={
-                    <PrivateRoute>
-                      <InquiryListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/cs/inquiries/new"
-                  element={
-                    <PrivateRoute>
-                      <InquiryCreatePage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/cs/inquiries/:inquiryId"
-                  element={
-                    <PrivateRoute>
-                      <InquiryDetailPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 문의 */}
+                  <Route
+                    path="/cs/inquiries"
+                    element={
+                      <PrivateRoute>
+                        <InquiryListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/cs/inquiries/new"
+                    element={
+                      <PrivateRoute>
+                        <InquiryCreatePage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/cs/inquiries/:inquiryId"
+                    element={
+                      <PrivateRoute>
+                        <InquiryDetailPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 관리자 문의 */}
-                <Route
-                  path="/admin/inquiries"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminInquiryListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/inquiries/:inquiryId"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminInquiryDetailPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 관리자 문의 */}
+                  <Route
+                    path="/admin/inquiries"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminInquiryListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/inquiries/:inquiryId"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminInquiryDetailPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* FAQ */}
-                <Route path="/cs/faqs" element={<FaqListPage />} />
-                <Route path="/cs/faqs/:faqId" element={<FaqPage />} />
+                  {/* FAQ */}
+                  <Route path="/cs/faqs" element={<FaqListPage />} />
+                  <Route path="/cs/faqs/:faqId" element={<FaqPage />} />
 
-                {/* 관리자 FAQ */}
-                <Route
-                  path="/admin/faqs"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminFaqListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/faqs/new"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminFaqCreatePage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/faqs/:faqId/edit"
-                  element={
-                    <PrivateRoute adminOnly={true}>
-                      <AdminFaqEditPage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 관리자 FAQ */}
+                  <Route
+                    path="/admin/faqs"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminFaqListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/faqs/new"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminFaqCreatePage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/faqs/:faqId/edit"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminFaqEditPage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 티켓 */}
-                <Route path="/tickets" element={<TicketListPage />} />
-                <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
-                <Route
-                  path="/sell"
-                  element={
-                    <PrivateRoute>
-                      <TicketCreatePage />
-                    </PrivateRoute>
-                  }
-                />
+                  {/* 티켓 */}
+                  <Route path="/tickets" element={<TicketListPage />} />
+                  <Route path="/tickets/:ticket_id/detail" element={<TicketDetailPage />} />
+                  <Route
+                    path="/sell"
+                    element={
+                      <PrivateRoute>
+                        <TicketCreatePage />
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* 거래 */}
-                <Route
-                  path="/deals"
-                  element={
-                    <PrivateRoute>
-                      <DealListPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
-                <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
-                <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
+                  {/* 거래 */}
+                  <Route
+                    path="/deals"
+                    element={
+                      <PrivateRoute>
+                        <DealListPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/deals/:deal_id/detail" element={<DealAcceptPage />} />
+                  <Route path="/payments/:payment_id/detail" element={<BuyerPaymentPage />} />
+                  <Route path="/payments/:payment_id/result" element={<PaymentResultPage />} />
 
-                {/* 채팅 */}
-                <Route path="/chat" element={<ChatListPage />} />
-                <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
+                  {/* 채팅 */}
+                  <Route path="/chat" element={<ChatListPage />} />
+                  <Route path="/chat/:chatroomId" element={<ChatRoomPage />} />
 
-                {/* 404 */}
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-            </Suspense>
+                  {/* 404 */}
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+              </Suspense>
             </Router>
           </AuthProvider>
         </LoadingProvider>

@@ -22,6 +22,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ChatIcon from "@mui/icons-material/Chat";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useAuth } from "../contexts/AuthContext";
 import userService from "../services/userService";
 
@@ -311,6 +313,29 @@ const MyPage = () => {
               </>
             )}
           </Box>
+        </Paper>
+
+        {/* 채팅 섹션 */}
+        <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <ChatIcon sx={{ fontSize: 28, color: "primary.main", mr: 1.5 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              내 채팅
+            </Typography>
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            티켓 거래를 위한 채팅 내역을 확인하고 관리하세요
+          </Typography>
+
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/chat")}
+            endIcon={<ChevronRightIcon />}
+            sx={{ px: 4 }}
+          >
+            채팅 목록 보기
+          </Button>
         </Paper>
 
         {/* 비밀번호 변경 섹션 */}
