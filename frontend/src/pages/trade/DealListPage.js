@@ -29,15 +29,8 @@ const DealListPage = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0); // 0: 구매내역, 1: 판매내역
 
-  const {
-    deals,
-    pagination,
-    loading,
-    error,
-    fetchPurchaseHistory,
-    fetchSalesHistory,
-    changePage,
-  } = useTrade();
+  const { deals, pagination, loading, error, fetchPurchaseHistory, fetchSalesHistory, changePage } =
+    useTrade();
 
   // 탭 변경 시 데이터 로드
   useEffect(() => {

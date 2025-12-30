@@ -120,7 +120,15 @@ const ChatRoomPage = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "calc(100vh - 64px)", bgcolor: "white", mt: "64px" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 64px)",
+        bgcolor: "white",
+        mt: "64px",
+      }}
+    >
       {/* 헤더 */}
       <AppBar
         position="static"

@@ -57,10 +57,9 @@ const createAxiosInstance = (baseURL, serviceName) => {
           // Refresh Token으로 새 Access Token 발급
           const refreshToken = localStorage.getItem("refreshToken");
           if (refreshToken) {
-            const response = await axios.post(
-              `${BASE_URLS.ACCOUNT}/api/auth/refresh`,
-              { refreshToken }
-            );
+            const response = await axios.post(`${BASE_URLS.ACCOUNT}/api/auth/refresh`, {
+              refreshToken,
+            });
 
             const { accessToken } = response.data.data;
             localStorage.setItem("accessToken", accessToken);

@@ -96,23 +96,20 @@ export const useFAQ = (initialParams = {}) => {
   /**
    * 인기 FAQ 조회
    */
-  const fetchPopularFAQs = useCallback(
-    async (limit = 10) => {
-      try {
-        const response = await csService.getPopularFAQs(limit);
+  const fetchPopularFAQs = useCallback(async (limit = 10) => {
+    try {
+      const response = await csService.getPopularFAQs(limit);
 
-        if (response.success) {
-          setPopularFaqs(response.data || []);
-          return { success: true, data: response.data };
-        }
-      } catch (err) {
-        const message = handleError(err);
-        console.error("Failed to fetch popular FAQs:", message);
-        return { success: false, error: message };
+      if (response.success) {
+        setPopularFaqs(response.data || []);
+        return { success: true, data: response.data };
       }
-    },
-    []
-  );
+    } catch (err) {
+      const message = handleError(err);
+      console.error("Failed to fetch popular FAQs:", message);
+      return { success: false, error: message };
+    }
+  }, []);
 
   /**
    * 카테고리별 FAQ 조회

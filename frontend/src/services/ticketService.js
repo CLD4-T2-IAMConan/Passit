@@ -116,7 +116,9 @@ class TicketService {
    * @returns {Promise}
    */
   async getTicketsByPriceRange(minPrice, maxPrice, params = {}) {
-    const response = await ticketAPI.get(ENDPOINTS.TICKETS.BY_PRICE_RANGE(minPrice, maxPrice), { params });
+    const response = await ticketAPI.get(ENDPOINTS.TICKETS.BY_PRICE_RANGE(minPrice, maxPrice), {
+      params,
+    });
     return response.data;
   }
 
@@ -128,7 +130,9 @@ class TicketService {
    * @returns {Promise}
    */
   async getTicketsByDateRange(startDate, endDate, params = {}) {
-    const response = await ticketAPI.get(ENDPOINTS.TICKETS.BY_DATE_RANGE(startDate, endDate), { params });
+    const response = await ticketAPI.get(ENDPOINTS.TICKETS.BY_DATE_RANGE(startDate, endDate), {
+      params,
+    });
     return response.data;
   }
 
@@ -253,7 +257,9 @@ class TicketService {
    * @returns {Promise}
    */
   async forceUpdateTicketStatus(ticketId, status) {
-    const response = await ticketAPI.patch(ENDPOINTS.TICKETS.ADMIN.UPDATE_STATUS(ticketId), { status });
+    const response = await ticketAPI.patch(ENDPOINTS.TICKETS.ADMIN.UPDATE_STATUS(ticketId), {
+      status,
+    });
     return response.data;
   }
 }

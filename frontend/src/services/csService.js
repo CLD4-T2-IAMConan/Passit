@@ -198,7 +198,9 @@ class CSService {
    * @returns {Promise}
    */
   async updateInquiryStatus(inquiryId, status) {
-    const response = await csAPI.patch(ENDPOINTS.INQUIRIES.ADMIN.UPDATE_STATUS(inquiryId), { status });
+    const response = await csAPI.patch(ENDPOINTS.INQUIRIES.ADMIN.UPDATE_STATUS(inquiryId), {
+      status,
+    });
     return response.data;
   }
 
@@ -562,7 +564,9 @@ class CSService {
    * @returns {Promise}
    */
   async reorderCategory(categoryId, orderIndex) {
-    const response = await csAPI.patch(ENDPOINTS.CATEGORIES.ADMIN.REORDER(categoryId), { orderIndex });
+    const response = await csAPI.patch(ENDPOINTS.CATEGORIES.ADMIN.REORDER(categoryId), {
+      orderIndex,
+    });
     return response.data;
   }
 }
