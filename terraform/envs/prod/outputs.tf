@@ -170,3 +170,40 @@ output "frontend_cloudfront_distribution_id" {
   value       = module.cicd.frontend_cloudfront_distribution_id
   description = "CloudFront distribution ID for cache invalidation"
 }
+
+#######################################
+# Monitoring - Amazon Managed Prometheus
+#######################################
+
+output "prometheus_workspace_arn" {
+  description = "ARN of the Amazon Managed Prometheus workspace"
+  value       = module.monitoring.prometheus_workspace_arn
+}
+
+output "prometheus_workspace_endpoint" {
+  description = "Remote write endpoint for Amazon Managed Prometheus"
+  value       = module.monitoring.prometheus_workspace_endpoint
+}
+
+#######################################
+# Monitoring - Prometheus IRSA
+#######################################
+
+output "prometheus_ingest_role_arn" {
+  description = "IAM Role ARN used by Prometheus/ADOT to write metrics to AMP"
+  value       = module.monitoring.prometheus_ingest_role_arn
+}
+
+#######################################
+# Monitoring - Kubernetes Metadata
+#######################################
+
+output "prometheus_namespace" {
+  description = "Kubernetes namespace where Prometheus/ADOT is deployed"
+  value       = module.monitoring.prometheus_namespace
+}
+
+output "prometheus_service_account_name" {
+  description = "Kubernetes ServiceAccount name for Prometheus/ADOT"
+  value       = module.monitoring.prometheus_service_account_name
+}
