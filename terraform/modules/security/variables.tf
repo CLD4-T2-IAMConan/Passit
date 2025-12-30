@@ -63,3 +63,9 @@ variable "github_repo" {
   type        = string
   default     = ""
 }
+
+variable "github_actions_role_name" {
+  description = "Custom name for GitHub Actions IAM role (optional, defaults to passit-github-actions-{environment})"
+  type        = string
+  default     = ""
+}

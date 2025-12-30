@@ -84,7 +84,7 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry_policy" {
 
 # GitHub Actions용 IAM 역할 (OIDC)
 resource "aws_iam_role" "github_actions" {
-  name = "${var.project_name}-github-actions-${var.environment}"
+  name = var.github_actions_role_name != "" ? var.github_actions_role_name : "${var.project_name}-github-actions-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -108,7 +108,7 @@ resource "aws_iam_role" "github_actions" {
   })
 
   tags = {
-    Name        = "${var.project_name}-github-actions-${var.environment}"
+    Name        = var.github_actions_role_name != "" ? var.github_actions_role_name : "${var.project_name}-github-actions-${var.environment}"
     Project     = var.project_name
     Environment = var.environment
   }

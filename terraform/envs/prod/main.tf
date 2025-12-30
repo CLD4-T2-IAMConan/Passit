@@ -75,6 +75,11 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # GitHub Actions IAM Role
+  github_org  = var.github_org
+  github_repo = var.github_repo
+  github_actions_role_name = var.github_actions_role_name
 }
 
 # ============================================
