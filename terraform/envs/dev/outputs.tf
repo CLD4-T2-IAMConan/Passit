@@ -184,3 +184,8 @@ output "s3_ticket_bucket_id" {
 output "alb_controller_role_arn" {
   value = module.cicd.alb_controller_role_arn
 }
+
+output "frontend_cloudfront_distribution_id" {
+  value       = module.cicd.frontend_cloudfront_distribution_id
+  description = "CloudFront distribution ID for cache invalidation"
+}
