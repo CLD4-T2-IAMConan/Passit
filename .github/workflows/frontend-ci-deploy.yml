@@ -162,7 +162,7 @@ jobs:
         run: |
           BUCKET_NAME="passit-prod-frontend-bucket"
           echo "Deploying to $BUCKET_NAME"
-          aws s3 sync frontend/dist s3://$BUCKET_NAME --delete
+          aws s3 sync frontend/build s3://$BUCKET_NAME --delete
 
       - name: CloudFront Invalidation
         run: |
