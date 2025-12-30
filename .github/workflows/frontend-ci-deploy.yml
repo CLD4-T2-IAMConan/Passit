@@ -118,7 +118,7 @@ jobs:
           retention-days: 30
 
   # --------------------
-  # Deploy (main only)
+  # Deploy (develop & main)
   # --------------------
   deploy:
     name: Deploy Frontend to S3
@@ -126,8 +126,8 @@ jobs:
     # needs: [build-and-test, e2e-tests] # e2e 테스트 할 때 이걸로 사용
     needs: [build-and-test]
 
-    # 핵심 조건
-    if: github.ref == 'refs/heads/main'
+    # develop과 main 브랜치 push 시 배포
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
 
     permissions:
       id-token: write
@@ -148,26 +148,64 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build (prod)
+      - name: Build
         working-directory: frontend
-        run: CI=false npm run build # CI false 나중에 제거
+        run: npm run build
+        env:
+          CI: false
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "env=prod" >> $GITHUB_OUTPUT
+            echo "aws_role=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
+            echo "bucket_name=passit-prod-frontend-bucket" >> $GITHUB_OUTPUT
+            echo "cf_dist_id=${{ secrets.CF_DIST_ID_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "env=dev" >> $GITHUB_OUTPUT
+            echo "aws_role=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_OUTPUT
+            echo "bucket_name=passit-dev-frontend-bucket" >> $GITHUB_OUTPUT
+            echo "cf_dist_id=${{ secrets.CF_DIST_ID_DEV }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          role-to-assume: ${{ steps.env.outputs.aws_role }}
           aws-region: ap-northeast-2
 
       - name: Deploy to S3
         run: |
-          BUCKET_NAME="passit-prod-frontend-bucket"
-          echo "Deploying to $BUCKET_NAME"
-          aws s3 sync frontend/dist s3://$BUCKET_NAME --delete
+          echo "Deploying to ${{ steps.env.outputs.bucket_name }} (${{ steps.env.outputs.env }})"
+          aws s3 sync frontend/build s3://${{ steps.env.outputs.bucket_name }} \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html" \
+            --exclude "*.map"
+
+          # index.html은 캐시 무효화
+          aws s3 cp frontend/build/index.html s3://${{ steps.env.outputs.bucket_name }}/index.html \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --content-type "text/html"
+
+          echo "✅ S3 업로드 완료"
 
       - name: CloudFront Invalidation
+        if: steps.env.outputs.cf_dist_id != ''
         run: |
-          if [ -n "${{ secrets.CF_DIST_ID_PROD }}" ]; then
-            aws cloudfront create-invalidation \
-              --distribution-id ${{ secrets.CF_DIST_ID_PROD }} \
-              --paths "/*"
-          fi
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.env.outputs.cf_dist_id }} \
+            --paths "/*"
+          echo "✅ CloudFront 캐시 무효화 완료"
+
+      - name: Deployment summary
+        run: |
+          ENV=${{ steps.env.outputs.env }}
+          echo "### ✅ Frontend Deployment Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: $ENV" >> $GITHUB_STEP_SUMMARY
+          echo "**S3 Bucket**: ${{ steps.env.outputs.bucket_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Frontend deployed successfully to $ENV environment"
