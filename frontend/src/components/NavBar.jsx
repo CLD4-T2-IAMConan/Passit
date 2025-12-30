@@ -27,7 +27,7 @@ export default function NavBar() {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [csAnchorEl, setCsAnchorEl] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const csOpen = Boolean(csAnchorEl);
