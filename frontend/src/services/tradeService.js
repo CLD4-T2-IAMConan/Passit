@@ -262,7 +262,9 @@ class TradeService {
    * @returns {Promise}
    */
   async forceCancelPayment(paymentId, reason) {
-    const response = await tradeAPI.post(ENDPOINTS.PAYMENTS.ADMIN.FORCE_CANCEL(paymentId), { reason });
+    const response = await tradeAPI.post(ENDPOINTS.PAYMENTS.ADMIN.FORCE_CANCEL(paymentId), {
+      reason,
+    });
     return response.data;
   }
 

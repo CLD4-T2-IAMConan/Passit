@@ -228,7 +228,11 @@ const ChatListPage = () => {
                         gap: 0.5,
                       }}
                     >
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.7rem" }}
+                      >
                         {formatTime(room.lastMessageTime)}
                       </Typography>
                       {room.unreadCount > 0 && (

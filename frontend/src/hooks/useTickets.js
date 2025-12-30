@@ -30,11 +30,11 @@ export const useTickets = (initialParams = {}) => {
 
   // 카테고리 이름을 ID로 매핑 (상수로 정의)
   const categoryMap = {
-    "콘서트": 1,
-    "뮤지컬": 2,
-    "스포츠": 3,
-    "전시": 4,
-    "클래식": 5,
+    콘서트: 1,
+    뮤지컬: 2,
+    스포츠: 3,
+    전시: 4,
+    클래식: 5,
   };
 
   /**
@@ -67,7 +67,7 @@ export const useTickets = (initialParams = {}) => {
 
         // category를 categoryId로 변환
         // 카테고리 이름을 ID로 매핑
-        if (searchParams.category && typeof searchParams.category === 'string') {
+        if (searchParams.category && typeof searchParams.category === "string") {
           const categoryId = categoryMap[searchParams.category];
           if (categoryId) {
             searchParams.categoryId = categoryId;

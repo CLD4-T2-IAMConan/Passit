@@ -257,7 +257,16 @@ const TicketListPage = () => {
         </Paper>
 
         {/* View Mode Toggle, Sort, and Results Count */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           <Typography variant="body2" color="text.secondary">
             총 <strong>{pagination.totalElements || 0}</strong>개의 티켓
           </Typography>
@@ -267,13 +276,19 @@ const TicketListPage = () => {
             <FormControl size="small" sx={{ minWidth: 180 }}>
               <InputLabel>정렬</InputLabel>
               <Select
-                value={sortBy === "sellingPrice" ? (sortDirection === "DESC" ? "priceDesc" : "price") : sortBy}
+                value={
+                  sortBy === "sellingPrice"
+                    ? sortDirection === "DESC"
+                      ? "priceDesc"
+                      : "price"
+                    : sortBy
+                }
                 label="정렬"
                 onChange={(e) => {
                   const selectedValue = e.target.value;
                   let actualSortBy = selectedValue;
                   let newSortDirection = "ASC";
-                  
+
                   // 정렬 기준에 따라 기본 방향 설정
                   if (selectedValue === "createdAt") {
                     newSortDirection = "DESC"; // 최신순은 내림차순
@@ -286,7 +301,7 @@ const TicketListPage = () => {
                   } else {
                     newSortDirection = "ASC"; // 이벤트 날짜순은 오름차순
                   }
-                  
+
                   setSortBy(actualSortBy);
                   setSortDirection(newSortDirection);
                   changeSorting(actualSortBy, newSortDirection);
@@ -414,10 +429,10 @@ const TicketListPage = () => {
                             p: 2,
                           }}
                         >
-                          <Typography 
-                            variant="h6" 
-                            sx={{ 
-                              fontWeight: 600, 
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontWeight: 600,
                               mb: 1,
                               overflow: "hidden",
                               textOverflow: "ellipsis",
@@ -430,7 +445,13 @@ const TicketListPage = () => {
                             {getTicketTitle(ticket)}
                           </Typography>
 
-                          <Stack direction="row" spacing={0.5} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            sx={{ mb: 2 }}
+                            flexWrap="wrap"
+                            useFlexGap
+                          >
                             {ticket.categoryId && (
                               <Chip label={getCategoryName(ticket.categoryId)} size="small" />
                             )}
@@ -440,7 +461,11 @@ const TicketListPage = () => {
                           </Stack>
 
                           <Box sx={{ mt: "auto" }}>
-                            <Typography variant="h5" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
+                            <Typography
+                              variant="h5"
+                              color="primary"
+                              sx={{ fontWeight: 700, mb: 1 }}
+                            >
                               {getTicketPrice(ticket).toLocaleString()}원
                             </Typography>
 
