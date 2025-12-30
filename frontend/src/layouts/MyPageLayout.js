@@ -21,6 +21,7 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import HistoryIcon from "@mui/icons-material/History";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import ChatIcon from "@mui/icons-material/Chat";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "../contexts/AuthContext";
@@ -53,6 +54,11 @@ const MyPageLayout = () => {
       text: "My 티켓",
       icon: <ConfirmationNumberIcon />,
       path: "/mypage/my-tickets",
+    },
+    {
+      text: "내 채팅",
+      icon: <ChatIcon />,
+      path: "/chat",
     },
   ];
 

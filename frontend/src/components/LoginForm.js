@@ -15,8 +15,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, Person, Lock } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
-import { API_SERVICES } from "../config/apiConfig";
-import { ENDPOINTS } from "../api/endpoints";
+import authService from "../services/authService";
 
 const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
   const { login } = useAuth();
@@ -59,8 +58,7 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
 
   const handleKakaoLogin = () => {
     // 카카오 로그인 API로 리다이렉트
-    // API_SERVICES.ACCOUNT는 이미 /api를 포함하고 있으므로 직접 사용
-    window.location.href = `${API_SERVICES.ACCOUNT}${ENDPOINTS.AUTH.KAKAO}`;
+    window.location.href = authService.getKakaoLoginUrl();
   };
 
   return (

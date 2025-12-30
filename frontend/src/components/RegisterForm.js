@@ -19,11 +19,10 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
-import { API_SERVICES } from "../config/apiConfig";
-import { ENDPOINTS } from "../api/endpoints";
+import authService from "../services/authService";
 
 const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
-  const { register } = useAuth();
+  const { signup } = useAuth();
   const [currentStep, setCurrentStep] = useState(0); // 0: 가입방법 선택, 1: 이메일 인증, 2: 기본정보, 3: 비밀번호
   const [signupMethod, setSignupMethod] = useState(""); // "kakao" or "email"
   const [formData, setFormData] = useState({
@@ -150,8 +149,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
     setSignupMethod(method);
     if (method === "kakao") {
       // 카카오 로그인으로 리다이렉트
-      // API_SERVICES.ACCOUNT는 이미 /api를 포함하고 있으므로 직접 사용
-      window.location.href = `${API_SERVICES.ACCOUNT}${ENDPOINTS.AUTH.KAKAO}`;
+      window.location.href = authService.getKakaoLoginUrl();
     } else {
       // 이메일 가입 플로우 시작
       setCurrentStep(1);
@@ -216,10 +214,12 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
 
     try {
       const { confirmPassword, verificationCode, ...userData } = formData;
-      const result = await register(userData);
+      const result = await signup(userData);
 
       if (result.success) {
-        onRegisterSuccess(result.user);
+        // result.data는 ApiResponse 구조이므로 result.data.data에서 실제 사용자 정보 추출
+        const userInfo = result.data?.data || result.data;
+        onRegisterSuccess(userInfo);
       } else {
         setError(result.error || "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
       }

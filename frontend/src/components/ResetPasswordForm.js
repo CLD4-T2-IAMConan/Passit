@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { userService } from "../services/userService";
+import userService from "../services/userService";
 
 const ResetPasswordForm = () => {
   const navigate = useNavigate();
