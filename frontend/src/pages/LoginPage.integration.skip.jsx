@@ -31,7 +31,6 @@ jest.mock("../components/LoginForm", () => (props) => {
     </button>
   );
 });
-
 /**
  * LoginPage 통합 테스트
  */
