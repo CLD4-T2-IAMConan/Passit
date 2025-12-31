@@ -3,10 +3,10 @@
 
 terraform {
   backend "s3" {
-    bucket         = "passit-terraform-state-prod"
+    bucket         = "passit-tf-state-prod-46470302"
     key            = "prod/terraform.tfstate"
     region         = "ap-northeast-2"
-    dynamodb_table = "passit-terraform-locks-prod"
+    dynamodb_table = "passit-tf-locks-prod-46470302"
     encrypt        = true
   }
 }
