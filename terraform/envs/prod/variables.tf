@@ -271,11 +271,6 @@ variable "grafana_namespace" {
   default     = "monitoring"
 }
 
-variable "grafana_service_account_name" {
-  description = "ServiceAccount name for Grafana (IRSA)"
-  type        = string
-  default     = "grafana"
-}
 
 variable "grafana_admin_user" {
   description = "Grafana admin username"
