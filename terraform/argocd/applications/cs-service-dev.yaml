@@ -19,7 +19,7 @@ spec:
       values: |
         image:
           repository: ghcr.io/cld4-t2-iamconan/service-cs
-          tag: latest
+          tag: sha-697af50
         imagePullSecrets:
           - name: ghcr-pull-secret
         ingress:
@@ -27,6 +27,8 @@ spec:
           className: alb
           annotations:
             kubernetes.io/ingress.class: alb
+            alb.ingress.kubernetes.io/group.name: passit-dev-alb
+            alb.ingress.kubernetes.io/load-balancer-name: passit-dev-alb
             alb.ingress.kubernetes.io/scheme: internet-facing
             alb.ingress.kubernetes.io/target-type: ip
             alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'

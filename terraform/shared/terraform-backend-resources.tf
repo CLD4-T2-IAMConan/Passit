@@ -1,11 +1,26 @@
-# Backend Bootstrap Resources
-# S3 bucket and DynamoDB table for Terraform state management
+# Terraform Backend Resources (S3 + DynamoDB)
+# 
+# 이 파일은 각 환경(dev, prod)의 Terraform backend를 위한 S3 bucket과 DynamoDB table을 생성합니다.
+# 
+# 중요:
+# - shared 폴더는 로컬 backend를 사용하므로 순환 참조 문제가 없습니다.
+# - IAM 권한이 없는 경우: 이미 존재하는 리소스는 terraform import를 사용하세요.
+# - 리소스가 없고 권한이 있는 경우: terraform apply로 생성 가능
 #
-# 주의: 이 파일은 backend.tf와 함께 사용할 수 없습니다.
-# 부트스트랩 단계:
-# 1. backend.tf를 임시로 주석 처리하거나 이름 변경
-# 2. terraform init && terraform apply로 S3/DynamoDB 생성
-# 3. backend.tf 주석 해제하고 terraform init -migrate-state
+# 사용 순서:
+# 1. 리소스가 이미 존재하는 경우:
+#    terraform import aws_s3_bucket.terraform_state_dev passit-terraform-state-dev
+#    terraform import aws_dynamodb_table.terraform_locks_dev passit-terraform-locks-dev
+#    (prod도 동일하게 import)
+#
+# 2. 리소스가 없는 경우 (IAM 권한 필요):
+#    terraform/shared에서 terraform init && terraform apply
+#
+# 3. 각 환경(dev/prod)에서 S3 backend 설정 후 terraform init -migrate-state
+
+# ============================================
+# Dev Environment Backend Resources
+# ============================================
 
 # S3 Bucket for Terraform State (Dev)
 resource "aws_s3_bucket" "terraform_state_dev" {
@@ -15,6 +30,7 @@ resource "aws_s3_bucket" "terraform_state_dev" {
     Name        = "Terraform State Bucket - Dev"
     Environment = "dev"
     ManagedBy   = "Terraform"
+    Purpose     = "TerraformBackend"
   }
 }
 
@@ -45,8 +61,31 @@ resource "aws_s3_bucket_public_access_block" "terraform_state_dev" {
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
-  restrict_public_buckets = true
+  restrict_public_buckets  = true
 }
+
+# DynamoDB Table for State Locking (dev environment)
+resource "aws_dynamodb_table" "terraform_locks_dev" {
+  name         = "passit-terraform-locks-dev"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "Terraform State Lock Table - Dev"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+    Purpose     = "TerraformStateLock"
+  }
+}
+
+# ============================================
+# Prod Environment Backend Resources
+# ============================================
 
 # S3 Bucket for Terraform State (Prod)
 resource "aws_s3_bucket" "terraform_state_prod" {
@@ -56,6 +95,7 @@ resource "aws_s3_bucket" "terraform_state_prod" {
     Name        = "Terraform State Bucket - Prod"
     Environment = "prod"
     ManagedBy   = "Terraform"
+    Purpose     = "TerraformBackend"
   }
 }
 
@@ -89,24 +129,6 @@ resource "aws_s3_bucket_public_access_block" "terraform_state_prod" {
   restrict_public_buckets = true
 }
 
-# DynamoDB Table for State Locking (dev environment)
-resource "aws_dynamodb_table" "terraform_locks_dev" {
-  name         = "passit-terraform-locks-dev"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  tags = {
-    Name        = "Terraform State Lock Table - Dev"
-    Environment = "dev"
-    ManagedBy   = "Terraform"
-  }
-}
-
 # DynamoDB Table for State Locking (prod environment)
 resource "aws_dynamodb_table" "terraform_locks_prod" {
   name         = "passit-terraform-locks-prod"
@@ -122,27 +144,7 @@ resource "aws_dynamodb_table" "terraform_locks_prod" {
     Name        = "Terraform State Lock Table - Prod"
     Environment = "prod"
     ManagedBy   = "Terraform"
+    Purpose     = "TerraformStateLock"
   }
-}
-
-# Outputs
-output "s3_bucket_name_dev" {
-  value       = aws_s3_bucket.terraform_state_dev.id
-  description = "Name of the S3 bucket for Terraform state (dev)"
-}
-
-output "s3_bucket_name_prod" {
-  value       = aws_s3_bucket.terraform_state_prod.id
-  description = "Name of the S3 bucket for Terraform state (prod)"
-}
-
-output "dynamodb_table_dev" {
-  value       = aws_dynamodb_table.terraform_locks_dev.name
-  description = "Name of the DynamoDB table for state locking (dev)"
-}
-
-output "dynamodb_table_prod" {
-  value       = aws_dynamodb_table.terraform_locks_prod.name
-  description = "Name of the DynamoDB table for state locking (prod)"
 }
 

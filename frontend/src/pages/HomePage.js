@@ -372,7 +372,9 @@ const HomePage = () => {
       {/* Popular Tickets Section */}
       <Box sx={{ bgcolor: "grey.50", py: 8 }}>
         <Container maxWidth="lg">
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}
+          >
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <TrendingUpIcon sx={{ mr: 1, color: "error.main", fontSize: 32 }} />
               <Box>
@@ -417,89 +419,105 @@ const HomePage = () => {
                     },
                   }}
                 >
-                    <CardActionArea
-                      onClick={() => handleTicketClick(ticket.ticketId || ticket.id)}
+                  <CardActionArea
+                    onClick={() => handleTicketClick(ticket.ticketId || ticket.id)}
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "stretch",
+                      justifyContent: "flex-start",
+                    }}
+                  >
+                    <CardMedia
+                      component="div"
+                      sx={{
+                        height: 200,
+                        bgcolor: "grey.300",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                      }}
+                    >
+                      <ConfirmationNumberIcon sx={{ fontSize: 60, color: "grey.400" }} />
+                      {/* HOT 뱃지 - 상위 3개 티켓에만 표시 */}
+                      {index < 3 && (
+                        <Chip
+                          label={index === 0 ? "🔥 HOT" : "🌟 인기"}
+                          size="small"
+                          sx={{
+                            position: "absolute",
+                            top: 12,
+                            left: 12,
+                            bgcolor: index === 0 ? "error.main" : "warning.main",
+                            color: "white",
+                            fontWeight: 700,
+                          }}
+                        />
+                      )}
+                      {/* 판매중 상태 뱃지 */}
+                      <Chip
+                        label="판매중"
+                        size="small"
+                        color="success"
+                        sx={{
+                          position: "absolute",
+                          top: 12,
+                          right: 12,
+                        }}
+                      />
+                    </CardMedia>
+                    <CardContent
                       sx={{
                         flex: 1,
                         display: "flex",
                         flexDirection: "column",
-                        alignItems: "stretch",
-                        justifyContent: "flex-start",
+                        p: 2,
                       }}
                     >
-                      <CardMedia
-                        component="div"
-                        sx={{
-                          height: 200,
-                          bgcolor: "grey.300",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          position: "relative",
-                        }}
-                      >
-                        <ConfirmationNumberIcon sx={{ fontSize: 60, color: "grey.400" }} />
-                        {/* HOT 뱃지 - 상위 3개 티켓에만 표시 */}
-                        {index < 3 && (
-                          <Chip
-                            label={index === 0 ? "🔥 HOT" : "🌟 인기"}
-                            size="small"
-                            sx={{
-                              position: "absolute",
-                              top: 12,
-                              left: 12,
-                              bgcolor: index === 0 ? "error.main" : "warning.main",
-                              color: "white",
-                              fontWeight: 700,
-                            }}
-                          />
-                        )}
-                        {/* 판매중 상태 뱃지 */}
+                      <Typography variant="h6" noWrap sx={{ fontWeight: 600, mb: 1 }}>
+                        {getTicketTitle(ticket)}
+                      </Typography>
+                      <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
                         <Chip
-                          label="판매중"
+                          label={getCategoryName(ticket.categoryId)}
                           size="small"
-                          color="success"
-                          sx={{
-                            position: "absolute",
-                            top: 12,
-                            right: 12,
-                          }}
+                          color="primary"
+                          variant="outlined"
                         />
-                      </CardMedia>
-                      <CardContent
-                        sx={{
-                          flex: 1,
-                          display: "flex",
-                          flexDirection: "column",
-                          p: 2,
-                        }}
-                      >
-                        <Typography variant="h6" noWrap sx={{ fontWeight: 600, mb: 1 }}>
-                          {getTicketTitle(ticket)}
-                        </Typography>
-                        <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
-                          <Chip label={getCategoryName(ticket.categoryId)} size="small" color="primary" variant="outlined" />
-                          {ticket.eventLocation && (
-                            <Chip label={ticket.eventLocation} size="small" />
-                          )}
-                        </Stack>
-                        <Box sx={{ mt: "auto" }}>
-                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mb: 1 }}>
-                            <Typography variant="h5" color="primary" sx={{ fontWeight: 700 }}>
-                              {getTicketPrice(ticket).toLocaleString()}
-                              <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
-                                원
-                              </Typography>
+                        {ticket.eventLocation && <Chip label={ticket.eventLocation} size="small" />}
+                      </Stack>
+                      <Box sx={{ mt: "auto" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "baseline",
+                            mb: 1,
+                          }}
+                        >
+                          <Typography variant="h5" color="primary" sx={{ fontWeight: 700 }}>
+                            {getTicketPrice(ticket).toLocaleString()}
+                            <Typography
+                              component="span"
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ ml: 0.5 }}
+                            >
+                              원
                             </Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            📅 {ticket.eventDate
-                              ? new Date(ticket.eventDate).toLocaleDateString("ko-KR")
-                              : "일정 미정"}
                           </Typography>
                         </Box>
-                      </CardContent>
-                    </CardActionArea>
+                        <Typography variant="body2" color="text.secondary">
+                          📅{" "}
+                          {ticket.eventDate
+                            ? new Date(ticket.eventDate).toLocaleDateString("ko-KR")
+                            : "일정 미정"}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </CardActionArea>
                 </Card>
               ))}
             </Box>
@@ -508,11 +526,7 @@ const HomePage = () => {
               <Typography variant="h6" color="text.secondary">
                 등록된 티켓이 없습니다
               </Typography>
-              <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                onClick={() => navigate("/sell")}
-              >
+              <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate("/sell")}>
                 첫 티켓 등록하기
               </Button>
             </Paper>
@@ -582,7 +596,11 @@ const HomePage = () => {
                   관리자
                 </Link>
               )}
-              <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", sm: "block" } }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ display: { xs: "none", sm: "block" } }}
+              />
               <Button
                 variant="outlined"
                 size="small"

@@ -495,21 +495,18 @@ export const useTrade = () => {
   /**
    * 결제 상태 조회
    */
-  const fetchPaymentStatus = useCallback(
-    async (paymentId) => {
-      try {
-        const response = await tradeService.getPaymentStatus(paymentId);
+  const fetchPaymentStatus = useCallback(async (paymentId) => {
+    try {
+      const response = await tradeService.getPaymentStatus(paymentId);
 
-        if (response.success) {
-          return { success: true, data: response.data };
-        }
-      } catch (err) {
-        const message = handleError(err);
-        return { success: false, error: message };
+      if (response.success) {
+        return { success: true, data: response.data };
       }
-    },
-    []
-  );
+    } catch (err) {
+      const message = handleError(err);
+      return { success: false, error: message };
+    }
+  }, []);
 
   /**
    * 페이지 변경

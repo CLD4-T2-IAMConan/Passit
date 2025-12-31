@@ -169,11 +169,27 @@ resource "null_resource" "create_passit_user" {
       done
       
       # MySQL 명령 실행
-      echo "CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD'; GRANT ALL PRIVILEGES ON \\\`$DB_NAME\\\`.* TO '$PASSIT_USER'@'%'; FLUSH PRIVILEGES; SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';" | mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" || {
+      mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" <<SQL || {
         echo "❌ MySQL 명령 실행 실패"
         kill $SSM_PID 2>/dev/null || true
         exit 1
       }
+      -- 데이터베이스 생성 (없으면)
+      CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;
+      
+      -- 사용자 생성 (없으면)
+      CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD';
+      
+      -- 모든 권한 부여
+      GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$PASSIT_USER'@'%';
+      
+      -- 권한 즉시 적용
+      FLUSH PRIVILEGES;
+      
+      -- 확인
+      SHOW GRANTS FOR '$PASSIT_USER'@'%';
+      SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';
+SQL
       
       echo "✅ passit_user 생성 완료!"
       

@@ -52,9 +52,7 @@ export default function NavBar() {
     { label: "판매등록", path: "/sell" },
   ];
 
-  const rightMenuItems = [
-    { label: "마이페이지", path: "/mypage" },
-  ];
+  const rightMenuItems = [{ label: "마이페이지", path: "/mypage" }];
 
   return (
     <>

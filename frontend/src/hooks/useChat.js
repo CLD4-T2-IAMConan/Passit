@@ -156,7 +156,9 @@ export const useChat = () => {
             setPagination({
               page: 0,
               size: pagination.size,
-              hasMore: messageData.totalPages ? messageData.page < messageData.totalPages - 1 : false,
+              hasMore: messageData.totalPages
+                ? messageData.page < messageData.totalPages - 1
+                : false,
             });
           }
 

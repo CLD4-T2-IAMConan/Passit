@@ -166,9 +166,7 @@ const BuyerPaymentPage = () => {
       // 2. NICEPAY SDK가 로드되었는지 확인
       console.log("🔍 NICEPAY SDK 확인:", typeof window.AUTHNICE);
       if (!window.AUTHNICE) {
-        throw new Error(
-          "NICEPAY SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요."
-        );
+        throw new Error("NICEPAY SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.");
       }
 
       // 3. NICEPAY 결제창 호출

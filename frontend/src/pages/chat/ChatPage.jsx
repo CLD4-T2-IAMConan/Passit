@@ -336,7 +336,11 @@ const ChatPage = () => {
                         gap: 0.5,
                       }}
                     >
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: "0.7rem" }}
+                      >
                         {formatTime(room.lastMessageTime)}
                       </Typography>
                       {room.unreadCount > 0 && (
@@ -491,7 +495,11 @@ const ChatPage = () => {
               {error}
             </Alert>
           ) : (
-            <ChatRoom messages={messages} currentUserId={currentUserId} chatroomId={selectedRoom.chatroomId} />
+            <ChatRoom
+              messages={messages}
+              currentUserId={currentUserId}
+              chatroomId={selectedRoom.chatroomId}
+            />
           )}
         </Box>
 
@@ -511,7 +519,15 @@ const ChatPage = () => {
   // 모바일: 채팅방 선택 시 채팅방만, 선택 안 하면 목록만
   if (isMobile) {
     return (
-      <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", bgcolor: "grey.50", mt: "64px" }}>
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          bgcolor: "grey.50",
+          mt: "64px",
+        }}
+      >
         {selectedRoom ? renderChatRoom() : renderChatList()}
       </Box>
     );
