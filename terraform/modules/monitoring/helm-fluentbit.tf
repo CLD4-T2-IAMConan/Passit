@@ -71,6 +71,7 @@ resource "helm_release" "fluentbit" {
   ]
 
   depends_on = [
+    kubernetes_service_account_v1.fluentbit,
     aws_iam_role_policy.fluentbit_cloudwatch,
     kubernetes_namespace_v1.logging
   ]

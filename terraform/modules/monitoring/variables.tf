@@ -58,3 +58,9 @@ variable "fluentbit_namespace" {
   type        = string
   default     = "logging"
 }
+
+variable "monitoring_namespace" {
+  type        = string
+  description = "Namespace for monitoring stack"
+  default     = "monitoring"
+}

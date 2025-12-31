@@ -64,3 +64,14 @@ resource "aws_iam_role_policy" "fluentbit_cloudwatch" {
     }]
   })
 }
+
+resource "kubernetes_service_account_v1" "fluentbit" {
+  metadata {
+    name      = "fluent-bit"
+    namespace = var.fluentbit_namespace
+
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.fluentbit.arn
+    }
+  }
+}
