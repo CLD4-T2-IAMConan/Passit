@@ -101,6 +101,14 @@ variable "grafana_authentication_providers" {
   default     = ["AWS_SSO"]
 }
 
+variable "grafana_admin_user" {
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  type        = string
+}
+
 ############################
 # Fluent Bit
 ############################
