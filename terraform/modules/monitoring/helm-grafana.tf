@@ -2,7 +2,8 @@ resource "helm_release" "grafana" {
   name       = "grafana"
   repository = "https://grafana.github.io/helm-charts"
   chart      = "grafana"
-  namespace = var.monitoring_namespace
+  namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+  create_namespace = false
 
   version = "7.3.9"
 
@@ -27,6 +28,6 @@ resource "helm_release" "grafana" {
 
 
   depends_on = [
-    helm_release.kube_prometheus_stack
+    kubernetes_namespace_v1.monitoring
   ]
 }

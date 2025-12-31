@@ -1,14 +1,4 @@
 ############################################
-# Namespace (logging)
-############################################
-
-resource "kubernetes_namespace_v1" "logging" {
-  metadata {
-    name = var.fluentbit_namespace
-  }
-}
-
-############################################
 # Fluent Bit Helm Release
 ############################################
 
@@ -16,7 +6,8 @@ resource "helm_release" "fluentbit" {
   name       = "fluent-bit"
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
-  namespace  = var.fluentbit_namespace
+  namespace = kubernetes_namespace_v1.logging.metadata[0].name
+
 
   create_namespace = false
 
@@ -53,7 +44,7 @@ resource "helm_release" "fluentbit" {
     # DaemonSet
     # ---------------------------------------
     {
-      name  = "daemonSet"
+      name  = "daemonset.enabled"
       value = "true"
     },
 
