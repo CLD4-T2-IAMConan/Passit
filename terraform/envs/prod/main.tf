@@ -219,6 +219,9 @@ module "monitoring" {
   alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   depends_on = [module.eks]
+
+  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
 }
 
 # ============================================

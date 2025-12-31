@@ -262,6 +262,16 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
+variable "grafana_admin_user" {
+  type        = string
+  default     = null
+}
+
+variable "grafana_admin_password" {
+  type        = string
+  default     = null
+}
+
 # =========================
 # CI/CD
 # =========================
