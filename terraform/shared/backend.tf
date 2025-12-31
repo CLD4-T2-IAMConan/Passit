@@ -12,10 +12,10 @@
 # S3 backend로 마이그레이션하려면 아래 주석을 해제하세요:
 # terraform {
 #   backend "s3" {
-#     bucket         = "passit-terraform-state-dev"
+#     bucket         = "passit-tf-state-prod-46470302"
 #     key            = "shared/terraform.tfstate"
 #     region         = "ap-northeast-2"
-#     dynamodb_table = "passit-terraform-locks-dev"
+#     dynamodb_table = "passit-tf-locks-prod-46470302"
 #     encrypt        = true
 #   }
 # }
