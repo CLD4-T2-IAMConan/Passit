@@ -64,3 +64,9 @@ variable "monitoring_namespace" {
   description = "Namespace for monitoring stack"
   default     = "monitoring"
 }
+
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
