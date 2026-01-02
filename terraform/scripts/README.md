@@ -32,6 +32,7 @@ Git Bash를 사용하는 경우:
 **원인**: Terraform state 초기화 문제 또는 S3 backend 접근 권한 문제
 
 **해결 방법**:
+
 ```bash
 cd terraform/envs/dev
 terraform init -reconfigure
@@ -43,6 +44,7 @@ terraform output  # 정상 작동 확인
 **원인**: 스크립트 실행 중 에러 또는 CRLF 줄바꿈 문제
 
 **해결 방법**:
+
 - **배치 파일 사용** (`connect-eks.bat`) - 에러 메시지 확인 가능
 - **Git Bash에서 직접 실행**: `bash ./terraform/scripts/connect-eks.sh dev`
 
@@ -51,6 +53,7 @@ terraform output  # 정상 작동 확인
 **원인**: Git이 윈도우에서 자동으로 CRLF로 변환
 
 **해결 방법**:
+
 ```bash
 # 프로젝트 루트에서 파일 정규화
 git add --renormalize .
@@ -63,6 +66,7 @@ git checkout -- connect-eks.sh
 #### 4. 권한 문제
 
 **해결 방법**:
+
 ```bash
 # Git Bash에서
 chmod +x terraform/scripts/*.sh
@@ -72,17 +76,34 @@ chmod +x terraform/scripts/*.sh
 
 ## 📋 스크립트 목록
 
-현재 **7개의 배포 자동화 스크립트**가 있습니다:
+자세한 스크립트 목록은 [SCRIPTS_INDEX.md](./SCRIPTS_INDEX.md)를 참조하세요.
+
+### 주요 배포 자동화 스크립트
 
 | 스크립트                     | 용도                                               | 사용 시점               |
 | ---------------------------- | -------------------------------------------------- | ----------------------- |
 | `setup-terraform-backend.sh` | Terraform Backend 설정 (S3, DynamoDB)              | 배포 전 필수            |
 | `connect-eks.sh`             | EKS 클러스터 접속 설정                             | 인프라 배포 후          |
-| `add-eks-access-entry.sh`    | EKS Access Entry 추가 (IAM 사용자 권한 부여)       | EKS 접근 권한 오류 시   |
+| `add-eks-user.sh`            | **EKS Access Entry 빠른 추가 (권장)**              | 신규 팀원 온보딩 시     |
 | `setup-k8s-prerequisites.sh` | Kubernetes 기본 설정 (NS, Secrets, ALB Controller) | EKS 접속 후             |
 | `update-helm-values.sh`      | Helm Values 자동 업데이트                          | Helm values 업데이트 시 |
 | `connect-bastion-rds.sh`     | Bastion을 통한 RDS 접속 (Session Manager)          | 로컬 개발 시            |
 | `connect-bastion-redis.sh`   | Bastion을 통한 Redis 접속 (Session Manager)        | 로컬 개발 시            |
+
+### 리소스 관리 스크립트
+
+| 스크립트                          | 용도                        | 사용 시점           |
+| --------------------------------- | --------------------------- | ------------------- |
+| `destroy-all-passit-resources.sh` | **모든 passit 리소스 삭제** | 전체 리소스 삭제 시 |
+| `check-all-remaining.sh`          | 남아있는 리소스 확인        | 삭제 후 확인 시     |
+| `fix-passit-user-permissions.sh`  | RDS passit_user 권한 수정   | DB 권한 문제 시     |
+
+### 기타 유용한 스크립트
+
+- `check-argocd-apps.sh` - ArgoCD 애플리케이션 상태 확인
+- `check-github-actions-setup.sh` - GitHub Actions 설정 확인
+- `verify-and-test-ses-email.sh` - SES 이메일 인증 및 테스트
+- `import-existing-resources.sh` - 기존 리소스 Terraform import
 
 ---
 
@@ -155,7 +176,67 @@ export GITHUB_PAT="your_pat"
 
 ---
 
-### `add-eks-access-entry.sh`
+### `add-eks-user.sh` (권장)
+
+**용도**: IAM 사용자에게 EKS 클러스터 접근 권한을 빠르게 부여하는 개선된 스크립트
+
+**사용법**:
+
+```bash
+./add-eks-user.sh <IAM_USER_ARN> [POLICY_TYPE]
+# 예시: ./add-eks-user.sh arn:aws:iam::727646470302:user/t2-alice
+# 예시: ./add-eks-user.sh arn:aws:iam::727646470302:user/t2-bob view
+```
+
+**권한 타입**:
+
+| Type    | Policy                      | 설명                    |
+| ------- | --------------------------- | ----------------------- |
+| `admin` | AmazonEKSClusterAdminPolicy | 클러스터 전체 관리자    |
+| `edit`  | AmazonEKSEditPolicy         | 리소스 생성/수정 가능   |
+| `view`  | AmazonEKSViewPolicy         | 조회만 가능 (Read-only) |
+
+**기능**:
+
+- 사용자 친화적인 인터페이스 (색상 코드, 진행 상황 표시)
+- Access Entry 존재 여부 자동 확인
+- 기존 Policy 자동 교체 (업데이트 시)
+- 상세한 결과 출력 및 다음 단계 안내
+- 에러 핸들링 및 롤백 지원
+
+**add-eks-access-entry.sh와의 차이점**:
+
+- ✅ IAM ARN을 직접 입력 (환경 이름 불필요)
+- ✅ 권한 타입 선택 가능 (admin/edit/view)
+- ✅ 기존 Policy 자동 교체
+- ✅ 더 나은 UX (색상, 확인 메시지)
+
+**사용 시나리오**:
+
+- 신규 팀원 온보딩
+- 팀원 권한 변경 (admin → view 등)
+- 긴급한 접근 권한 부여
+
+**다음 단계 안내**:
+
+스크립트 실행 후 팀원에게 다음을 안내합니다:
+
+```bash
+# kubeconfig 설정
+aws eks update-kubeconfig --name passit-dev-eks --region ap-northeast-2
+
+# 접근 확인
+kubectl get nodes
+```
+
+**참고 문서**:
+
+- [EKS Access 설정 가이드](../docs/EKS_ACCESS_SETUP_GUIDE.md)
+- [팀원용 빠른 시작](../docs/QUICK_START_FOR_TEAM.md)
+
+---
+
+### `add-eks-access-entry.sh` (레거시)
 
 **용도**: IAM 사용자에게 EKS 클러스터 접근 권한 부여
 

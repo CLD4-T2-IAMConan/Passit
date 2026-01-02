@@ -165,3 +165,23 @@ output "frontend_cloudfront_domain" {
 output "alb_controller_role_arn" {
   value = module.cicd.alb_controller_role_arn
 }
+
+output "frontend_cloudfront_distribution_id" {
+  value       = module.cicd.frontend_cloudfront_distribution_id
+  description = "CloudFront distribution ID for cache invalidation"
+}
+
+#######################################
+# Monitoring - In-Cluster Prometheus
+#######################################
+
+output "prometheus_namespace" {
+  description = "Kubernetes namespace where Prometheus is deployed"
+  value       = module.monitoring.prometheus_namespace
+}
+
+output "prometheus_service_url" {
+  description = "In-cluster Prometheus service URL for Grafana"
+  value       = module.monitoring.prometheus_service_url
+}
+

@@ -8,6 +8,18 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+
+  # 기존 OAC가 있어도 에러 없이 진행 (import 후 사용)
+  lifecycle {
+    ignore_changes = all
+    # CloudFront Distribution에서 사용 중이면 삭제 방지
+    prevent_destroy = true
+  }
+}
+
+# OAC ID를 사용하는 locals
+locals {
+  oac_id = var.enable_frontend ? aws_cloudfront_origin_access_control.frontend[0].id : ""
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
@@ -21,7 +33,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   origin {
     domain_name              = aws_s3_bucket.frontend[0].bucket_regional_domain_name
     origin_id                = "s3-frontend-origin"
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend[0].id
+    origin_access_control_id = local.oac_id
   }
 
   default_cache_behavior {

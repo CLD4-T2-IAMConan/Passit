@@ -103,12 +103,26 @@ resource "aws_elasticache_replication_group" "valkey" {
   # Maintenance
   maintenance_window = "sun:05:00-sun:06:00" # UTC, can be adjusted
 
+  # 변경사항을 즉시 적용하지 않음 (다음 maintenance window에 적용)
+  apply_immediately = false
+
   tags = merge(
     local.common_tags,
     {
       Name = local.valkey_cluster_id
     }
   )
+
+  # 불필요한 재생성 방지
+  lifecycle {
+    # KMS key ID는 ARN과 키 ID 형식이 다르게 인식되어 재생성 방지
+    ignore_changes = [
+      tags,
+      kms_key_id,  # ARN과 키 ID 형식 차이로 인한 재생성 방지
+    ]
+    # 데이터 손실 방지 (필요시 true로 변경)
+    prevent_destroy = false
+  }
 }
 
 # ============================================

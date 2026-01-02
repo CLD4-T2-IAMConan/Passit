@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
+import { ConfirmationNumber } from "@mui/icons-material";
 
 // 부모 컴포넌트로부터 open 상태, 닫기 함수, 티켓 정보를 받습니다.
 const DealRequestModal = ({ open, onClose, ticket, onConfirm }) => {
@@ -37,8 +38,14 @@ const DealRequestModal = ({ open, onClose, ticket, onConfirm }) => {
       alert("수량을 1개 이상 입력해주세요.");
       return;
     }
-    console.log(`구매 확정: 티켓 ID ${ticket.id}, 수량 ${quantity}`);
-    onConfirm(ticket.id, quantity);
+    // ticketId 또는 id 중 사용 가능한 값 사용
+    const ticketId = ticket.ticketId || ticket.id;
+    if (!ticketId) {
+      alert("티켓 ID를 찾을 수 없습니다.");
+      return;
+    }
+    console.log(`구매 확정: 티켓 ID ${ticketId}, 수량 ${quantity}`);
+    onConfirm(ticketId, quantity);
     onClose(); // 모달 닫기
   };
 
@@ -57,13 +64,32 @@ const DealRequestModal = ({ open, onClose, ticket, onConfirm }) => {
               borderRadius: "12px",
               overflow: "hidden",
               border: "1px solid #e0e0e0",
+              bgcolor: "grey.300",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
             }}
           >
-            <img
-              src={ticket.imageUrl}
-              alt={ticket.eventName}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
+            {ticket.image1 || ticket.imageUrl ? (
+              <Box
+                component="img"
+                src={ticket.image1 || ticket.imageUrl}
+                alt={ticket.eventName}
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : null}
+            {/* 기본 아이콘 (이미지가 없거나 로드 실패 시 표시) */}
+            {!ticket.image1 && !ticket.imageUrl && (
+              <ConfirmationNumber sx={{ fontSize: 60, color: "grey.400" }} />
+            )}
           </Box>
 
           {/* 📝 우측: 티켓 정보 및 수량 선택 */}
@@ -80,7 +106,16 @@ const DealRequestModal = ({ open, onClose, ticket, onConfirm }) => {
                 {ticket.eventName}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                공연일자: {ticket.eventDate}
+                공연일자:{" "}
+                {ticket.eventDate
+                  ? new Date(ticket.eventDate).toLocaleString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "날짜 미정"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 좌석정보: {ticket.seatInfo || "정보 없음"}

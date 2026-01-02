@@ -262,14 +262,26 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
-variable "grafana_admin_user" {
+# ============================================
+# Monitoring - Grafana (EKS Helm)
+# ============================================
+variable "grafana_namespace" {
+  description = "Namespace to deploy Grafana"
   type        = string
-  default     = null
+  default     = "monitoring"
+}
+
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
 }
 
 variable "grafana_admin_password" {
+  description = "Grafana admin password"
   type        = string
-  default     = null
+  sensitive   = true
 }
 
 # =========================

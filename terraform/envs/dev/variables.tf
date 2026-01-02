@@ -271,6 +271,29 @@ variable "grafana_admin_password" {
 }
 
 # ============================================
+# Monitoring - Grafana (EKS Helm)
+# ============================================
+variable "grafana_namespace" {
+  description = "Namespace to deploy Grafana"
+  type        = string
+  default     = "monitoring"
+}
+
+
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
+
+# ============================================
 # CI/CD Module Variables
 # ============================================
 variable "github_org" {
