@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 group = 'com.company'
@@ -10,6 +11,26 @@ java {
     targetCompatibility = '17'
     withSourcesJar()
     withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = group
+            artifactId = 'sns-lib'
+            version = version
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+// Ensure jar task is properly configured
+jar {
+    archiveBaseName = 'sns-lib'
+    archiveVersion = version
 }
 
 repositories {
