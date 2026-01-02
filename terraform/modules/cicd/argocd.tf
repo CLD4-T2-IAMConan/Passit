@@ -31,31 +31,9 @@ resource "helm_release" "argocd" {
   depends_on = [kubernetes_namespace_v1.argocd]
 
   values = [
-    <<EOF
-server:
-  service:
-    enabled: true
-    type: ClusterIP
-  ingress:
-    enabled: true
-    ingressClassName: alb
-    hosts:
-      - host: argocd.passit.com
-        paths:
-          - /
-    annotations:
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
-
-repoServer:
-  # DNS 설정 개선
-  dnsPolicy: ClusterFirst
-  dnsConfig:
-    options:
-      - name: ndots
-        value: "2"
-      - name: edns0
-EOF
+    templatefile("${path.module}/values-argocd.yaml", {
+      project_name = var.project_name
+      environment  = var.environment
+    })
   ]
 }
