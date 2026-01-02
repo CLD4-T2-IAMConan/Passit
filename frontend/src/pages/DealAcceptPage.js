@@ -164,26 +164,40 @@ const DealAcceptPage = () => {
   );
 
   // 🚨 5-3. 취소 API 호출 및 처리 핸들러 (구매자 요청)
-   const handleConfirmCancel = async () => {
-      setIsCancelModalOpen(false);
-      try {
-        setLoading(true);
-        await axios.put(`${API_BASE_URL}/api/deals/${deal.dealId}/cancel`, {
-          cancelReason: "구매자가 결제 페이지에서 직접 취소함"
-        }, {
-          params: { buyerId: currentUserId }
-        });
+  const handleConfirmCancel = useCallback(async () => {
+    const dealId = deal?.dealId;
 
-        alert("주문이 정상적으로 취소되었습니다.");
-        window.location.reload();
+    setIsCancelModalOpen(false);
+    if (!dealId) {
+      setActionMessage("거래 정보를 찾을 수 없습니다.");
+      setIsProcessing(false);
+      return;
+    }
 
-      } catch (err) {
-        console.error("Cancel order failed:", err);
-        alert("주문 취소 중 오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    setIsProcessing(true);
+    setActionMessage(null);
+
+    const endpoint = `${API_BASE_URL}/api/deals/${dealId}/cancel`;
+
+    try {
+      // PUT /api/deals/{id}/cancel 호출 (BuyerId 전달)
+      await axios.put(endpoint, { currentUserId: currentUserId });
+
+      setActionMessage(
+        "✅ 거래 요청이 성공적으로 취소되었습니다. 티켓은 AVAILABLE 상태로 돌아갔습니다."
+      );
+
+      setTimeout(() => {
+        navigate("/mypage/buyer/deals"); // 구매자 거래 목록 페이지로 이동
+      }, 3000);
+    } catch (err) {
+      console.error("❌ 거래 취소 실패:", err);
+      const errorMessage =
+        err.response?.data?.message || err.response?.data || "취소 처리 중 오류가 발생했습니다.";
+      setActionMessage(`❌ 취소 실패: ${errorMessage}`);
+      setIsProcessing(false);
+    }
+  }, [deal, currentUserId, navigate]);
 
   // 🚨 5-4. 구매 확정 API 호출 및 처리 핸들러 (수정: 모달 닫기 추가)
   const handleConfirmCompletion = useCallback(async () => {
