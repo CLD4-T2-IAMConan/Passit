@@ -1,3 +1,13 @@
+# Monitoring Namespace 생성
+resource "kubernetes_namespace_v1" "monitoring" {
+  metadata {
+    name = var.monitoring_namespace
+    labels = {
+      name = var.monitoring_namespace
+    }
+  }
+}
+
 resource "helm_release" "kube_prometheus_stack" {
   name       = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
@@ -14,6 +24,7 @@ resource "helm_release" "kube_prometheus_stack" {
   ]
 
   depends_on = [
+    kubernetes_namespace_v1.monitoring,
     helm_release.fluentbit
   ]
 }

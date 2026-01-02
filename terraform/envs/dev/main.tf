@@ -295,6 +295,8 @@ module "account_app" {
   app_name        = "account"
   project_name    = var.project_name
   environment     = var.environment
+  namespace       = "account"  # service_namespaces에 포함된 namespace 사용
+  ghcr_secret_name = var.ghcr_secret_name
 
   # [2] 이미지 설정
   container_image = var.account_image

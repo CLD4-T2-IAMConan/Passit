@@ -354,3 +354,18 @@ variable "allowed_cidr_blocks_bastion" {
   type        = list(string)
   default     = [] # prod에서는 빈 배열
 }
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}

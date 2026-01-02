@@ -197,12 +197,12 @@ resource "aws_instance" "bastion" {
 # RDS Security Group에 Bastion 접근 허용
 resource "aws_security_group_rule" "rds_from_bastion" {
   type                     = "ingress"
-  from_port                = 5432
-  to_port                  = 5432
+  from_port                = 3306
+  to_port                  = 3306
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.bastion.id
   security_group_id        = var.rds_security_group_id
-  description              = "Allow PostgreSQL access from Bastion Host"
+  description              = "Allow MySQL access from Bastion Host"
 }
 
 # ElastiCache Security Group에 Bastion 접근 허용

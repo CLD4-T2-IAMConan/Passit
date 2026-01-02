@@ -27,6 +27,7 @@ resource "helm_release" "grafana" {
 
 
   depends_on = [
+    kubernetes_namespace_v1.monitoring,
     helm_release.kube_prometheus_stack
   ]
 }

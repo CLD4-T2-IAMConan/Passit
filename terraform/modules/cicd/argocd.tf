@@ -21,14 +21,17 @@ resource "helm_release" "argocd" {
   
   # CRD는 이미 존재하므로 건너뛰기 (resource policy로 보호됨)
   skip_crds = true
-  replace   = false
+  replace   = true  # 기존 release가 있으면 교체
   
   # 기존 리소스를 Helm이 adopt하도록 설정
   force_update = true
   wait         = true
   wait_for_jobs = true
   
-  depends_on = [kubernetes_namespace_v1.argocd]
+  depends_on = [
+    kubernetes_namespace_v1.argocd,
+    helm_release.alb_controller  # ALB Controller가 먼저 설치되어야 webhook이 준비됨
+  ]
 
   values = [
     templatefile("${path.module}/values-argocd.yaml", {
