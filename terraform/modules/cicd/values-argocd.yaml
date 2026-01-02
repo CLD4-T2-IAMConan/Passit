@@ -7,9 +7,9 @@ server:
     enabled: true
     ingressClassName: alb
     hosts:
-      - host: argocd.${project_name}.com
-        paths:
-          - /
+      - argocd.${project_name}.com
+    paths:
+      - /
 
     annotations:
       alb.ingress.kubernetes.io/scheme: internet-facing
