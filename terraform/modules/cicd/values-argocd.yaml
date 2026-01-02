@@ -1,0 +1,27 @@
+server:
+  service:
+    enabled: true
+    type: ClusterIP
+
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hosts:
+      - host: argocd.${project_name}.com
+        paths:
+          - /
+
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+      alb.ingress.kubernetes.io/load-balancer-name: ${project_name}-${environment}-argocd-alb
+      alb.ingress.kubernetes.io/group.name: ${project_name}-${environment}-argocd-alb
+
+repoServer:
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "2"
+      - name: edns0

@@ -16,10 +16,10 @@
 # 버킷 이름은 terraform/shared/outputs.tf에서 확인하세요
 terraform {
   backend "s3" {
-    bucket         = "passit-tf-state-dev-46470302"  # terraform/shared에서 확인
+    bucket         = "passit-terraform-state-dev"  # terraform/shared에서 확인
     key            = "dev/terraform.tfstate"
     region         = "ap-northeast-2"
-    dynamodb_table = "passit-tf-locks-dev-46470302"  # terraform/shared에서 확인
+    dynamodb_table = "passit-terraform-locks-dev"  # terraform/shared에서 확인
     encrypt        = true
   }
 }
