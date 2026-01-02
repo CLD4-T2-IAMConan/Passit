@@ -292,3 +292,15 @@ variable "enable_rds" {
   type        = bool
   default     = true
 }
+
+variable "global_cluster_id" {
+  description = "ID of the Aurora Global Cluster"
+  type        = string
+  default     = null # 중요: 값을 안 주면 일반 DB로 동작하게 함
+}
+
+variable "is_dr_region" {
+  description = "현재 배포 리전이 DR(Secondary) 리전인지 여부"
+  type        = bool
+  default     = false
+}

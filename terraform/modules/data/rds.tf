@@ -68,31 +68,37 @@ locals {
     ) : "" # false일 때는 빈 문자열 반환
 }
 
-# 1. Aurora 클러스터 본체
+
+
 resource "aws_rds_cluster" "main" {
   count              = var.enable_rds ? 1 : 0
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
+
+  # Global Cluster 연결
+  global_cluster_identifier = var.global_cluster_id
+
   engine             = "aurora-mysql"
   engine_version     = "8.0.mysql_aurora.3.08.2"
 
-  master_username = local.db_creds["DB_USER"]
-  master_password = local.db_creds["DB_PASSWORD"]
-  database_name   = local.db_creds["DB_NAME"]
+  # Secondary 리전(DR)일 경우 자격 증명을 전송하지 않음 (서울에서 상속)
+  master_username = var.is_dr_region ? null : local.db_creds["DB_USER"]
+  master_password = var.is_dr_region ? null : local.db_creds["DB_PASSWORD"]
+  database_name   = var.is_dr_region ? null : local.db_creds["DB_NAME"]
 
   db_subnet_group_name            = local.db_subnet_group_name
   vpc_security_group_ids          = [var.rds_security_group_id]
   db_cluster_parameter_group_name = local.rds_parameter_group_name
 
-  backup_retention_period = var.environment == "prod" ? 7 : 1
+  # Secondary는 백업 권한이 없으므로 최소치 설정
+  backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
   preferred_backup_window = "03:00-04:00"
   deletion_protection     = var.environment == "prod" ? true : false
-  # Destroy 시 스냅샷 없이 삭제 (필요시 수동으로 스냅샷 생성 후 삭제)
   skip_final_snapshot     = true
 
   tags = { Name = "${var.project_name}-${var.environment}-aurora-cluster" }
 }
 
-# 2. 클러스터 인스턴스 (노드 생성)
+# 4. 클러스터 인스턴스 (노드 생성)
 resource "aws_rds_cluster_instance" "main" {
   count = var.enable_rds ? (var.environment == "prod" ? 2 : 1) : 0
 
@@ -101,18 +107,17 @@ resource "aws_rds_cluster_instance" "main" {
   engine             = aws_rds_cluster.main[0].engine
   engine_version     = aws_rds_cluster.main[0].engine_version
 
-  # RDS 인스턴스 클래스는 변수에서 가져오기
   instance_class       = var.rds_instance_class
   db_subnet_group_name = local.db_subnet_group_name
-
-  publicly_accessible = false
+  publicly_accessible  = false
 
   tags = { Name = "${var.project_name}-${var.environment}-db-${count.index}" }
 }
 
-# 3. passit_user 자동 생성 (Bastion Host를 통해)
+# 5. passit_user 자동 생성 (서울 리전에서만 실행)
 resource "null_resource" "create_passit_user" {
-  count = (var.enable_rds && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
+  # 🚨 DR 리전이 아니고(is_dr_region = false), 생성 옵션이 켜져 있을 때만 실행
+  count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
 
   depends_on = [
     aws_rds_cluster.main,
@@ -124,14 +129,12 @@ resource "null_resource" "create_passit_user" {
     db_name         = local.db_creds["DB_NAME"]
     user_name       = var.passit_user_name
     user_password   = var.passit_user_password
-    # Secrets Manager에서 가져온 경우 secret version이 변경되면 재실행
     secret_version  = var.db_secret_name != "" ? data.aws_secretsmanager_secret_version.db_secret_version[0].version_id : "manual"
   }
 
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      
       BASTION_ID="${var.bastion_instance_id}"
       RDS_ENDPOINT="${aws_rds_cluster.main[0].endpoint}"
       DB_NAME="${local.db_creds["DB_NAME"]}"
@@ -140,53 +143,29 @@ resource "null_resource" "create_passit_user" {
       PASSIT_USER="${var.passit_user_name}"
       PASSIT_PASSWORD="${var.passit_user_password}"
       REGION="${var.region}"
-      
-      # MySQL 클라이언트 확인
-      if ! command -v mysql &> /dev/null; then
-        echo "❌ MySQL 클라이언트가 설치되어 있지 않습니다."
-        echo "   macOS: brew install mysql-client"
-        echo "   Ubuntu: sudo apt-get install mysql-client"
-        exit 1
-      fi
-      
-      echo "📋 RDS에 passit_user 생성 중..."
-      echo "   Endpoint: $RDS_ENDPOINT"
-      echo "   Database: $DB_NAME"
-      echo "   User: $PASSIT_USER"
-      
-      # Session Manager를 통한 포트 포워딩 (백그라운드)
+
       LOCAL_PORT=13306
       aws ssm start-session \
         --target "$BASTION_ID" \
         --document-name AWS-StartPortForwardingSession \
         --parameters "{\"portNumber\":[\"3306\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" \
         --region "$REGION" > /dev/null 2>&1 &
-      
+
       SSM_PID=$!
-      echo "   포트 포워딩 시작 (PID: $SSM_PID)"
       sleep 8
-      
-      # MySQL 명령 실행
+
       mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" <<SQL || {
-        echo "❌ MySQL 명령 실행 실패"
         kill $SSM_PID 2>/dev/null || true
         exit 1
       }
         CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD';
         GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$PASSIT_USER'@'%';
         FLUSH PRIVILEGES;
-        SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';
       SQL
-      
-      echo "✅ passit_user 생성 완료!"
-      
-      # SSM 세션 종료
+
       kill $SSM_PID 2>/dev/null || true
-      sleep 1
     EOT
 
-    environment = {
-      AWS_REGION = var.region
-    }
+    environment = { AWS_REGION = var.region }
   }
 }

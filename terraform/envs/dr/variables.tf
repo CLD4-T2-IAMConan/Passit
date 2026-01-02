@@ -14,13 +14,13 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name (prod)"
   type        = string
-  default     = "prod"
+  default     = "dr"
 }
 
 variable "region" {
   description = "AWS Region"
   type        = string
-  default     = "ap-northeast-2"
+  default     = "ap-northeast-1"
 }
 
 variable "team" {
@@ -359,4 +359,14 @@ variable "allowed_cidr_blocks_bastion" {
 variable "enable_rds" {
   description = "RDS 생성 여부 결정"
   type        = bool
+}
+
+variable "enable_cluster_creator_admin_permissions" {
+  type    = bool
+  default = true
+}
+
+variable "access_entries" {
+  type    = any
+  default = {}
 }

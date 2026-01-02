@@ -50,6 +50,14 @@ module "network" {
   # NAT Gateway Configuration
   enable_nat_gateway = var.enable_nat_gateway
   single_nat_gateway = var.single_nat_gateway
+
+  public_subnet_tags = {
+      "kubernetes.io/cluster/passit-dr-eks" = "shared"
+  }
+
+  private_subnet_tags = {
+      "kubernetes.io/cluster/passit-dr-eks" = "shared"
+  }
 }
 
 # ============================================
@@ -77,6 +85,11 @@ module "security" {
   elasticache_security_group_id = var.elasticache_security_group_id
 }
 
+locals {
+  # 도쿄(DR)에서는 노드 그룹을 비워둡니다.
+  eks_managed_node_groups = {}
+}
+
 # ============================================
 # EKS Module
 # ============================================
@@ -84,6 +97,7 @@ module "security" {
 module "eks" {
   source = "../../modules/eks"
 
+  region       = var.region
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -99,30 +113,30 @@ module "eks" {
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
   node_instance_types = var.node_instance_types
-  capacity_type       = var.capacity_type
-  node_min_size       = var.node_min_size
-  node_desired_size   = var.node_desired_size
-  node_max_size       = var.node_max_size
+  #   capacity_type       = var.capacity_type
+  node_min_size     = var.node_min_size
+  node_desired_size = var.node_desired_size
+  node_max_size     = var.node_max_size
+  #   eks_managed_node_groups = local.eks_managed_node_groups
+  enable_cluster_creator_admin_permissions = true
+
+  access_entries = {
+      yejin = {
+        principal_arn = "arn:aws:iam::727646470302:user/t2-yejin"
+        type          = "STANDARD"
+
+        policy_associations = {
+          admin = {
+            policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+            access_scope = {
+              type = "cluster"
+            }
+          }
+        }
+      }
+  }
 }
 
-# ============================================
-# Autoscaling Module (Cluster Autoscaler)
-# ============================================
-module "autoscaling" {
-  source = "../../modules/autoscaling"
-
-  project_name = var.project_name
-  environment  = var.environment
-  team         = var.team
-  owner        = var.owner
-  region       = var.region
-
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url = module.eks.oidc_provider_url
-
-  depends_on = [module.eks]
-}
 
 # ============================================
 # Bastion Host Module
@@ -237,6 +251,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
+  vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
