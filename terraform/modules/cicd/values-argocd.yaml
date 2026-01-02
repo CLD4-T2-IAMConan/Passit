@@ -18,6 +18,11 @@ server:
       alb.ingress.kubernetes.io/load-balancer-name: ${project_name}-${environment}-argocd-alb
       alb.ingress.kubernetes.io/group.name: ${project_name}-${environment}-argocd-alb
 
+configs:
+  cm:
+    # Enable in-cluster deployment
+    cluster.inClusterEnabled: "true"
+
 repoServer:
   dnsPolicy: ClusterFirst
   dnsConfig:
