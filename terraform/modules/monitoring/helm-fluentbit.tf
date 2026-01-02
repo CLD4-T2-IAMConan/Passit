@@ -1,14 +1,4 @@
 ############################################
-# Namespace (logging)
-############################################
-
-resource "kubernetes_namespace_v1" "logging" {
-  metadata {
-    name = var.fluentbit_namespace
-  }
-}
-
-############################################
 # Fluent Bit Helm Release
 ############################################
 
@@ -16,7 +6,8 @@ resource "helm_release" "fluentbit" {
   name       = "fluent-bit"
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
-  namespace  = var.fluentbit_namespace
+  namespace = kubernetes_namespace_v1.logging.metadata[0].name
+
 
   create_namespace = false
 
@@ -32,6 +23,35 @@ resource "helm_release" "fluentbit" {
       name  = "serviceAccount.name"
       value = local.fluentbit_serviceaccount
     },
+
+    {
+      name  = "outputs.elasticsearch.enabled"
+      value = "false"
+    },
+
+    {
+      name  = "cloudWatch.enabled"
+      value = "true"
+    },
+
+    {
+        name  = "config.outputs"
+        value = <<-EOT
+    [OUTPUT]
+        Name cloudwatch_logs
+        Match *
+        region ${var.region}
+        log_group_name /eks/${var.project_name}/${var.environment}/application
+        log_stream_prefix fluentbit-
+        auto_create_group true
+    EOT
+      },
+
+      {
+        name  = "daemonset.enabled"
+        value = "true"
+      },
+
 
     # ---------------------------------------
     # AWS / CloudWatch Logs
@@ -53,7 +73,7 @@ resource "helm_release" "fluentbit" {
     # DaemonSet
     # ---------------------------------------
     {
-      name  = "daemonSet"
+      name  = "daemonset.enabled"
       value = "true"
     },
 
