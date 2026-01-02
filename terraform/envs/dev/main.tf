@@ -76,6 +76,18 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+<<<<<<< Updated upstream
+=======
+
+  # GitHub OIDC Configuration
+  github_org  = var.github_org
+  github_repo = var.github_repo
+
+  # github actions IAM에 필요
+  frontend_bucket_name                = module.cicd.frontend_bucket_name
+  frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
+  github_actions_frontend_role_arn    = module.cicd.github_actions_frontend_role_arn
+>>>>>>> Stashed changes
 }
 
 # ============================================
@@ -183,6 +195,7 @@ module "data" {
 
   # S3 Configuration
   s3_kms_key_id = module.security.s3_kms_key_id
+  s3_buckets    = var.s3_buckets
 
   # RDS Configuration
   db_secret_name      = ""
@@ -194,10 +207,19 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+<<<<<<< Updated upstream
+=======
+  # Passit User Configuration
+  create_passit_user   = var.create_passit_user
+  passit_user_name     = var.passit_user_name
+  passit_user_password = var.passit_user_password
+  bastion_instance_id  = module.bastion.bastion_instance_id
+
+>>>>>>> Stashed changes
   # Existing Resources
-  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name  = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
@@ -213,8 +235,8 @@ module "monitoring" {
   region       = var.region
   account_id   = var.account_id
 
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
 
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
@@ -231,6 +253,12 @@ module "monitoring" {
   alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   depends_on = [module.eks]
+<<<<<<< Updated upstream
+=======
+
+  grafana_admin_user     = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
+>>>>>>> Stashed changes
 }
 
 # ============================================
@@ -254,9 +282,9 @@ module "cicd" {
   owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
   github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
@@ -267,8 +295,8 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = true
-  frontend_bucket_name  = var.frontend_bucket_name
+  enable_frontend      = true
+  frontend_bucket_name = var.frontend_bucket_name
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -278,8 +306,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile       = var.s3_bucket_profile
-  s3_bucket_ticket        = var.s3_bucket_ticket
+  s3_bucket_profile = var.s3_bucket_profile
+  s3_bucket_ticket  = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
@@ -295,9 +323,9 @@ module "account_app" {
   source = "../../modules/kubernetes_app"
 
   # [1] 앱 식별 정보
-  app_name        = "account"
-  project_name    = var.project_name
-  environment     = var.environment
+  app_name     = "account"
+  project_name = var.project_name
+  environment  = var.environment
 
   # [2] 이미지 설정
   container_image = var.account_image
@@ -306,11 +334,11 @@ module "account_app" {
   replicas        = 2
 
   # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
+  vpc_id = module.network.vpc_id
 
   # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
+  db_host        = module.data.rds_cluster_endpoint
+  db_secret_name = "passit/${var.environment}/db"
 
 
   rds_master_username = "admin"
