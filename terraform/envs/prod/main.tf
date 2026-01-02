@@ -204,10 +204,6 @@ module "monitoring" {
 
   oidc_provider_arn = module.eks.oidc_provider_arn
 
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
-
   depends_on = [module.eks]
 
   grafana_admin_user = var.grafana_admin_user

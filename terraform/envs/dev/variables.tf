@@ -260,16 +260,6 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
-variable "grafana_admin_user" {
-  type        = string
-  default     = null
-}
-
-variable "grafana_admin_password" {
-  type        = string
-  default     = null
-}
-
 # ============================================
 # Monitoring - Grafana (EKS Helm)
 # ============================================
@@ -278,8 +268,6 @@ variable "grafana_namespace" {
   type        = string
   default     = "monitoring"
 }
-
-
 
 variable "grafana_admin_user" {
   description = "Grafana admin username"
@@ -386,6 +374,24 @@ variable "account_image" {
 # 다른 서비스 추가
 variable "chat_image" {
   description = "Docker image for chat service"
+  type        = string
+  default     = ""
+}
+
+variable "cs_image" {
+  description = "Docker image for cs service"
+  type        = string
+  default     = ""
+}
+
+variable "ticket_image" {
+  description = "Docker image for ticket service"
+  type        = string
+  default     = ""
+}
+
+variable "trade_image" {
+  description = "Docker image for trade service"
   type        = string
   default     = ""
 }

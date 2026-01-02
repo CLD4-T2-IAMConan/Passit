@@ -324,3 +324,119 @@ module "account_app" {
 
   depends_on = [module.eks, module.data]
 }
+
+module "chat_app" {
+  source = "../../modules/kubernetes_app"
+
+  # [1] 앱 식별 정보
+  app_name        = "chat"
+  project_name    = var.project_name
+  environment     = var.environment
+  namespace       = "chat"
+  ghcr_secret_name = var.ghcr_secret_name
+
+  # [2] 이미지 설정
+  container_image = var.chat_image
+  container_port  = 8080
+  service_port    = 8080
+  replicas        = 2
+
+  # [3] 네트워크 및 인프라 연결
+  vpc_id          = module.network.vpc_id
+
+  # [4] DB 연결
+  db_host         = module.data.rds_cluster_endpoint
+  db_secret_name  = "passit/${var.environment}/db"
+
+  rds_master_username = "admin"
+  rds_database_name   = "passit"
+
+  depends_on = [module.eks, module.data]
+}
+
+module "cs_app" {
+  source = "../../modules/kubernetes_app"
+
+  # [1] 앱 식별 정보
+  app_name        = "cs"
+  project_name    = var.project_name
+  environment     = var.environment
+  namespace       = "cs"
+  ghcr_secret_name = var.ghcr_secret_name
+
+  # [2] 이미지 설정
+  container_image = var.cs_image
+  container_port  = 8080
+  service_port    = 8080
+  replicas        = 2
+
+  # [3] 네트워크 및 인프라 연결
+  vpc_id          = module.network.vpc_id
+
+  # [4] DB 연결
+  db_host         = module.data.rds_cluster_endpoint
+  db_secret_name  = "passit/${var.environment}/db"
+
+  rds_master_username = "admin"
+  rds_database_name   = "passit"
+
+  depends_on = [module.eks, module.data]
+}
+
+module "ticket_app" {
+  source = "../../modules/kubernetes_app"
+
+  # [1] 앱 식별 정보
+  app_name        = "ticket"
+  project_name    = var.project_name
+  environment     = var.environment
+  namespace       = "ticket"
+  ghcr_secret_name = var.ghcr_secret_name
+
+  # [2] 이미지 설정
+  container_image = var.ticket_image
+  container_port  = 8080
+  service_port    = 8080
+  replicas        = 2
+
+  # [3] 네트워크 및 인프라 연결
+  vpc_id          = module.network.vpc_id
+
+  # [4] DB 연결
+  db_host         = module.data.rds_cluster_endpoint
+  db_secret_name  = "passit/${var.environment}/db"
+
+  rds_master_username = "admin"
+  rds_database_name   = "passit"
+
+  depends_on = [module.eks, module.data]
+}
+
+module "trade_app" {
+  source = "../../modules/kubernetes_app"
+
+  # [1] 앱 식별 정보
+  app_name        = "trade"
+  project_name    = var.project_name
+  environment     = var.environment
+  namespace       = "trade"
+  ghcr_secret_name = var.ghcr_secret_name
+
+  # [2] 이미지 설정
+  container_image = var.trade_image
+  container_port  = 8080
+  service_port    = 8080
+  replicas        = 2
+
+  # [3] 네트워크 및 인프라 연결
+  vpc_id          = module.network.vpc_id
+
+  # [4] DB 연결
+  db_host         = module.data.rds_cluster_endpoint
+  db_secret_name  = "passit/${var.environment}/db"
+
+  rds_master_username = "admin"
+  rds_database_name   = "passit"
+
+  depends_on = [module.eks, module.data]
+}
