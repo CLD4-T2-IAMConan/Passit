@@ -395,11 +395,11 @@ variable "rds_master_username" {
   default     = "admin"
 }
 
-# variable "rds_master_password" {
-#   description = "Master password for RDS"
-#   type        = string
-#   sensitive   = true # 보안을 위해 출력을 숨깁니다.
-# }
+variable "rds_master_password" {
+  description = "Master password for RDS"
+  type        = string
+  sensitive   = true # 보안을 위해 출력을 숨깁니다.
+}
 
 variable "rds_database_name" {
   description = "Database name for RDS"
@@ -424,23 +424,4 @@ variable "passit_user_password" {
   type        = string
   default     = "passit_password"
   sensitive   = true
-}
-
-variable "is_dr_region" {
-  description = "현재 배포 리전이 DR(Secondary) 리전인지 여부"
-  type        = bool
-  default     = false
-}
-
-# (참고) global_cluster_id도 도쿄에서 넘겨받아야 하니 확인해보세요!
-variable "global_cluster_id" {
-  description = "Aurora Global Cluster의 ID"
-  type        = string
-  default     = ""
-}
-
-variable "enable_rds" {
-  description = "RDS 생성 여부"
-  type        = bool
-  default     = true # 기본값을 true로 주면 호출부에서 생략해도 작동합니다.
 }

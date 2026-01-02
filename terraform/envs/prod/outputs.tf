@@ -76,12 +76,6 @@ output "rds_reader_endpoint" {
   value       = module.data.rds_reader_endpoint
 }
 
-# 도쿄 리전 (Secondary - Read Only)
-output "tokyo_rds_endpoint" {
-  description = "Tokyo (Secondary) Cluster Endpoint"
-  value       = module.data_tokyo.rds_cluster_endpoint
-}
-
 output "valkey_primary_endpoint" {
   description = "Valkey (ElastiCache) primary endpoint"
   value       = module.data.valkey_primary_endpoint

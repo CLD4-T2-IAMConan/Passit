@@ -14,13 +14,13 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name (prod)"
   type        = string
-  default     = "dr"
+  default     = "prod"
 }
 
 variable "region" {
   description = "AWS Region"
   type        = string
-  default     = "ap-northeast-1"
+  default     = "ap-northeast-2"
 }
 
 variable "team" {
@@ -353,20 +353,4 @@ variable "allowed_cidr_blocks_bastion" {
   description = "CIDR blocks allowed to SSH into Bastion Host (prod에서는 사용되지 않음)"
   type        = list(string)
   default     = [] # prod에서는 빈 배열
-}
-
-# DR 환경에서 RDS 생성을 생략하기 위한 변수
-variable "enable_rds" {
-  description = "RDS 생성 여부 결정"
-  type        = bool
-}
-
-variable "enable_cluster_creator_admin_permissions" {
-  type    = bool
-  default = true
-}
-
-variable "access_entries" {
-  type    = any
-  default = {}
 }

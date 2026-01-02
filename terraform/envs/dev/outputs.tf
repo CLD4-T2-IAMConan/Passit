@@ -105,7 +105,7 @@ output "bastion_connection_info" {
   description = "Bastion Host 접속 정보"
   value = {
     session_manager_command = module.bastion.session_manager_command
-    ssh_command             = module.bastion.ssh_command
+    ssh_command            = module.bastion.ssh_command
   }
 }
 
