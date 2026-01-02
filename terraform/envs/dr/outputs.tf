@@ -66,14 +66,9 @@ output "eks_worker_security_group_id" {
 # ============================================
 # Data Module Outputs (RDS Endpoint 등 추가)
 # ============================================
-output "rds_cluster_endpoint" {
-  description = "RDS Aurora cluster endpoint"
-  value       = module.data.rds_cluster_endpoint
-}
-
-output "rds_reader_endpoint" {
-  description = "RDS Aurora reader endpoint"
-  value       = module.data.rds_reader_endpoint
+output "db_subnet_group_name" {
+  description = "The name of the DB subnet group in Tokyo"
+  value       = module.data.db_subnet_group_name
 }
 
 output "valkey_primary_endpoint" {
