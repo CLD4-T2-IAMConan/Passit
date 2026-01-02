@@ -47,8 +47,26 @@ variable "grafana_admin_user" {
   sensitive   = true
 }
 
+variable "grafana_authentication_providers" {
+  description = "Grafana authentication providers (e.g. AWS_SSO)"
+  type        = list(string)
+  default     = ["AWS_SSO"]
+}
+
+variable "grafana_admin_user" {
+  type        = string
+}
+
 variable "grafana_admin_password" {
-  description = "Grafana admin password"
+  type        = string
+}
+
+############################
+# Fluent Bit
+############################
+
+variable "fluentbit_namespace" {
+  description = "Kubernetes namespace for Fluent Bit"
   type        = string
   sensitive   = true
 }

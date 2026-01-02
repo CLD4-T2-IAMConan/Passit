@@ -117,42 +117,52 @@ resource "aws_iam_role" "github_actions" {
 # GitHub Actions 정책: ECR, EKS 접근
 data "aws_iam_policy_document" "github_actions" {
   statement {
-    sid    = "AllowECRAccess"
-    effect = "Allow"
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "ecr:PutImage",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
     sid    = "AllowEKSUpdate"
     effect = "Allow"
     actions = [
       "eks:DescribeCluster",
-      "eks:UpdateClusterConfig"
     ]
     resources = ["*"]
   }
 
   statement {
-    sid    = "AllowS3ForArtifacts"
+    sid    = "AllowFrontendS3Deploy"
     effect = "Allow"
     actions = [
       "s3:GetObject",
       "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.project_name}-${var.environment}-frontend-bucket",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-frontend-bucket/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowArtifactsBucket"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
       "s3:ListBucket"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}",
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowCloudFrontInvalidation"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateInvalidation"
+    ]
+    resources = [
+      "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
     ]
   }
 

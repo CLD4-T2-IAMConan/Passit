@@ -63,3 +63,15 @@ variable "github_repo" {
   type        = string
   default     = ""
 }
+
+variable "frontend_bucket_name" {
+  type = string
+}
+
+variable "frontend_cloudfront_distribution_id" {
+  type = string
+}
+
+variable "github_actions_frontend_role_arn" {
+  type = string
+}
