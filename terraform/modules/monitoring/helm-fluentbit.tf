@@ -24,6 +24,35 @@ resource "helm_release" "fluentbit" {
       value = local.fluentbit_serviceaccount
     },
 
+    {
+      name  = "outputs.elasticsearch.enabled"
+      value = "false"
+    },
+
+    {
+      name  = "cloudWatch.enabled"
+      value = "true"
+    },
+
+    {
+        name  = "config.outputs"
+        value = <<-EOT
+    [OUTPUT]
+        Name cloudwatch_logs
+        Match *
+        region ${var.region}
+        log_group_name /eks/${var.project_name}/${var.environment}/application
+        log_stream_prefix fluentbit-
+        auto_create_group true
+    EOT
+      },
+
+      {
+        name  = "daemonset.enabled"
+        value = "true"
+      },
+
+
     # ---------------------------------------
     # AWS / CloudWatch Logs
     # ---------------------------------------

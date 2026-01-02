@@ -222,6 +222,7 @@ module "monitoring" {
   cluster_name  = module.eks.cluster_name
   region            = var.region
   account_id        = var.account_id
+  tags         = var.tags
 
 
   oidc_provider_arn = module.eks.oidc_provider_arn
