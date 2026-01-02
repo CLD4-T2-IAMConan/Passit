@@ -6,16 +6,17 @@
 #       backend 리소스 생성 후, 필요하다면 아래 주석을 해제하여
 #       S3 backend로 마이그레이션할 수 있습니다.
 
-# 로컬 backend 사용 (기본값)
+# 로컬 backend 사용 (초기 생성 시)
 # terraform state는 terraform.tfstate 파일에 저장됩니다.
 
-# S3 backend로 마이그레이션하려면 아래 주석을 해제하세요:
-# terraform {
-#   backend "s3" {
-#     bucket         = "passit-tf-state-prod-46470302"
-#     key            = "shared/terraform.tfstate"
-#     region         = "ap-northeast-2"
-#     dynamodb_table = "passit-tf-locks-prod-46470302"
-#     encrypt        = true
-#   }
-# }
+# S3 backend로 마이그레이션 (backend 리소스 생성 후)
+# 주의: prod 버킷을 사용 (shared는 공통 리소스이므로 prod 버킷 사용)
+terraform {
+  backend "s3" {
+    bucket         = "passit-terraform-state-prod"
+    key            = "shared/terraform.tfstate"
+    region         = "ap-northeast-2"
+    dynamodb_table = "passit-terraform-locks-prod"
+    encrypt        = true
+  }
+}
