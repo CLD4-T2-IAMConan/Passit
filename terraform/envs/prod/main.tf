@@ -75,6 +75,11 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # github actions IAM에 필요
+  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
+  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
@@ -199,7 +204,9 @@ module "monitoring" {
 
   oidc_provider_arn = module.eks.oidc_provider_arn
 
-  grafana_admin_user     = var.grafana_admin_user
+  depends_on = [module.eks]
+
+  grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 }
 

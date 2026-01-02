@@ -53,6 +53,16 @@ variable "grafana_admin_password" {
   sensitive   = true
 }
 
+variable "grafana_authentication_providers" {
+  description = "Grafana authentication providers (e.g. AWS_SSO)"
+  type        = list(string)
+  default     = ["AWS_SSO"]
+}
+
+############################
+# Fluent Bit
+############################
+
 variable "fluentbit_namespace" {
   description = "Namespace for Fluent Bit"
   type        = string
