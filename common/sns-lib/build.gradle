@@ -1,0 +1,50 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'com.company'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // ✅ Spring "Framework"만 사용 (Boot ❌)
+    api 'org.springframework:spring-context:6.1.1'
+
+    // AWS SDK
+    implementation 'software.amazon.awssdk:sns:2.20.0'
+    implementation 'software.amazon.awssdk:sqs:2.20.0'
+
+    // Logging
+    api 'org.slf4j:slf4j-api:2.0.9'
+
+    // Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifactId = 'sns-lib'
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}

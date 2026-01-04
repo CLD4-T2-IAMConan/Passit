@@ -21,7 +21,11 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
       }
 
       console.log("🔵 WebSocket 연결 시작...", { chatroomId });
-      const socket = new SockJS("http://localhost:8084/ws");
+      // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
+      const cloudfrontURL =
+        process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+      const chatBaseURL = process.env.REACT_APP_CHAT_API_URL || cloudfrontURL;
+      const socket = new SockJS(`${chatBaseURL}/ws`);
       const client = Stomp.over(socket);
 
       // 디버그 모드 비활성화 (로그 줄이기)

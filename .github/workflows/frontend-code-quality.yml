@@ -29,7 +29,11 @@ jobs:
 
       - name: Check code formatting with Prettier
         run: |
-          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}" || {
+            echo "❌ Code formatting issues found."
+            echo "Please run 'npx prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"' to fix."
+            exit 1
+          }
 
       - name: Run ESLint
         run: |

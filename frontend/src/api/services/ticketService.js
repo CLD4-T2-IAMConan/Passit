@@ -2,10 +2,13 @@ import axios from "axios";
 import { ENDPOINTS } from "../endpoints";
 
 /**
- *  ticket 서비스 전용 API Client (8082)
+ *  ticket 서비스 전용 API Client
+ *  CloudFront를 통한 Ticket Service 접근 (/api/tickets/*)
  */
+const CLOUDFRONT_URL =
+  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
 const ticketApiClient = axios.create({
-  baseURL: "http://localhost:8082", // /api는 endpoints.js에 포함되어 있음
+  baseURL: process.env.REACT_APP_TICKET_API_URL || CLOUDFRONT_URL, // /api는 endpoints.js에 포함되어 있음
 });
 
 /**

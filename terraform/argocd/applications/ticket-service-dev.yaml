@@ -16,29 +16,6 @@ spec:
     helm:
       valueFiles:
         - values-dev.yaml
-      values: |
-        image:
-          repository: ghcr.io/cld4-t2-iamconan/service-ticket
-          tag: sha-a2366b4
-        imagePullSecrets:
-          - name: ghcr-pull-secret
-        ingress:
-          enabled: true
-          className: alb
-          annotations:
-            kubernetes.io/ingress.class: alb
-            alb.ingress.kubernetes.io/group.name: passit-dev-alb
-            alb.ingress.kubernetes.io/load-balancer-name: passit-dev-alb
-            alb.ingress.kubernetes.io/scheme: internet-facing
-            alb.ingress.kubernetes.io/target-type: ip
-            alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
-            alb.ingress.kubernetes.io/backend-protocol: HTTP
-          hosts:
-            - host: ticket-service.passit.com
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls: []
 
   destination:
     server: https://kubernetes.default.svc

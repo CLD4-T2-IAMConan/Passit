@@ -21,19 +21,9 @@ module "eks" {
   enable_cluster_creator_admin_permissions = false
 
   # Access entries for additional users
-  access_entries = {
-    t2_krystal = {
-      principal_arn = "arn:aws:iam::727646470302:user/t2-krystal"
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-  }
+  # principal_arn은 var.access_entries에서 전달받음 (기본값: 빈 객체)
+  # 실제 사용자는 terraform/envs/dev/main.tf에서 var.eks_access_entries로 전달
+  access_entries = var.access_entries
 
   # Disable CloudWatch Logs (권한 문제)
   create_cloudwatch_log_group = false

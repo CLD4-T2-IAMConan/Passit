@@ -37,6 +37,7 @@ resource "helm_release" "argocd" {
     templatefile("${path.module}/values-argocd.yaml", {
       project_name = var.project_name
       environment  = var.environment
+      alb_dns_name = ""  # ALB DNS is determined after ingress creation
     })
   ]
 }

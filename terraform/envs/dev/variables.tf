@@ -2,9 +2,9 @@
 # Common / Global Variables
 # ============================================
 variable "account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (deprecated - auto-detected from current credentials via data.aws_caller_identity.current)"
   type        = string
-  default     = "727646470302"
+  default     = ""  # 기본값 제거 - main.tf에서 자동 감지된 값 사용
 }
 
 variable "project_name" {
@@ -140,6 +140,21 @@ variable "node_desired_size" {
 variable "node_max_size" {
   description = "Maximum number of nodes"
   type        = number
+}
+
+variable "eks_access_entries" {
+  description = "EKS access entries configuration. Username will be used to construct principal_arn with auto-detected account_id."
+  type = map(object({
+    username          = string
+    policy_associations = map(object({
+      policy_arn   = string
+      access_scope = optional(object({
+        type       = string
+        namespaces = optional(list(string))
+      }))
+    }))
+  }))
+  default = null
 }
 
 # ============================================
@@ -453,4 +468,89 @@ variable "passit_user_password" {
   type        = string
   default     = "passit_password"
   sensitive   = true
+}
+
+# ============================================
+# Secrets Manager Variables
+# ============================================
+
+variable "db_secrets" {
+  description = "Database credentials for Secrets Manager"
+  type = object({
+    db_host     = string
+    db_port     = string
+    db_name     = string
+    db_user     = string
+    db_password = string
+  })
+  sensitive = true
+}
+
+variable "smtp_secrets" {
+  description = "SMTP email credentials for Secrets Manager"
+  type = object({
+    mail_username = string
+    mail_password = string
+  })
+  sensitive = true
+  default = {
+    mail_username = ""
+    mail_password = ""
+  }
+}
+
+variable "kakao_secrets" {
+  description = "Kakao OAuth credentials for Secrets Manager"
+  type = object({
+    rest_api_key  = string
+    client_secret = string
+    admin_key     = string
+  })
+  sensitive = true
+  default = {
+    rest_api_key  = ""
+    client_secret = ""
+    admin_key     = ""
+  }
+}
+
+variable "admin_secrets" {
+  description = "Initial admin account credentials for Secrets Manager"
+  type = object({
+    email    = string
+    password = string
+    name     = string
+    nickname = string
+  })
+  sensitive = true
+  default = {
+    email    = "admin@passit.com"
+    password = "admin123!"
+    name     = "Administrator"
+    nickname = "admin"
+  }
+}
+
+variable "app_secrets" {
+  description = "Application secrets (JWT, API keys, etc.) for Secrets Manager"
+  type = object({
+    jwt_secret = string
+    api_key    = string
+  })
+  sensitive = true
+  default = {
+    jwt_secret = ""
+    api_key    = ""
+  }
+}
+
+variable "elasticache_secrets" {
+  description = "ElastiCache credentials for Secrets Manager"
+  type = object({
+    auth_token = string
+  })
+  sensitive = true
+  default = {
+    auth_token = ""
+  }
 }

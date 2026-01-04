@@ -21,21 +21,21 @@ locals {
 }
 
 # Provider를 생성해야 하는 경우 아래 주석을 해제하세요 (IAM 권한 필요)
-# resource "aws_iam_openid_connect_provider" "github" {
-#   url = "https://token.actions.githubusercontent.com"
-#
-#   client_id_list = [
-#     "sts.amazonaws.com"
-#   ]
-#
-#   thumbprint_list = [
-#     "6938fd4d98bab03faadb97b34396831e3780aea1",
-#     "1c58a3a8518e8759bf075b76b750d4f2df264fcd"
-#   ]
-#
-#   tags = {
-#     Name        = "GitHub Actions OIDC Provider"
-#     Purpose     = "GitHubActions"
-#     ManagedBy   = "Terraform"
-#   }
-# }
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1",
+    "1c58a3a8518e8759bf075b76b750d4f2df264fcd"
+  ]
+
+  tags = {
+    Name        = "GitHub Actions OIDC Provider"
+    Purpose     = "GitHubActions"
+    ManagedBy   = "Terraform"
+  }
+}

@@ -22,7 +22,11 @@ import {
 import ChatRoom from "../../components/chat/ChatRoom";
 import MessageInput from "../../components/chat/MessageInput";
 import useChatWebSocket from "../../hooks/chat/useChatWebSocket";
-import { getMessages, markAllMessagesAsRead, getChatRoomDetail } from "../../api/services/chat/chat.api";
+import {
+  getMessages,
+  markAllMessagesAsRead,
+  getChatRoomDetail,
+} from "../../api/services/chat/chat.api";
 import { useAuth } from "../../contexts/AuthContext";
 
 const ChatRoomPage = () => {
@@ -64,7 +68,7 @@ const ChatRoomPage = () => {
       }
       try {
         setLoading(true);
-        
+
         // 채팅방 정보 가져오기 (roomStatus 포함)
         try {
           const roomRes = await getChatRoomDetail(chatroomId);

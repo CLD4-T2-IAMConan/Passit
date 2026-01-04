@@ -1,8 +1,17 @@
 # ============================================
+# Data Sources - 현재 AWS 계정 정보 자동 감지
+# ============================================
+
+data "aws_caller_identity" "current" {}
+
+# ============================================
 # Locals - 공통 변수 및 계산된 값
 # ============================================
 
 locals {
+  # 현재 실행 중인 AWS 계정 ID 자동 감지
+  account_id = data.aws_caller_identity.current.account_id
+
   # 공통 태그 및 메타데이터
   common_tags = {
     Project     = var.project_name
@@ -59,10 +68,18 @@ module "network" {
 module "security" {
   source = "../../modules/security"
 
-  account_id   = var.account_id
+  account_id   = local.account_id  # 자동 감지된 계정 ID 사용
   environment  = var.environment
   region       = var.region
   project_name = var.project_name
+
+  # Secrets Manager variables
+  db_secrets         = var.db_secrets
+  smtp_secrets       = var.smtp_secrets
+  kakao_secrets      = var.kakao_secrets
+  admin_secrets      = var.admin_secrets
+  app_secrets        = var.app_secrets
+  elasticache_secrets = var.elasticache_secrets
 
   vpc_id = module.network.vpc_id
 
@@ -110,6 +127,15 @@ module "eks" {
   node_min_size       = var.node_min_size
   node_desired_size   = var.node_desired_size
   node_max_size       = var.node_max_size
+
+  # Access entries - principal_arn은 동적으로 생성 (account_id 자동 감지)
+  # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
+  access_entries = var.eks_access_entries != null ? {
+    for k, v in var.eks_access_entries : k => {
+      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+      policy_associations = v.policy_associations
+    }
+  } : {}
 }
 
 # ============================================
@@ -225,10 +251,9 @@ module "monitoring" {
   project_name  = var.project_name
   environment   = var.environment
   cluster_name  = module.eks.cluster_name
-  region            = var.region
-  account_id        = var.account_id
-  tags         = var.tags
-
+  region        = var.region
+  account_id    = local.account_id  # 자동 감지된 계정 ID 사용
+  tags          = var.tags
 
   oidc_provider_arn = module.eks.oidc_provider_arn
 
@@ -264,7 +289,7 @@ module "cicd" {
   oidc_provider_url  = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
-  github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
+  github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
 
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
@@ -273,7 +298,8 @@ module "cicd" {
 
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true
-  frontend_bucket_name  = var.frontend_bucket_name
+  frontend_bucket_name   = var.frontend_bucket_name
+  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -292,152 +318,33 @@ module "cicd" {
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
 
-  depends_on = [module.eks]
+  # SNS Topic ARNs
+  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
+
+  # SQS Queue URLs
+  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
+
+  # SQS Queue ARNs (for IAM policies)
+  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
+
+  depends_on = [module.eks, module.sns]
 }
 
+# ============================================
+# SNS Module (Event-Driven Architecture)
+# ============================================
+module "sns" {
+  source = "../../modules/sns"
 
-module "account_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name        = "account"
-  project_name    = var.project_name
-  environment     = var.environment
-  namespace       = "account"  # service_namespaces에 포함된 namespace 사용
-  ghcr_secret_name = var.ghcr_secret_name
-
-  # [2] 이미지 설정
-  container_image = var.account_image
-  container_port  = 8081
-  service_port    = 8081
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
-
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
-}
-
-module "chat_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name        = "chat"
-  project_name    = var.project_name
-  environment     = var.environment
-  namespace       = "chat"
-  ghcr_secret_name = var.ghcr_secret_name
-
-  # [2] 이미지 설정
-  container_image = var.chat_image
-  container_port  = 8080
-  service_port    = 8080
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
-}
-
-module "cs_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name        = "cs"
-  project_name    = var.project_name
-  environment     = var.environment
-  namespace       = "cs"
-  ghcr_secret_name = var.ghcr_secret_name
-
-  # [2] 이미지 설정
-  container_image = var.cs_image
-  container_port  = 8080
-  service_port    = 8080
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
-}
-
-module "ticket_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name        = "ticket"
-  project_name    = var.project_name
-  environment     = var.environment
-  namespace       = "ticket"
-  ghcr_secret_name = var.ghcr_secret_name
-
-  # [2] 이미지 설정
-  container_image = var.ticket_image
-  container_port  = 8080
-  service_port    = 8080
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
-}
-
-module "trade_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name        = "trade"
-  project_name    = var.project_name
-  environment     = var.environment
-  namespace       = "trade"
-  ghcr_secret_name = var.ghcr_secret_name
-
-  # [2] 이미지 설정
-  container_image = var.trade_image
-  container_port  = 8080
-  service_port    = 8080
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id          = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host         = module.data.rds_cluster_endpoint
-  db_secret_name  = "passit/${var.environment}/db"
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
 }

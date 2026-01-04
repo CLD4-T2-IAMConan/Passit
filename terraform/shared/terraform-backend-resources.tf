@@ -26,6 +26,10 @@
 resource "aws_s3_bucket" "terraform_state_dev" {
   bucket = "passit-terraform-state-dev"
 
+  # Destroy 시 버킷이 비어있지 않아도 삭제 가능
+  # 주의: Terraform state가 있는 경우 백업 후 삭제하세요
+  force_destroy = true
+
   tags = {
     Name        = "Terraform State Bucket - Dev"
     Environment = "dev"
@@ -90,6 +94,10 @@ resource "aws_dynamodb_table" "terraform_locks_dev" {
 # S3 Bucket for Terraform State (Prod)
 resource "aws_s3_bucket" "terraform_state_prod" {
   bucket = "passit-terraform-state-prod"
+
+  # Destroy 시 버킷이 비어있지 않아도 삭제 가능
+  # 주의: Terraform state가 있는 경우 백업 후 삭제하세요
+  force_destroy = true
 
   tags = {
     Name        = "Terraform State Bucket - Prod"
