@@ -11,8 +11,7 @@ server:
   ingress:
     enabled: true
     ingressClassName: alb
-    hosts:
-      - /
+    hosts: []
     paths:
       - /
     pathType: Prefix
