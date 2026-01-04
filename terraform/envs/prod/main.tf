@@ -204,8 +204,11 @@ module "monitoring" {
 
 
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   depends_on = [module.eks]
+
+  grafana_namespace = "monitoring"
 
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password

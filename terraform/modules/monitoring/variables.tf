@@ -28,6 +28,10 @@ variable "oidc_provider_arn" {
   description = "OIDC Provider ARN from EKS"
 }
 
+variable "oidc_provider_url" {
+  type = string
+}
+
 variable "account_id" {
   type        = string
   description = "AWS Account ID"
@@ -59,6 +63,11 @@ variable "grafana_authentication_providers" {
   default     = ["AWS_SSO"]
 }
 
+variable "grafana_namespace" {
+  type    = string
+  default = "monitoring"
+}
+
 ############################
 # Fluent Bit
 ############################
@@ -79,4 +88,9 @@ variable "tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default     = {}
+}
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
 }

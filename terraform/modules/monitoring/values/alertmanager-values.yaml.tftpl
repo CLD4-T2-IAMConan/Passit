@@ -1,0 +1,30 @@
+alertmanager:
+  serviceAccount:
+    create: true
+    name: alertmanager-kube-prometheus-stack
+    annotations:
+      eks.amazonaws.com/role-arn: ${alertmanager_role_arn}
+
+  config:
+    global:
+      resolve_timeout: 5m
+
+    route:
+      receiver: "sns-notifications"
+      group_by: ["alertname", "namespace"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    receivers:
+      - name: "sns-notifications"
+        sns_configs:
+          - topic_arn: ${sns_topic_arn}
+            sigv4:
+              region: ap-northeast-2
+            subject: "[PASSIT][{{ .Status | toUpper }}] {{ .CommonAnnotations.summary }}"
+            message: |
+              🔔 Alert: {{ .CommonLabels.alertname }}
+              📦 Namespace: {{ .CommonLabels.namespace }}
+              🚦 Status: {{ .Status }}
+              📝 Description: {{ .CommonAnnotations.description }}
