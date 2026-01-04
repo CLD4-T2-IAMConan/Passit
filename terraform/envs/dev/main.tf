@@ -94,6 +94,10 @@ module "security" {
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
 
+  # EKS Node Security Group ID (for ElastiCache and RDS access)
+  # EKS 모듈이 생성한 실제 Node Security Group 사용
+  eks_node_security_group_id = try(module.eks.node_security_group_id, "")
+
   # GitHub OIDC Configuration
   github_org  = var.github_org
   github_repo = var.github_repo

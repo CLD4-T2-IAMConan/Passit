@@ -16,8 +16,7 @@ resource "aws_iam_role" "alertmanager" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${var.oidc_provider_url}:sub" =
-              "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack"
+            "${var.oidc_provider_url}:sub" = "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack"
           }
         }
       }

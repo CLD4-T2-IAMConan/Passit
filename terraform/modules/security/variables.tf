@@ -28,6 +28,12 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "eks_node_security_group_id" {
+  description = "EKS Node Security Group ID (for ElastiCache and RDS access). If not provided, uses eks_worker security group."
+  type        = string
+  default     = ""
+}
+
 variable "eks_cluster_name" {
   description = "EKS Cluster name for IRSA"
   type        = string
