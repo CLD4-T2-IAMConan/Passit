@@ -12,7 +12,8 @@ import userService from "../services/userService";
 
 // 백엔드 서버의 기본 URL (ALB URL 사용)
 const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
-const TICKET_API_BASE_URL = process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
+const TICKET_API_BASE_URL =
+  process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
 
 const TicketDetailPage = () => {
   const { ticket_id } = useParams();

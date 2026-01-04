@@ -34,7 +34,8 @@ const TicketEditPage = () => {
 
         // 기존 이미지 미리보기
         if (ticket.image1) {
-          const ticketBaseURL = process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
+          const ticketBaseURL =
+            process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
           setImagePreview(`${ticketBaseURL}${ticket.image1}`);
         }
       } catch (err) {
