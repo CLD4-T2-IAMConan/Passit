@@ -2,7 +2,7 @@
 # Common / Global Variables
 # ============================================
 variable "account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (deprecated - auto-detected from current credentials)"
   type        = string
   default     = "727646470302"
 }

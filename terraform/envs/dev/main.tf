@@ -1,8 +1,17 @@
 # ============================================
+# Data Sources - 현재 AWS 계정 정보 자동 감지
+# ============================================
+
+data "aws_caller_identity" "current" {}
+
+# ============================================
 # Locals - 공통 변수 및 계산된 값
 # ============================================
 
 locals {
+  # 현재 실행 중인 AWS 계정 ID 자동 감지
+  account_id = data.aws_caller_identity.current.account_id
+
   # 공통 태그 및 메타데이터
   common_tags = {
     Project     = var.project_name
@@ -59,7 +68,7 @@ module "network" {
 module "security" {
   source = "../../modules/security"
 
-  account_id   = var.account_id
+  account_id   = local.account_id  # 자동 감지된 계정 ID 사용
   environment  = var.environment
   region       = var.region
   project_name = var.project_name
@@ -225,8 +234,8 @@ module "monitoring" {
   project_name  = var.project_name
   environment   = var.environment
   cluster_name  = module.eks.cluster_name
-  region            = var.region
-  account_id        = var.account_id
+  region        = var.region
+  account_id    = local.account_id  # 자동 감지된 계정 ID 사용
 
 
   oidc_provider_arn = module.eks.oidc_provider_arn
@@ -291,7 +300,22 @@ module "cicd" {
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
 
-  depends_on = [module.eks]
+  # SNS Topic ARNs
+  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
+
+  # SQS Queue URLs
+  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
+
+  # SQS Queue ARNs (for IAM policies)
+  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
+
+  depends_on = [module.eks, module.sns]
 }
 
 # ============================================

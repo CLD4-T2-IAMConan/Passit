@@ -70,6 +70,54 @@ data "aws_iam_policy_document" "backend_service_policy" {
       ]
     }
   }
+
+  # =================================================
+  # ticket 서비스: SQS 큐 접근 (deal-events 구독)
+  # =================================================
+  dynamic "statement" {
+    for_each = each.key == "ticket" && var.sns_ticket_deal_events_queue_arn != "" ? [1] : []
+    content {
+      actions = [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl"
+      ]
+      resources = [var.sns_ticket_deal_events_queue_arn]
+    }
+  }
+
+  # =================================================
+  # chat 서비스: SQS 큐 접근 (deal-events 구독)
+  # =================================================
+  dynamic "statement" {
+    for_each = each.key == "chat" && var.sns_chat_deal_events_queue_arn != "" ? [1] : []
+    content {
+      actions = [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl"
+      ]
+      resources = [var.sns_chat_deal_events_queue_arn]
+    }
+  }
+
+  # =================================================
+  # trade 서비스: SQS 큐 접근 (ticket-events 구독)
+  # =================================================
+  dynamic "statement" {
+    for_each = each.key == "trade" && var.sns_trade_ticket_events_queue_arn != "" ? [1] : []
+    content {
+      actions = [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl"
+      ]
+      resources = [var.sns_trade_ticket_events_queue_arn]
+    }
+  }
 }
 
 # =================================================
