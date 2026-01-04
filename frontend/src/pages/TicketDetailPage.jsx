@@ -341,7 +341,8 @@ const TicketDetailPage = () => {
     setSubmitError(null);
 
     try {
-      const response = await fetch("http://localhost:8083/api/deals/request", {
+      const tradeBaseURL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
+      const response = await fetch(`${tradeBaseURL}/api/deals/request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -10,7 +10,7 @@ import DealAcceptModal from "../components/Ticket/DealAcceptModal";
 import DealCancelModal from "../components/Ticket/DealCancelModal";
 import DealConfirmModal from "../components/Ticket/DealConfirmModal";
 
-const API_BASE_URL = "http://localhost:8083";
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
 
 const DealAcceptPage = () => {
   // URL에서 deal_id를 가져옵니다.

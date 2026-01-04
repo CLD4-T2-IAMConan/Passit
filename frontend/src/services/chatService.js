@@ -156,7 +156,7 @@ class ChatService {
    * @param {Function} onError - 에러 콜백
    */
   connect(accessToken, onConnected, onError) {
-    const baseURL = process.env.REACT_APP_CHAT_API_URL || "http://localhost:8084";
+    const baseURL = process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com";
     const wsURL = `${baseURL}${ENDPOINTS.CHAT.WS_ENDPOINT}`;
 
     // SockJS 사용

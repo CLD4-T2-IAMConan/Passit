@@ -105,7 +105,7 @@ class AuthService {
    * @returns {string}
    */
   getKakaoLoginUrl() {
-    const baseURL = process.env.REACT_APP_ACCOUNT_API_URL || "http://localhost:8081";
+    const baseURL = process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com";
     return `${baseURL}${ENDPOINTS.AUTH.KAKAO}`;
   }
 

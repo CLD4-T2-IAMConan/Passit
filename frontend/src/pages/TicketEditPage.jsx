@@ -34,7 +34,8 @@ const TicketEditPage = () => {
 
         // 기존 이미지 미리보기
         if (ticket.image1) {
-          setImagePreview(`http://localhost:8082${ticket.image1}`);
+          const ticketBaseURL = process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
+          setImagePreview(`${ticketBaseURL}${ticket.image1}`);
         }
       } catch (err) {
         setError("티켓 정보를 불러올 수 없습니다.");

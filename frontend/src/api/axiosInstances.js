@@ -3,13 +3,13 @@
  */
 import axios from "axios";
 
-// 환경변수 또는 기본 포트 설정
+// 환경변수 또는 ALB URL 설정
 const BASE_URLS = {
-  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || "http://localhost:8081",
-  TICKET: process.env.REACT_APP_TICKET_API_URL || "http://localhost:8082",
-  TRADE: process.env.REACT_APP_TRADE_API_URL || "http://localhost:8083",
-  CHAT: process.env.REACT_APP_CHAT_API_URL || "http://localhost:8084",
-  CS: process.env.REACT_APP_CS_API_URL || "http://localhost:8085",
+  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com",
+  TICKET: process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com",
+  TRADE: process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com",
+  CHAT: process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com",
+  CS: process.env.REACT_APP_CS_API_URL || "http://cs-service.passit.com",
 };
 
 /**

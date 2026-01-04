@@ -2,10 +2,10 @@ import axios from "axios";
 import { ENDPOINTS } from "../endpoints";
 
 /**
- *  ticket 서비스 전용 API Client (8082)
+ *  ticket 서비스 전용 API Client
  */
 const ticketApiClient = axios.create({
-  baseURL: "http://localhost:8082", // /api는 endpoints.js에 포함되어 있음
+  baseURL: process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com", // /api는 endpoints.js에 포함되어 있음
 });
 
 /**

@@ -22,8 +22,8 @@ import { ConfirmationNumber } from "@mui/icons-material";
 // 🚨 [추가] userService import
 import userService from "../services/userService";
 
-// ⚠️ 임시 설정
-const API_BASE_URL = "http://localhost:8083";
+// Trade Service ALB URL
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
 
 // 🌟 MUI 커스텀 모달 스타일
 const modalStyle = {

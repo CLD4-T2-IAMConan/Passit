@@ -21,7 +21,8 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
       }
 
       console.log("🔵 WebSocket 연결 시작...", { chatroomId });
-      const socket = new SockJS("http://localhost:8084/ws");
+      const chatBaseURL = process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com";
+      const socket = new SockJS(`${chatBaseURL}/ws`);
       const client = Stomp.over(socket);
 
       // 디버그 모드 비활성화 (로그 줄이기)

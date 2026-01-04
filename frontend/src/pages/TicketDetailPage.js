@@ -10,9 +10,9 @@ import RequestSuccessModal from "../components/Ticket/RequestSuccessModal";
 import defaultTicket from "../assets/images/defaultTicket.png";
 import userService from "../services/userService";
 
-// 백엔드 서버의 기본 URL (Java Spring Boot, 8083 포트 가정)
-const API_BASE_URL = "http://localhost:8083";
-const TICKET_API_BASE_URL = "http://localhost:8082"; // 💡 8082 포트로 고정
+// 백엔드 서버의 기본 URL (ALB URL 사용)
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
+const TICKET_API_BASE_URL = process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
 
 const TicketDetailPage = () => {
   const { ticket_id } = useParams();
