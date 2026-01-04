@@ -16,7 +16,6 @@ export const API_SERVICES = {
   // 다른 서비스들 추가
   // SERVICE2: process.env.REACT_APP_SERVICE2_API_URL || "http://localhost:8082/api",
   // SERVICE3: process.env.REACT_APP_SERVICE3_API_URL || "http://localhost:8083/api",
-
 };
 
 export default API_SERVICES;
