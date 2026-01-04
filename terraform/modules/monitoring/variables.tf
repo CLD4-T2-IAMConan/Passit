@@ -89,3 +89,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
+}
