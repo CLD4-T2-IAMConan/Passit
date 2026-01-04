@@ -13,20 +13,6 @@ java {
     withJavadocJar()
 }
 
-// Explicitly configure attributes for multi-project builds
-configurations {
-    apiElements {
-        outgoing {
-            capability("${group}:sns-lib:${version}")
-        }
-    }
-    runtimeElements {
-        outgoing {
-            capability("${group}:sns-lib:${version}")
-        }
-    }
-}
-
 repositories {
     mavenCentral()
 }
