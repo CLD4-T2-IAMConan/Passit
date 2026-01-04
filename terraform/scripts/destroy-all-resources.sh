@@ -213,7 +213,9 @@ for policy in github-actions argocd prometheus fluentbit app-pod cluster-autosca
     fi
     
     # Policy versions 삭제 (기본 버전 제외)
-    POLICY_ARN="arn:aws:iam::727646470302:policy/${POLICY_NAME}"
+    # 계정 ID 자동 감지
+    ACCOUNT_ID=$(aws sts get-caller-identity --profile motionbit --query Account --output text 2>/dev/null || aws sts get-caller-identity --query Account --output text 2>/dev/null || echo "")
+    POLICY_ARN="arn:aws:iam::${ACCOUNT_ID}:policy/${POLICY_NAME}"
     aws iam list-policy-versions --policy-arn "$POLICY_ARN" --query 'Versions[?IsDefaultVersion==`false`].VersionId' --output text 2>/dev/null | \
     while read version_id; do
         [ -n "$version_id" ] && aws iam delete-policy-version --policy-arn "$POLICY_ARN" --version-id "$version_id" 2>/dev/null || true

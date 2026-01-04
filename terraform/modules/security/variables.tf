@@ -1,9 +1,9 @@
 # Security Module Variables
 
 variable "account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (should be passed from parent module, auto-detected in envs/dev/main.tf)"
   type        = string
-  default     = "727646470302"
+  # 기본값 제거 - 부모 모듈에서 전달받거나 자동 감지된 값 사용
 }
 
 variable "environment" {

@@ -2,9 +2,9 @@
 # Common / Global Variables
 # ============================================
 variable "account_id" {
-  description = "AWS Account ID (deprecated - auto-detected from current credentials)"
+  description = "AWS Account ID (deprecated - auto-detected from current credentials via data.aws_caller_identity.current)"
   type        = string
-  default     = "727646470302"
+  default     = ""  # 기본값 제거 - main.tf에서 자동 감지된 값 사용
 }
 
 variable "project_name" {
@@ -140,6 +140,21 @@ variable "node_desired_size" {
 variable "node_max_size" {
   description = "Maximum number of nodes"
   type        = number
+}
+
+variable "eks_access_entries" {
+  description = "EKS access entries configuration. Username will be used to construct principal_arn with auto-detected account_id."
+  type = map(object({
+    username          = string
+    policy_associations = map(object({
+      policy_arn   = string
+      access_scope = optional(object({
+        type       = string
+        namespaces = optional(list(string))
+      }))
+    }))
+  }))
+  default = null
 }
 
 # ============================================

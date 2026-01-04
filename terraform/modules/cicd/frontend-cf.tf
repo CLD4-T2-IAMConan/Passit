@@ -152,7 +152,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -175,7 +175,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -199,7 +199,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -223,7 +223,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -246,7 +246,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -270,7 +270,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -293,7 +293,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization"]
+      headers      = ["Authorization", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -317,7 +317,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -340,7 +340,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -363,7 +363,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
@@ -386,7 +386,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     forwarded_values {
       query_string = true
-      headers      = ["Host", "Authorization", "Content-Type"]
+      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
       cookies {
         forward = "all"
       }
