@@ -6,7 +6,8 @@ import axios from "axios";
 // CloudFront URL을 통한 백엔드 API 호출
 // CloudFront Distribution: https://d82dq0ggv7fb.cloudfront.net
 // 각 서비스는 CloudFront의 Path Pattern을 통해 라우팅됨
-const CLOUDFRONT_URL = process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+const CLOUDFRONT_URL =
+  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
 
 const BASE_URLS = {
   // Account Service: /api/auth/*, /api/users/* → alb-account-origin

@@ -157,7 +157,10 @@ class ChatService {
    */
   connect(accessToken, onConnected, onError) {
     // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
-    const baseURL = process.env.REACT_APP_CHAT_API_URL || process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+    const baseURL =
+      process.env.REACT_APP_CHAT_API_URL ||
+      process.env.REACT_APP_CLOUDFRONT_URL ||
+      "https://d82dq0ggv7fb.cloudfront.net";
     const wsURL = `${baseURL}${ENDPOINTS.CHAT.WS_ENDPOINT}`;
 
     // SockJS 사용

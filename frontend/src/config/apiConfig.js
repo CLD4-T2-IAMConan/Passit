@@ -5,7 +5,8 @@
  * 각 서비스는 CloudFront의 Path Pattern을 통해 라우팅됨
  */
 
-const CLOUDFRONT_URL = process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+const CLOUDFRONT_URL =
+  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
 
 export const API_SERVICES = {
   // 계정 서비스 (인증, 회원 관리)
