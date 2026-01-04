@@ -100,7 +100,21 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = var.github_org != "" && var.github_repo != "" ? "repo:${var.github_org}/${var.github_repo}:*" : "repo:${var.project_name}/*:*"
+            # GitHub Actions에서 실제로 보내는 sub 클레임 형식들:
+            # - repo:ORG/REPO:ref:refs/heads/BRANCH
+            # - repo:ORG/REPO:pull_request
+            # - repo:ORG/REPO:workflow
+            "token.actions.githubusercontent.com:sub" = var.github_org != "" && var.github_repo != "" ? [
+              "repo:${var.github_org}/${var.github_repo}:*",
+              "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/*",
+              "repo:${var.github_org}/${var.github_repo}:pull_request",
+              "repo:${var.github_org}/${var.github_repo}:workflow"
+            ] : [
+              "repo:CLD4-T2-IAMConan/Passit:*",
+              "repo:CLD4-T2-IAMConan/Passit:ref:refs/heads/*",
+              "repo:CLD4-T2-IAMConan/Passit:pull_request",
+              "repo:CLD4-T2-IAMConan/Passit:workflow"
+            ]
           }
         }
       }

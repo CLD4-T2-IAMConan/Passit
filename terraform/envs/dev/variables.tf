@@ -454,3 +454,88 @@ variable "passit_user_password" {
   default     = "passit_password"
   sensitive   = true
 }
+
+# ============================================
+# Secrets Manager Variables
+# ============================================
+
+variable "db_secrets" {
+  description = "Database credentials for Secrets Manager"
+  type = object({
+    db_host     = string
+    db_port     = string
+    db_name     = string
+    db_user     = string
+    db_password = string
+  })
+  sensitive = true
+}
+
+variable "smtp_secrets" {
+  description = "SMTP email credentials for Secrets Manager"
+  type = object({
+    mail_username = string
+    mail_password = string
+  })
+  sensitive = true
+  default = {
+    mail_username = ""
+    mail_password = ""
+  }
+}
+
+variable "kakao_secrets" {
+  description = "Kakao OAuth credentials for Secrets Manager"
+  type = object({
+    rest_api_key  = string
+    client_secret = string
+    admin_key     = string
+  })
+  sensitive = true
+  default = {
+    rest_api_key  = ""
+    client_secret = ""
+    admin_key     = ""
+  }
+}
+
+variable "admin_secrets" {
+  description = "Initial admin account credentials for Secrets Manager"
+  type = object({
+    email    = string
+    password = string
+    name     = string
+    nickname = string
+  })
+  sensitive = true
+  default = {
+    email    = "admin@passit.com"
+    password = "admin123!"
+    name     = "Administrator"
+    nickname = "admin"
+  }
+}
+
+variable "app_secrets" {
+  description = "Application secrets (JWT, API keys, etc.) for Secrets Manager"
+  type = object({
+    jwt_secret = string
+    api_key    = string
+  })
+  sensitive = true
+  default = {
+    jwt_secret = ""
+    api_key    = ""
+  }
+}
+
+variable "elasticache_secrets" {
+  description = "ElastiCache credentials for Secrets Manager"
+  type = object({
+    auth_token = string
+  })
+  sensitive = true
+  default = {
+    auth_token = ""
+  }
+}

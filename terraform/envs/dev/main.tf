@@ -73,6 +73,14 @@ module "security" {
   region       = var.region
   project_name = var.project_name
 
+  # Secrets Manager variables
+  db_secrets         = var.db_secrets
+  smtp_secrets       = var.smtp_secrets
+  kakao_secrets      = var.kakao_secrets
+  admin_secrets      = var.admin_secrets
+  app_secrets        = var.app_secrets
+  elasticache_secrets = var.elasticache_secrets
+
   vpc_id = module.network.vpc_id
 
   # EKS Configuration
