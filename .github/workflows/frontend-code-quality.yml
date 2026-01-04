@@ -27,9 +27,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check code formatting with Prettier
+      - name: Format code with Prettier
         run: |
-          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+          npx prettier --write "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+      
+      - name: Check for formatting changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Code formatting issues found. Please run 'npx prettier --write' to fix."
+            git diff
+            exit 1
+          else
+            echo "✅ Code formatting is correct."
+          fi
 
       - name: Run ESLint
         run: |

@@ -263,7 +263,7 @@ module "cicd" {
   oidc_provider_url  = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
-  github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
+  github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
 
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org

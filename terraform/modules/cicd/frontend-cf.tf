@@ -12,8 +12,9 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   # 기존 OAC가 있어도 에러 없이 진행 (import 후 사용)
   lifecycle {
     ignore_changes = all
-    # CloudFront Distribution에서 사용 중이면 삭제 방지
-    prevent_destroy = true
+    # CloudFront Distribution이 먼저 삭제되어야 OAC를 삭제할 수 있음
+    # destroy 시에는 prevent_destroy를 false로 설정
+    prevent_destroy = false
   }
 }
 
