@@ -45,12 +45,12 @@ class AuthService {
    */
   async login(email, password) {
     const response = await accountAPI.post(ENDPOINTS.AUTH.LOGIN, { email, password });
-    
+
     // 백엔드 응답 구조: ApiResponse<T>
     // { success: true, data: { accessToken, refreshToken, userId, ... }, message: "..." }
     // axios는 response.data에 JSON 응답을 파싱하므로:
     // response.data = { success: true, data: { ... }, message: "..." }
-    
+
     if (!response || !response.data) {
       throw new Error("로그인 응답 데이터가 없습니다");
     }
