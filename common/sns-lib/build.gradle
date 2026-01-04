@@ -7,11 +7,24 @@ group = 'com.company'
 version = '1.0.0'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
     withSourcesJar()
     withJavadocJar()
+}
+
+// Explicitly configure attributes for multi-project builds
+configurations {
+    apiElements {
+        outgoing {
+            capability("${group}:sns-lib:${version}")
+        }
+    }
+    runtimeElements {
+        outgoing {
+            capability("${group}:sns-lib:${version}")
+        }
+    }
 }
 
 repositories {
