@@ -1,31 +1,113 @@
-// src/components/chat/MessageInput/index.jsx
-import React, { useState } from "react";
-import "./style.css";
+import React, { useState, useRef } from "react";
+import { Box, TextField, IconButton } from "@mui/material";
+import { Send as SendIcon } from "@mui/icons-material";
 
-const MessageInput = ({ onSend }) => {
-    const [text, setText] = useState("");
+const MessageInput = ({ onSend, roomStatus }) => {
+  const [text, setText] = useState("");
+  const isSubmitting = useRef(false);
+  const isLocked = roomStatus === "LOCK";
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!text.trim()) return;
-        onSend(text);
-        setText("");
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!text.trim() || isLocked) return;
 
-    return (
-        <form className="message-input-form" onSubmit={handleSubmit}>
-            <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="메시지를 입력하세요..."
-                className="message-input-field"
-            />
-            <button type="submit" className="message-input-button">
-                전송
-            </button>
-        </form>
-    );
+    // Prevent double submission
+    if (isSubmitting.current) {
+      console.log("⚠️ 중복 전송 방지");
+      return;
+    }
+
+    isSubmitting.current = true;
+    console.log("📤 메시지 전송:", text);
+
+    onSend(text);
+    setText("");
+
+    // Reset after a short delay
+    setTimeout(() => {
+      isSubmitting.current = false;
+    }, 300);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: "flex",
+        gap: 1.5,
+        alignItems: "center",
+        px: 2,
+        py: 1.5,
+      }}
+    >
+      <TextField
+        fullWidth
+        multiline
+        maxRows={4}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyPress={handleKeyPress}
+        placeholder={isLocked ? "채팅이 잠겨 있습니다." : "메시지를 입력하세요"}
+        variant="outlined"
+        disabled={isLocked}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            bgcolor: "background.paper",
+            borderRadius: "24px",
+            "& fieldset": {
+              borderColor: "divider",
+            },
+            "&:hover fieldset": {
+              borderColor: "primary.main",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "primary.main",
+              borderWidth: 1.5,
+            },
+          },
+          "& .MuiOutlinedInput-input": {
+            py: 1,
+            px: 2,
+            fontSize: "0.95rem",
+            lineHeight: 1.5,
+          },
+        }}
+      />
+      <IconButton
+        type="submit"
+        disabled={!text.trim() || isLocked}
+        sx={{
+          bgcolor: text.trim() && !isLocked ? "primary.main" : "action.disabledBackground",
+          color: text.trim() && !isLocked ? "white" : "text.disabled",
+          width: 48,
+          height: 48,
+          borderRadius: "50%",
+          boxShadow: text.trim() && !isLocked ? "0 2px 8px rgba(25, 118, 210, 0.3)" : "none",
+          "&:hover": {
+            bgcolor: text.trim() && !isLocked ? "primary.dark" : "action.disabledBackground",
+            boxShadow: text.trim() && !isLocked ? "0 4px 12px rgba(25, 118, 210, 0.4)" : "none",
+            transform: text.trim() && !isLocked ? "scale(1.05)" : "none",
+          },
+          "&.Mui-disabled": {
+            bgcolor: "action.disabledBackground",
+            color: "text.disabled",
+          },
+          transition: "all 0.2s ease",
+          flexShrink: 0,
+        }}
+      >
+        <SendIcon sx={{ fontSize: 24 }} />
+      </IconButton>
+    </Box>
+  );
 };
 
 export default MessageInput;

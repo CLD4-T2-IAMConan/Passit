@@ -65,3 +65,47 @@ allowed_cidr_blocks = ["0.0.0.0/0"]
 # existing_rds_parameter_group_name          = "passit-dev-aurora-pg"
 # existing_elasticache_subnet_group_name     = "passit-dev-valkey-subnet-group"
 # existing_elasticache_parameter_group_name  = "passit-dev-valkey-pg"
+
+# =================================
+# Secrets Manager Configuration
+# =================================
+# Database credentials (application-dev.yml 참고)
+db_secrets = {
+  db_host     = ""  # RDS 생성 후 자동 업데이트됨
+  db_port     = "3306"
+  db_name     = "passit_db"
+  db_user     = "passit_user"
+  db_password = "YOUR_DB_PASSWORD"  # 실제 DB 비밀번호 입력 필요
+}
+
+# SMTP credentials (Gmail 앱 비밀번호 필요)
+smtp_secrets = {
+  mail_username = "YOUR_EMAIL@gmail.com"  # 실제 Gmail 계정 입력 필요
+  mail_password = "YOUR_APP_PASSWORD"    # Gmail 앱 비밀번호 입력 필요
+}
+
+# Kakao OAuth credentials (application.yml 참고)
+kakao_secrets = {
+  rest_api_key  = "YOUR_KAKAO_REST_API_KEY"   # 카카오 개발자 콘솔에서 발급
+  client_secret = "YOUR_KAKAO_CLIENT_SECRET"  # 카카오 개발자 콘솔에서 발급
+  admin_key     = "YOUR_KAKAO_ADMIN_KEY"       # 카카오 개발자 콘솔에서 발급
+}
+
+# Admin account credentials (application.yml 참고)
+admin_secrets = {
+  email    = "admin@passit.com"  # 초기 관리자 이메일
+  password = "YOUR_ADMIN_PASSWORD"  # 초기 관리자 비밀번호 (강력한 비밀번호 권장)
+  name     = "Administrator"
+  nickname = "admin"
+}
+
+# Application secrets (JWT, API keys)
+app_secrets = {
+  jwt_secret = "YOUR_JWT_SECRET"  # JWT 서명용 비밀키 (강력한 랜덤 문자열 권장)
+  api_key    = "YOUR_API_KEY"     # API 인증용 키 (필요시)
+}
+
+# ElastiCache credentials
+elasticache_secrets = {
+  auth_token = ""  # ElastiCache 인증 토큰 (필요시 설정)
+}

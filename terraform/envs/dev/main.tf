@@ -1,8 +1,17 @@
 # ============================================
+# Data Sources - 현재 AWS 계정 정보 자동 감지
+# ============================================
+
+data "aws_caller_identity" "current" {}
+
+# ============================================
 # Locals - 공통 변수 및 계산된 값
 # ============================================
 
 locals {
+  # 현재 실행 중인 AWS 계정 ID 자동 감지
+  account_id = data.aws_caller_identity.current.account_id
+
   # 공통 태그 및 메타데이터
   common_tags = {
     Project     = var.project_name
@@ -59,10 +68,18 @@ module "network" {
 module "security" {
   source = "../../modules/security"
 
-  account_id   = var.account_id
+  account_id   = local.account_id  # 자동 감지된 계정 ID 사용
   environment  = var.environment
   region       = var.region
   project_name = var.project_name
+
+  # Secrets Manager variables
+  db_secrets         = var.db_secrets
+  smtp_secrets       = var.smtp_secrets
+  kakao_secrets      = var.kakao_secrets
+  admin_secrets      = var.admin_secrets
+  app_secrets        = var.app_secrets
+  elasticache_secrets = var.elasticache_secrets
 
   vpc_id = module.network.vpc_id
 
@@ -76,8 +93,6 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
-<<<<<<< Updated upstream
-=======
 
   # GitHub OIDC Configuration
   github_org  = var.github_org
@@ -87,7 +102,6 @@ module "security" {
   frontend_bucket_name                = module.cicd.frontend_bucket_name
   frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
   github_actions_frontend_role_arn    = module.cicd.github_actions_frontend_role_arn
->>>>>>> Stashed changes
 }
 
 # ============================================
@@ -113,6 +127,15 @@ module "eks" {
   node_min_size       = var.node_min_size
   node_desired_size   = var.node_desired_size
   node_max_size       = var.node_max_size
+
+  # Access entries - principal_arn은 동적으로 생성 (account_id 자동 감지)
+  # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
+  access_entries = var.eks_access_entries != null ? {
+    for k, v in var.eks_access_entries : k => {
+      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+      policy_associations = v.policy_associations
+    }
+  } : {}
 }
 
 # ============================================
@@ -161,7 +184,7 @@ module "bastion" {
   elasticache_security_group_id = local.elasticache_security_group_id
   # eks_cluster_security_group_id는 EKS 클러스터 생성 후 주석 해제
   # eks_cluster_security_group_id = module.eks.cluster_security_group_id
-
+  
   depends_on = [module.network, module.security, module.eks]
 }
 
@@ -207,15 +230,11 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
-<<<<<<< Updated upstream
-=======
   # Passit User Configuration
-  create_passit_user   = var.create_passit_user
-  passit_user_name     = var.passit_user_name
-  passit_user_password = var.passit_user_password
-  bastion_instance_id  = module.bastion.bastion_instance_id
-
->>>>>>> Stashed changes
+  create_passit_user     = var.create_passit_user
+  passit_user_name       = var.passit_user_name
+  passit_user_password   = var.passit_user_password
+  bastion_instance_id    = module.bastion.bastion_instance_id
   # Existing Resources
   existing_db_subnet_group_name             = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
@@ -229,36 +248,18 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = var.tags
-  region       = var.region
-  account_id   = var.account_id
+  project_name  = var.project_name
+  environment   = var.environment
+  cluster_name  = module.eks.cluster_name
+  region        = var.region
+  account_id    = local.account_id  # 자동 감지된 계정 ID 사용
 
-  cluster_name      = module.eks.cluster_name
   oidc_provider_arn = module.eks.oidc_provider_arn
 
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
-
-  fluentbit_namespace            = "kube-system"
-  fluentbit_service_account_name = "fluent-bit"
-  fluentbit_chart_version        = "0.48.6"
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
-
   depends_on = [module.eks]
-<<<<<<< Updated upstream
-=======
 
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
->>>>>>> Stashed changes
 }
 
 # ============================================
@@ -287,7 +288,7 @@ module "cicd" {
   oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
-  github_oidc_provider_arn = data.terraform_remote_state.shared.outputs.github_oidc_provider_arn
+  github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
 
   # GitHub Actions OIDC (CI)
   github_org  = var.github_org
@@ -295,8 +296,9 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = true
-  frontend_bucket_name = var.frontend_bucket_name
+  enable_frontend        = true
+  frontend_bucket_name   = var.frontend_bucket_name
+  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -315,34 +317,33 @@ module "cicd" {
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
 
-  depends_on = [module.eks]
+  # SNS Topic ARNs
+  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
+
+  # SQS Queue URLs
+  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
+
+  # SQS Queue ARNs (for IAM policies)
+  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
+
+  depends_on = [module.eks, module.sns]
 }
 
+# ============================================
+# SNS Module (Event-Driven Architecture)
+# ============================================
+module "sns" {
+  source = "../../modules/sns"
 
-module "account_app" {
-  source = "../../modules/kubernetes_app"
-
-  # [1] 앱 식별 정보
-  app_name     = "account"
   project_name = var.project_name
   environment  = var.environment
-
-  # [2] 이미지 설정
-  container_image = var.account_image
-  container_port  = 8081
-  service_port    = 8081
-  replicas        = 2
-
-  # [3] 네트워크 및 인프라 연결
-  vpc_id = module.network.vpc_id
-
-  # [4] DB 연결
-  db_host        = module.data.rds_cluster_endpoint
-  db_secret_name = "passit/${var.environment}/db"
-
-
-  rds_master_username = "admin"
-  rds_database_name   = "passit"
-
-  depends_on = [module.eks, module.data]
+  team         = var.team
+  owner        = var.owner
+  kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
 }

@@ -80,3 +80,18 @@ variable "node_max_size" {
   description = "Maximum number of worker nodes"
   type        = number
 }
+
+variable "access_entries" {
+  description = "Map of access entries to add to the EKS cluster. Key is the entry name, value is the access entry configuration."
+  type = map(object({
+    principal_arn      = string
+    policy_associations = optional(map(object({
+      policy_arn   = string
+      access_scope = optional(object({
+        type = string
+        namespaces = optional(list(string))
+      }))
+    })))
+  }))
+  default = {}
+}

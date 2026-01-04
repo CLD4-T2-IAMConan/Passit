@@ -1,7 +1,7 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import React from "react";
+import { render } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 
 /**
  * Custom render function that wraps components with necessary providers
@@ -15,11 +15,10 @@ const AllTheProviders = ({ children }) => {
   );
 };
 
-const customRender = (ui, options = {}) =>
-  render(ui, { wrapper: AllTheProviders, ...options });
+const customRender = (ui, options = {}) => render(ui, { wrapper: AllTheProviders, ...options });
 
 // Re-export everything from @testing-library/react
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 
 // Override the default render with our custom render
 export { customRender as render };
@@ -48,7 +47,7 @@ export const mockLocalStorage = (() => {
  * Setup localStorage mock before each test
  */
 export const setupLocalStorageMock = () => {
-  Object.defineProperty(window, 'localStorage', {
+  Object.defineProperty(window, "localStorage", {
     value: mockLocalStorage,
   });
 };

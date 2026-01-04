@@ -9,16 +9,17 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
-    targetRevision: develop
-    path: service-ticket/helm
+    # ⭐ 직접 service-ticket repository 참조 (submodule 대신)
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-ticket.git
+    targetRevision: main  # service-ticket repo의 기본 브랜치
+    path: helm
     helm:
       valueFiles:
         - values-dev.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: services
+    namespace: ticket
 
   syncPolicy:
     automated:

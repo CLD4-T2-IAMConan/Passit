@@ -49,9 +49,7 @@ export default function AdminReportListPage() {
               <tr
                 key={r.reportId ?? r.id}
                 style={{ cursor: "pointer" }}
-                onClick={() =>
-                  navigate(`/admin/reports/${r.reportId ?? r.id}`)
-                }
+                onClick={() => navigate(`/admin/reports/${r.reportId ?? r.id}`)}
               >
                 <td>{r.reportId ?? r.id}</td>
                 <td>{r.status}</td>

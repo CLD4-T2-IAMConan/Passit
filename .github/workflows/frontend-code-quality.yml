@@ -1,0 +1,48 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting with Prettier
+        run: |
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}" || {
+            echo "❌ Code formatting issues found."
+            echo "Please run 'npx prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"' to fix."
+            exit 1
+          }
+
+      - name: Run ESLint
+        run: |
+          npx eslint "src/**/*.{js,jsx,ts,tsx}"
+
+      - name: Type check (if TypeScript)
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          else
+            echo "No TypeScript configuration found, skipping type check"
+          fi

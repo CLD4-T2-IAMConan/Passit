@@ -19,15 +19,15 @@ resource "aws_secretsmanager_secret" "db" {
   }
 }
 
-# Database 자격 증명 값 (초기값, 실제로는 수동으로 설정하거나 별도 스크립트로 설정)
+# Database 자격 증명 값 (tfvars에서 설정)
 resource "aws_secretsmanager_secret_version" "db" {
   secret_id = aws_secretsmanager_secret.db.id
   secret_string = jsonencode({
-    DB_HOST     = "" # RDS 생성 후 업데이트 필요
-    DB_PORT     = "3306"
-    DB_NAME     = "passit"
-    DB_USER     = "admin"
-    DB_PASSWORD = "CHANGE_ME_IN_PRODUCTION" # 프로덕션에서는 반드시 변경 필요
+    DB_HOST     = var.db_secrets.db_host
+    DB_PORT     = var.db_secrets.db_port
+    DB_NAME     = var.db_secrets.db_name
+    DB_USER     = var.db_secrets.db_user
+    DB_PASSWORD = var.db_secrets.db_password
   })
 }
 
@@ -50,12 +50,12 @@ resource "aws_secretsmanager_secret" "smtp" {
   }
 }
 
-# SMTP 자격 증명 값 (초기값)
+# SMTP 자격 증명 값 (tfvars에서 설정)
 resource "aws_secretsmanager_secret_version" "smtp" {
   secret_id = aws_secretsmanager_secret.smtp.id
   secret_string = jsonencode({
-    MAIL_USERNAME = "CHANGE_ME_IN_PRODUCTION" # Gmail 계정
-    MAIL_PASSWORD = "CHANGE_ME_IN_PRODUCTION" # Gmail 앱 비밀번호
+    MAIL_USERNAME = var.smtp_secrets.mail_username
+    MAIL_PASSWORD = var.smtp_secrets.mail_password
   })
 }
 
@@ -78,13 +78,13 @@ resource "aws_secretsmanager_secret" "kakao" {
   }
 }
 
-# Kakao OAuth 자격 증명 값 (초기값)
+# Kakao OAuth 자격 증명 값 (tfvars에서 설정)
 resource "aws_secretsmanager_secret_version" "kakao" {
   secret_id = aws_secretsmanager_secret.kakao.id
   secret_string = jsonencode({
-    KAKAO_REST_API_KEY  = "CHANGE_ME_IN_PRODUCTION"
-    KAKAO_CLIENT_SECRET = "CHANGE_ME_IN_PRODUCTION"
-    KAKAO_ADMIN_KEY     = "CHANGE_ME_IN_PRODUCTION"
+    KAKAO_REST_API_KEY  = var.kakao_secrets.rest_api_key
+    KAKAO_CLIENT_SECRET = var.kakao_secrets.client_secret
+    KAKAO_ADMIN_KEY     = var.kakao_secrets.admin_key
   })
 }
 
@@ -107,14 +107,14 @@ resource "aws_secretsmanager_secret" "admin" {
   }
 }
 
-# Admin 계정 자격 증명 값 (초기값)
+# Admin 계정 자격 증명 값 (tfvars에서 설정)
 resource "aws_secretsmanager_secret_version" "admin" {
   secret_id = aws_secretsmanager_secret.admin.id
   secret_string = jsonencode({
-    ADMIN_EMAIL    = "admin@passit.com"
-    ADMIN_PASSWORD = "CHANGE_ME_IN_PRODUCTION"
-    ADMIN_NAME     = "Administrator"
-    ADMIN_NICKNAME = "admin"
+    ADMIN_EMAIL    = var.admin_secrets.email
+    ADMIN_PASSWORD = var.admin_secrets.password
+    ADMIN_NAME     = var.admin_secrets.name
+    ADMIN_NICKNAME = var.admin_secrets.nickname
   })
 }
 
@@ -137,12 +137,12 @@ resource "aws_secretsmanager_secret" "app_secrets" {
   }
 }
 
-# 애플리케이션 시크릿 값 (초기값)
+# 애플리케이션 시크릿 값 (tfvars에서 설정)
 resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
   secret_string = jsonencode({
-    jwt_secret = "CHANGE_ME_IN_PRODUCTION"
-    api_key    = "CHANGE_ME_IN_PRODUCTION"
+    jwt_secret = var.app_secrets.jwt_secret
+    api_key    = var.app_secrets.api_key
   })
 }
 
@@ -168,6 +168,6 @@ resource "aws_secretsmanager_secret" "elasticache_credentials" {
 resource "aws_secretsmanager_secret_version" "elasticache_credentials" {
   secret_id = aws_secretsmanager_secret.elasticache_credentials.id
   secret_string = jsonencode({
-    auth_token = "CHANGE_ME_IN_PRODUCTION"
+    auth_token = var.elasticache_secrets.auth_token
   })
 }

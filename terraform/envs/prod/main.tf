@@ -75,6 +75,11 @@ module "security" {
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # github actions IAM에 필요
+  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
+  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
@@ -190,30 +195,19 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = var.tags
-  region       = var.region
-  account_id   = var.account_id
+  project_name  = var.project_name
+  environment   = var.environment
+  cluster_name  = module.eks.cluster_name
+  region            = var.region
+  account_id        = var.account_id
 
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
 
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
-
-  fluentbit_namespace            = "kube-system"
-  fluentbit_service_account_name = "fluent-bit"
-  fluentbit_chart_version        = "0.48.6"
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+  oidc_provider_arn = module.eks.oidc_provider_arn
 
   depends_on = [module.eks]
+
+  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
 }
 
 # ============================================

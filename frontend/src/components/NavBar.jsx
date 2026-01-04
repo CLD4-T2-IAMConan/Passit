@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function NavBar() {
@@ -27,7 +28,7 @@ export default function NavBar() {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [csAnchorEl, setCsAnchorEl] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const csOpen = Boolean(csAnchorEl);
@@ -47,11 +48,11 @@ export default function NavBar() {
   };
 
   const menuItems = [
-    { label: "마이페이지", path: "/mypage" },
+    { label: "티켓검색", path: "/tickets" },
     { label: "판매등록", path: "/sell" },
-    { label: "티켓", path: "/tickets" },
-    { label: "안내", path: "/guide" },
   ];
+
+  const rightMenuItems = [{ label: "마이페이지", path: "/mypage" }];
 
   return (
     <>
@@ -96,14 +97,14 @@ export default function NavBar() {
               </Typography>
             </Box>
 
-            {/* Menu */}
+            {/* Center Menu */}
             <Box
               sx={{
                 display: { xs: "none", md: "flex" },
                 alignItems: "center",
                 gap: { md: 2, lg: 3 },
                 flex: 1,
-                justifyContent: "center",
+                ml: { md: 4, lg: 6 },
               }}
             >
               {menuItems.map((item) => (
@@ -140,6 +141,23 @@ export default function NavBar() {
                 <MenuItem onClick={() => go("/cs/inquiries")}>문의</MenuItem>
                 <MenuItem onClick={() => go("/cs/faqs")}>FAQ</MenuItem>
               </Menu>
+
+              {/* 마이페이지 */}
+              {rightMenuItems.map((item) => (
+                <Button
+                  key={item.label}
+                  color="inherit"
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    fontSize: "0.938rem",
+                    fontWeight: 500,
+                    color: isActive(item.path) ? "primary.main" : "text.primary",
+                    "&:hover": { color: "primary.main" },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
             </Box>
 
             {/* Mobile Menu Button */}
@@ -155,9 +173,20 @@ export default function NavBar() {
               </IconButton>
             )}
 
-            {/* Login/Logout Button */}
+            {/* Chat & Login/Logout Button */}
             {!isMobile && (
-              <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {isAuthenticated && (
+                  <IconButton
+                    onClick={() => navigate("/chat")}
+                    color={isActive("/chat") ? "primary" : "default"}
+                    sx={{
+                      "&:hover": { color: "primary.main" },
+                    }}
+                  >
+                    <ChatBubbleOutlineIcon />
+                  </IconButton>
+                )}
                 {isAuthenticated ? (
                   <Button
                     onClick={handleLogout}
@@ -202,6 +231,7 @@ export default function NavBar() {
       >
         <Box sx={{ width: 250, pt: 2 }}>
           <List>
+            {/* 티켓검색, 판매등록 */}
             {menuItems.map((item) => (
               <ListItem key={item.label} disablePadding>
                 <ListItemButton onClick={() => go(item.path)}>
@@ -209,28 +239,60 @@ export default function NavBar() {
                 </ListItemButton>
               </ListItem>
             ))}
-            <ListItem disablePadding>
+
+            {/* 고객센터 섹션 */}
+            <ListItem sx={{ pt: 1 }}>
+              <ListItemText
+                primary="고객센터"
+                primaryTypographyProps={{
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  color: "text.secondary",
+                }}
+              />
+            </ListItem>
+            <ListItem disablePadding sx={{ pl: 2 }}>
               <ListItemButton onClick={() => go("/cs/notices")}>
                 <ListItemText primary="공지" />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
+            <ListItem disablePadding sx={{ pl: 2 }}>
               <ListItemButton onClick={() => go("/cs/inquiries")}>
                 <ListItemText primary="문의" />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
+            <ListItem disablePadding sx={{ pl: 2 }}>
               <ListItemButton onClick={() => go("/cs/faqs")}>
                 <ListItemText primary="FAQ" />
               </ListItemButton>
             </ListItem>
+
+            {/* 채팅 */}
+            {isAuthenticated && (
+              <ListItem disablePadding sx={{ pt: 1 }}>
+                <ListItemButton onClick={() => go("/chat")}>
+                  <ListItemText primary="내 채팅" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            {/* 마이페이지 */}
+            {rightMenuItems.map((item) => (
+              <ListItem key={item.label} disablePadding sx={{ pt: 1 }}>
+                <ListItemButton onClick={() => go(item.path)}>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+
+            {/* 로그인/로그아웃 */}
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => {
                   if (isAuthenticated) {
                     handleLogout();
                   } else {
-                    navigate("/auth");
+                    go("/auth");
                   }
                 }}
                 sx={{ mt: 2 }}

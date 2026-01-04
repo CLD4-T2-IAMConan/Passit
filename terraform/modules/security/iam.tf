@@ -100,7 +100,12 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.project_name}/*:*"
+            # GitHub Actions에서 실제로 보내는 sub 클레임 형식:
+            # - repo:ORG/REPO:ref:refs/heads/BRANCH (브랜치 push)
+            # - repo:ORG/REPO:pull_request (PR)
+            # - repo:ORG/REPO:workflow (워크플로우 dispatch)
+            # 와일드카드 *는 모든 형식을 매칭합니다
+            "token.actions.githubusercontent.com:sub" = var.github_org != "" && var.github_repo != "" ? "repo:${var.github_org}/${var.github_repo}:*" : "repo:CLD4-T2-IAMConan/Passit:*"
           }
         }
       }
@@ -117,42 +122,81 @@ resource "aws_iam_role" "github_actions" {
 # GitHub Actions 정책: ECR, EKS 접근
 data "aws_iam_policy_document" "github_actions" {
   statement {
-    sid    = "AllowECRAccess"
-    effect = "Allow"
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "ecr:PutImage",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
     sid    = "AllowEKSUpdate"
     effect = "Allow"
     actions = [
       "eks:DescribeCluster",
-      "eks:UpdateClusterConfig"
     ]
     resources = ["*"]
   }
 
   statement {
-    sid    = "AllowS3ForArtifacts"
+    sid    = "AllowFrontendS3Deploy"
     effect = "Allow"
     actions = [
       "s3:GetObject",
       "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.project_name}-${var.environment}-frontend-bucket",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-frontend-bucket/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowArtifactsBucket"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
       "s3:ListBucket"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}",
       "arn:aws:s3:::${var.project_name}-artifacts-${var.environment}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowCloudFrontInvalidation"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateInvalidation"
+    ]
+    resources = [
+      "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
+    ]
+  }
+
+  statement {
+    sid    = "AllowS3ForTerraformState"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:ListBucket",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.project_name}-terraform-state-${var.environment}",
+      "arn:aws:s3:::${var.project_name}-terraform-state-${var.environment}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowDynamoDBForTerraformLocks"
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${var.region}:${var.account_id}:table/${var.project_name}-terraform-locks-${var.environment}"
     ]
   }
 }

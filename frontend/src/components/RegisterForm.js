@@ -19,11 +19,10 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
-import { API_SERVICES } from "../config/apiConfig";
-import { ENDPOINTS } from "../api/endpoints";
+import authService from "../services/authService";
 
 const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
-  const { register } = useAuth();
+  const { signup } = useAuth();
   const [currentStep, setCurrentStep] = useState(0); // 0: 가입방법 선택, 1: 이메일 인증, 2: 기본정보, 3: 비밀번호
   const [signupMethod, setSignupMethod] = useState(""); // "kakao" or "email"
   const [formData, setFormData] = useState({
@@ -106,10 +105,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
       setError("");
       alert("인증 코드가 이메일로 발송되었습니다.");
     } catch (err) {
-      setError(
-        err.message ||
-          "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
-      );
+      setError(err.message || "인증 코드를 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
     } finally {
       setSendingEmail(false);
     }
@@ -153,8 +149,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
     setSignupMethod(method);
     if (method === "kakao") {
       // 카카오 로그인으로 리다이렉트
-      // API_SERVICES.ACCOUNT는 이미 /api를 포함하고 있으므로 직접 사용
-      window.location.href = `${API_SERVICES.ACCOUNT}${ENDPOINTS.AUTH.KAKAO}`;
+      window.location.href = authService.getKakaoLoginUrl();
     } else {
       // 이메일 가입 플로우 시작
       setCurrentStep(1);
@@ -219,21 +214,17 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
 
     try {
       const { confirmPassword, verificationCode, ...userData } = formData;
-      const result = await register(userData);
+      const result = await signup(userData);
 
       if (result.success) {
-        onRegisterSuccess(result.user);
+        // result.data는 ApiResponse 구조이므로 result.data.data에서 실제 사용자 정보 추출
+        const userInfo = result.data?.data || result.data;
+        onRegisterSuccess(userInfo);
       } else {
-        setError(
-          result.error ||
-            "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
-        );
+        setError(result.error || "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
       }
     } catch (err) {
-      setError(
-        err.message ||
-          "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요"
-      );
+      setError(err.message || "회원가입 중 문제가 발생했어요. 잠시 후 다시 시도해주세요");
     } finally {
       setLoading(false);
     }
@@ -308,9 +299,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
 
           {/* Step 0: 가입 방법 선택 */}
           {currentStep === 0 && (
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, py: 2 }}>
               <Button
                 fullWidth
                 variant="contained"
@@ -340,11 +329,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
               </Button>
 
               <Divider>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.875rem" }}
-                >
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.875rem" }}>
                   또는
                 </Typography>
               </Divider>
@@ -410,11 +395,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     InputProps={{
                       endAdornment: emailVerified ? (
                         <InputAdornment position="end">
-                          <Typography
-                            variant="body2"
-                            color="success.main"
-                            sx={{ fontWeight: 600 }}
-                          >
+                          <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
                             ✓ 인증완료
                           </Typography>
                         </InputAdornment>
@@ -434,10 +415,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     {sendingEmail ? (
                       <CircularProgress size={20} />
                     ) : timer > 0 ? (
-                      `${Math.floor(timer / 60)}:${String(timer % 60).padStart(
-                        2,
-                        "0"
-                      )}`
+                      `${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, "0")}`
                     ) : emailSent ? (
                       "재발송"
                     ) : (
@@ -474,11 +452,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {verifyingCode ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        "확인"
-                      )}
+                      {verifyingCode ? <CircularProgress size={20} color="inherit" /> : "확인"}
                     </Button>
                   </Box>
                   <Typography
@@ -540,10 +514,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
@@ -583,16 +554,10 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         edge="end"
                       >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -674,11 +639,7 @@ const RegisterForm = ({ onRegisterSuccess, onSwitchToLogin }) => {
                     fontSize: { xs: "0.938rem", sm: "1rem" },
                   }}
                 >
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "회원가입"
-                  )}
+                  {loading ? <CircularProgress size={24} color="inherit" /> : "회원가입"}
                 </Button>
               )}
             </Box>

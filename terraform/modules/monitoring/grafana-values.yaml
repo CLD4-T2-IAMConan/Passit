@@ -1,0 +1,28 @@
+
+
+########################################
+# Service
+########################################
+service:
+  type: ClusterIP
+  port: 3000
+
+########################################
+# Persistence (dev: OFF)
+########################################
+persistence:
+  enabled: false
+
+########################################
+# Datasource Provisioning
+########################################
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        isDefault: true
+        editable: false

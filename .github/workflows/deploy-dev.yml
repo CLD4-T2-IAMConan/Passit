@@ -32,7 +32,6 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   EKS_CLUSTER_NAME: passit-dev-eks
-  NAMESPACE: services
 
 jobs:
   update-helm-values:

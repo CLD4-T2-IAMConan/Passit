@@ -31,12 +31,14 @@
         "elasticloadbalancing:DescribeLoadBalancers",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:DescribeListenerAttributes",
         "elasticloadbalancing:DescribeListenerCertificates",
         "elasticloadbalancing:DescribeSSLPolicies",
         "elasticloadbalancing:DescribeRules",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetGroupAttributes",
-        "elasticloadbalancing:DescribeTargetHealth"
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:DescribeTags"
       ],
       "Resource": "*"
     },
@@ -84,10 +86,13 @@
         "elasticloadbalancing:AddListenerCertificates",
         "elasticloadbalancing:RemoveListenerCertificates",
         "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:SetRulePriorities",
         "elasticloadbalancing:ModifyTargetGroup",
         "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:RegisterTargets",
-        "elasticloadbalancing:DeregisterTargets"
+        "elasticloadbalancing:DeregisterTargets",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:RemoveTags"
       ],
       "Resource": "*"
     }

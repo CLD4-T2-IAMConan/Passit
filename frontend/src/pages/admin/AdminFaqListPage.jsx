@@ -48,19 +48,14 @@ export default function AdminFaqListPage() {
           const id = faq.id ?? faq.faqId;
           return (
             <li key={id}>
-              <span style={{ marginRight: 8 }}>
-                {faq.question ?? faq.title ?? `FAQ #${id}`}
-              </span>
+              <span style={{ marginRight: 8 }}>{faq.question ?? faq.title ?? `FAQ #${id}`}</span>
               <button
                 onClick={() => navigate(`/admin/faqs/${id}/edit`)}
                 style={{ cursor: "pointer", marginRight: 6 }}
               >
                 수정
               </button>
-              <button
-                onClick={() => onDelete(id)}
-                style={{ cursor: "pointer" }}
-              >
+              <button onClick={() => onDelete(id)} style={{ cursor: "pointer" }}>
                 삭제
               </button>
             </li>

@@ -1,0 +1,44 @@
+########################################
+# Grafana (OFF)
+########################################
+grafana:
+  enabled: false
+
+########################################
+# Prometheus
+########################################
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+    # 빠른 dev용 (재시작 시 데이터 삭제)
+    storageSpec:
+      emptyDir: {}
+
+########################################
+# Alertmanager
+########################################
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      emptyDir: {}
+
+########################################
+# kube-state-metrics
+########################################
+kubeStateMetrics:
+  enabled: true
+
+########################################
+# node-exporter
+########################################
+nodeExporter:
+  enabled: true
+
+########################################
+# Default Rules
+########################################
+defaultRules:
+  create: true

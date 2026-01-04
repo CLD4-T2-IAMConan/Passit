@@ -1,39 +1,43 @@
 # ArgoCD Installation (Helm-based)
 
+# ArgoCD Namespace 생성
 resource "kubernetes_namespace_v1" "argocd" {
   metadata {
     name = var.argocd_namespace
+    labels = {
+      name = var.argocd_namespace
+    }
   }
 }
 
 resource "helm_release" "argocd" {
   name       = "argocd"
-  namespace  = kubernetes_namespace_v1.argocd.metadata[0].name
+  namespace  = var.argocd_namespace
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   version    = var.argocd_chart_version
   
-  timeout = 600  # 10분 timeout
+  timeout = 1200  # 20분 timeout (ArgoCD 설치에 시간이 걸림)
   
-  # 기존 리소스가 Helm으로 관리되지 않은 경우를 대비
-  skip_crds = false
-  replace   = false
+  # CRD는 이미 존재하므로 건너뛰기 (resource policy로 보호됨)
+  skip_crds = true
+  replace   = true  # 기존 release가 있으면 교체
+  
+  # 기존 리소스를 Helm이 adopt하도록 설정
+  force_update = true
+  wait         = true
+  wait_for_jobs = true
+  
+  depends_on = [
+    kubernetes_namespace_v1.argocd,
+    helm_release.alb_controller  # ALB Controller가 먼저 설치되어야 webhook이 준비됨
+  ]
 
   values = [
-    <<EOF
-server:
-  ingress:
-    enabled: true
-    ingressClassName: alb
-    hosts:
-      - argocd.passit.com
-    annotations:
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-      alb.ingress.kubernetes.io/backend-protocol: HTTPS
-      alb.ingress.kubernetes.io/ssl-redirect: "443"
-EOF
+    templatefile("${path.module}/values-argocd.yaml", {
+      project_name = var.project_name
+      environment  = var.environment
+      alb_dns_name = ""  # ALB DNS is determined after ingress creation
+    })
   ]
 }

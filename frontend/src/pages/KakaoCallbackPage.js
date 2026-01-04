@@ -23,8 +23,7 @@ const KakaoCallbackPage = () => {
         // 에러 발생 시 로그인 페이지로 리다이렉트
         console.error("Kakao login error:", errorMessage);
         navigate(
-          "/auth?error=kakao_login_failed&message=" +
-            encodeURIComponent(errorMessage || error)
+          "/auth?error=kakao_login_failed&message=" + encodeURIComponent(errorMessage || error)
         );
         return;
       }
@@ -32,14 +31,7 @@ const KakaoCallbackPage = () => {
       if (token && refreshToken && userId && email && name) {
         try {
           // 카카오 로그인 콜백 처리
-          const result = handleKakaoCallback(
-            token,
-            refreshToken,
-            userId,
-            email,
-            name,
-            provider
-          );
+          const result = handleKakaoCallback(token, refreshToken, userId, email, name, provider);
 
           if (result.success) {
             // 상태 업데이트가 완료되도록 약간의 지연 후 리다이렉트
@@ -53,10 +45,7 @@ const KakaoCallbackPage = () => {
           }
         } catch (err) {
           console.error("Error processing Kakao callback:", err);
-          navigate(
-            "/auth?error=kakao_login_failed&message=" +
-              encodeURIComponent(err.message)
-          );
+          navigate("/auth?error=kakao_login_failed&message=" + encodeURIComponent(err.message));
         }
       } else {
         // 필수 파라미터가 없는 경우
@@ -67,9 +56,7 @@ const KakaoCallbackPage = () => {
           email: !!email,
           name: !!name,
         });
-        navigate(
-          "/auth?error=kakao_login_failed&message=필수 정보가 누락되었습니다"
-        );
+        navigate("/auth?error=kakao_login_failed&message=필수 정보가 누락되었습니다");
       }
     };
 

@@ -18,6 +18,9 @@ resource "aws_s3_bucket" "frontend" {
   count  = var.enable_frontend ? 1 : 0
   bucket = local.frontend_bucket
 
+  # Destroy 시 버킷이 비어있지 않아도 삭제 가능
+  force_destroy = true
+
   tags = local.tags
 }
 

@@ -30,10 +30,16 @@ const InquiryDetailPage = () => {
   return (
     <div>
       <h2>문의 상세</h2>
-      <p><strong>제목:</strong> {inquiry.title}</p>
-      <p><strong>내용:</strong></p>
+      <p>
+        <strong>제목:</strong> {inquiry.title}
+      </p>
+      <p>
+        <strong>내용:</strong>
+      </p>
       <p>{inquiry.content}</p>
-      <p><strong>상태:</strong> {inquiry.status}</p>
+      <p>
+        <strong>상태:</strong> {inquiry.status}
+      </p>
 
       {inquiry.answer && (
         <>

@@ -1,0 +1,41 @@
+server:
+  extraArgs:
+    - --insecure
+    - --rootpath
+    - /
+
+  service:
+    enabled: true
+    type: ClusterIP
+
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hosts: []
+    paths:
+      - /
+    pathType: Prefix
+
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+      alb.ingress.kubernetes.io/load-balancer-name: ${project_name}-${environment}-argocd-alb
+      alb.ingress.kubernetes.io/group.name: ${project_name}-${environment}-argocd-alb
+      alb.ingress.kubernetes.io/success-codes: "200-399"
+      alb.ingress.kubernetes.io/healthcheck-path: /healthz
+      alb.ingress.kubernetes.io/ssl-redirect: "404"
+
+configs:
+  cm:
+    # Enable in-cluster deployment
+    cluster.inClusterEnabled: "true"
+    url: http://${alb_dns_name}
+
+repoServer:
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "2"
+      - name: edns0

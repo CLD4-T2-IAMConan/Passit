@@ -16,7 +16,7 @@ const createApiClient = (baseURL) => {
   // 요청 인터셉터
   instance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("accessToken"); // ✅ 키 통일
+      const token = localStorage.getItem("token"); // ✅ 키 통일
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -39,7 +39,7 @@ const createApiClient = (baseURL) => {
       const { status, data } = error.response;
 
       if (status === 401) {
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject({
@@ -80,19 +80,15 @@ const createApiClient = (baseURL) => {
   return instance;
 };
 
-/**
- * 서비스별 API 클라이언트
- */
+//서비스별 API 클라이언트
 export const accountApiClient = createApiClient(API_SERVICES.ACCOUNT);
 export const csApiClient = createApiClient(API_SERVICES.CS);
-// export const service2ApiClient = createApiClient(API_SERVICES.SERVICE2);
+export const chatApiClient = createApiClient(API_SERVICES.CHAT);
 // export const service3ApiClient = createApiClient(API_SERVICES.SERVICE3);
 
-/**
- * 기본 클라이언트 (계정 서비스)
- */
+// 기본 클라이언트 (계정 서비스)
 const apiClient = accountApiClient;
 
 //  named + default
 export { apiClient };
-export default apiClient
+export default apiClient;

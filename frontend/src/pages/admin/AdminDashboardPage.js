@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  Card,
-  CardContent,
-} from "@mui/material";
+import { Box, Container, Typography, Grid, Paper, Card, CardContent } from "@mui/material";
 import {
   People as PeopleIcon,
   PersonAdd as PersonAddIcon,

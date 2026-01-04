@@ -140,6 +140,18 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
+variable "alb_name" {
+  description = "ALB name for backend services (used to lookup DNS name dynamically)"
+  type        = string
+  default     = ""
+}
+
+variable "alb_dns_name" {
+  description = "ALB DNS name for backend services (optional fallback, if alb_name is not provided)"
+  type        = string
+  default     = ""
+}
+
 # ============================================
 # irsa.tf
 # ============================================
@@ -174,4 +186,67 @@ variable "secret_smtp_arn" {
 variable "secret_kakao_arn" {
   description = "Kakao OAuth 자격 증명 Secrets Manager ARN (account 서비스 전용)"
   type        = string
+}
+
+# ============================================
+# SNS/SQS - Topic ARNs
+# ============================================
+variable "sns_ticket_events_topic_arn" {
+  description = "ARN of the ticket events SNS topic"
+  type        = string
+  default     = ""
+}
+
+variable "sns_deal_events_topic_arn" {
+  description = "ARN of the deal events SNS topic"
+  type        = string
+  default     = ""
+}
+
+variable "sns_payment_events_topic_arn" {
+  description = "ARN of the payment events SNS topic"
+  type        = string
+  default     = ""
+}
+
+# ============================================
+# SNS/SQS - Queue URLs
+# ============================================
+variable "sns_chat_deal_events_queue_url" {
+  description = "URL of the chat service deal events SQS queue"
+  type        = string
+  default     = ""
+}
+
+variable "sns_ticket_deal_events_queue_url" {
+  description = "URL of the ticket service deal events SQS queue"
+  type        = string
+  default     = ""
+}
+
+variable "sns_trade_ticket_events_queue_url" {
+  description = "URL of the trade service ticket events SQS queue"
+  type        = string
+  default     = ""
+}
+
+# ============================================
+# SNS/SQS - Queue ARNs
+# ============================================
+variable "sns_chat_deal_events_queue_arn" {
+  description = "ARN of the chat service deal events SQS queue"
+  type        = string
+  default     = ""
+}
+
+variable "sns_ticket_deal_events_queue_arn" {
+  description = "ARN of the ticket service deal events SQS queue"
+  type        = string
+  default     = ""
+}
+
+variable "sns_trade_ticket_events_queue_arn" {
+  description = "ARN of the trade service ticket events SQS queue"
+  type        = string
+  default     = ""
 }

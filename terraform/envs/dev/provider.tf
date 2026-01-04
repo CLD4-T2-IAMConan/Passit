@@ -24,10 +24,11 @@ provider "aws" {
 }
 
 # Remote State - Shared 환경의 outputs 참조
+# Shared state는 prod 버킷에 저장됨
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {
-    bucket = "passit-terraform-state-dev"
+    bucket = "passit-terraform-state-prod"
     key    = "shared/terraform.tfstate"
     region = "ap-northeast-2"
   }
