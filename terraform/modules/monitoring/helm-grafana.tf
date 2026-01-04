@@ -8,9 +8,15 @@ resource "helm_release" "grafana" {
   version = "7.3.9"
 
   values = [
-    file("${path.module}/grafana-values.yaml"),
+    templatefile(
+      "${path.module}/values/grafana-values.yaml.tftpl",
+      {
+        grafana_irsa_role_arn = aws_iam_role.grafana.arn
+      }
+    ),
     file("${path.module}/grafana-dashboards.yaml")
   ]
+
 
   ########################################
   # Admin credentials (from tfvars)
