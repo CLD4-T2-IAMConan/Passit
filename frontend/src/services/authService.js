@@ -105,7 +105,8 @@ class AuthService {
    * @returns {string}
    */
   getKakaoLoginUrl() {
-    const baseURL = process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com";
+    // CloudFront를 통한 Account Service 접근
+    const baseURL = process.env.REACT_APP_ACCOUNT_API_URL || process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
     return `${baseURL}${ENDPOINTS.AUTH.KAKAO}`;
   }
 

@@ -1,7 +1,8 @@
 import { http, HttpResponse } from "msw";
 
-const API_BASE_URL =
-  process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com/api";
+// CloudFront를 통한 Account Service 접근 (개발용 Mock)
+const CLOUDFRONT_URL = process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+const API_BASE_URL = process.env.REACT_APP_ACCOUNT_API_URL || `${CLOUDFRONT_URL}/api`;
 
 export const handlers = [
   // Auth endpoints

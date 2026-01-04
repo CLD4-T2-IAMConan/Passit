@@ -289,7 +289,8 @@ module "cicd" {
 
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true
-  frontend_bucket_name  = var.frontend_bucket_name
+  frontend_bucket_name   = var.frontend_bucket_name
+  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret

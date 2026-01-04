@@ -21,7 +21,9 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
       }
 
       console.log("🔵 WebSocket 연결 시작...", { chatroomId });
-      const chatBaseURL = process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com";
+      // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
+      const cloudfrontURL = process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+      const chatBaseURL = process.env.REACT_APP_CHAT_API_URL || cloudfrontURL;
       const socket = new SockJS(`${chatBaseURL}/ws`);
       const client = Stomp.over(socket);
 

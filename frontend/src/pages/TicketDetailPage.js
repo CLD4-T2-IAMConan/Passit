@@ -10,10 +10,10 @@ import RequestSuccessModal from "../components/Ticket/RequestSuccessModal";
 import defaultTicket from "../assets/images/defaultTicket.png";
 import userService from "../services/userService";
 
-// 백엔드 서버의 기본 URL (ALB URL 사용)
-const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
-const TICKET_API_BASE_URL =
-  process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
+// CloudFront를 통한 백엔드 서버 접근
+const CLOUDFRONT_URL = process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || CLOUDFRONT_URL; // Trade Service: /api/trades/*, /api/deals/*
+const TICKET_API_BASE_URL = process.env.REACT_APP_TICKET_API_URL || CLOUDFRONT_URL; // Ticket Service: /api/tickets/*
 
 const TicketDetailPage = () => {
   const { ticket_id } = useParams();
