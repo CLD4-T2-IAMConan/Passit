@@ -99,9 +99,9 @@ module "security" {
   github_repo = var.github_repo
 
   # github actions IAM에 필요
-  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_bucket_name                = module.cicd.frontend_bucket_name
   frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
-  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
+  github_actions_frontend_role_arn    = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
@@ -218,6 +218,7 @@ module "data" {
 
   # S3 Configuration
   s3_kms_key_id = module.security.s3_kms_key_id
+  s3_buckets    = var.s3_buckets
 
   # RDS Configuration
   db_secret_name      = ""
@@ -234,11 +235,10 @@ module "data" {
   passit_user_name       = var.passit_user_name
   passit_user_password   = var.passit_user_password
   bastion_instance_id    = module.bastion.bastion_instance_id
-
   # Existing Resources
-  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name  = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
@@ -287,9 +287,9 @@ module "cicd" {
   owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
   github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
@@ -312,8 +312,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile       = var.s3_bucket_profile
-  s3_bucket_ticket        = var.s3_bucket_ticket
+  s3_bucket_profile = var.s3_bucket_profile
+  s3_bucket_ticket  = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn

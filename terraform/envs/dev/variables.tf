@@ -249,6 +249,94 @@ variable "valkey_ecpu_limit" {
 }
 
 # ============================================
+# S3 Buckets
+# ============================================
+variable "s3_buckets" {
+  description = "List of S3 buckets to create"
+  type = list(object({
+    name               = string
+    versioning_enabled = bool
+    lifecycle_rules = optional(list(object({
+      id      = string
+      enabled = bool
+      prefix  = optional(string, null)
+      transitions = optional(list(object({
+        days          = number
+        storage_class = string
+      })), [])
+      expiration_days = optional(number, null)
+    })), [])
+  }))
+  default = [
+    # 공통 업로드 버킷
+    {
+      name               = "uploads"
+      versioning_enabled = false
+      lifecycle_rules = [
+        {
+          id              = "temp-files-cleanup"
+          enabled         = true
+          prefix          = "temp/"
+          expiration_days = 7
+        }
+      ]
+    },
+
+    # 로그 보관용 버킷
+    {
+      name               = "logs"
+      versioning_enabled = true
+      lifecycle_rules = [
+        {
+          id      = "logs-lifecycle"
+          enabled = true
+          transitions = [
+            {
+              days          = 30
+              storage_class = "STANDARD_IA"
+            },
+            {
+              days          = 90
+              storage_class = "GLACIER"
+            }
+          ]
+          expiration_days = null
+        }
+      ]
+    },
+
+    # 백업 버킷
+    {
+      name               = "backup"
+      versioning_enabled = true
+      lifecycle_rules    = []
+    },
+
+    # =====================================
+    # account 서비스 - profile 이미지 버킷
+    # =====================================
+    # 실제 생성 버킷명:
+    # passit-dev-profile-images-bucket
+    {
+      name               = "passit-dev-profile-images-bucket"
+      versioning_enabled = false
+      lifecycle_rules    = []
+    },
+
+    # =====================================
+    # ticket 서비스 - ticket 이미지 버킷
+    # =====================================
+    # 실제 생성 버킷명:
+    # passit-dev-ticket-images-bucket
+    {
+      name               = "passit-dev-ticket-images-bucket"
+      versioning_enabled = false
+      lifecycle_rules    = []
+    }
+  ]
+}
+
+# ============================================
 # Monitoring Module Variables
 # ============================================
 variable "tags" {
