@@ -119,7 +119,7 @@ resource "aws_iam_role" "github_actions" {
   }
 }
 
-# GitHub Actions 정책: ECR, EKS 접근
+# GitHub Actions 정책: EKS, S3, Cloudfront, DynamoDB 접근
 data "aws_iam_policy_document" "github_actions" {
   statement {
     sid    = "AllowEKSUpdate"
