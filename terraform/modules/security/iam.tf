@@ -168,8 +168,9 @@ data "aws_iam_policy_document" "github_actions" {
       actions = [
         "cloudfront:CreateInvalidation"
       ]
+      # CloudFront는 리소스 레벨 권한을 지원하지 않으므로 * 사용
       resources = [
-        "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
+        "*"
       ]
     }
   }
