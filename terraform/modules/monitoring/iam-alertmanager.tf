@@ -5,24 +5,28 @@
 resource "aws_iam_role" "alertmanager" {
   name = "${var.project_name}-${var.environment}-alertmanager"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = var.oidc_provider_arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "${var.oidc_provider_url}:sub" =
-              "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack"
-          }
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "${var.oidc_provider_arn}"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "${replace(var.oidc_provider_url, "https://", "")}:sub":
+            "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack",
+          "${replace(var.oidc_provider_url, "https://", "")}:aud":
+            "sts.amazonaws.com"
         }
       }
-    ]
-  })
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_iam_policy" "alertmanager_sns_publish" {
@@ -33,10 +37,8 @@ resource "aws_iam_policy" "alertmanager_sns_publish" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
         Resource = aws_sns_topic.alertmanager.arn
       }
     ]

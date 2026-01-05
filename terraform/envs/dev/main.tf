@@ -68,17 +68,17 @@ module "network" {
 module "security" {
   source = "../../modules/security"
 
-  account_id   = local.account_id  # 자동 감지된 계정 ID 사용
+  account_id   = local.account_id # 자동 감지된 계정 ID 사용
   environment  = var.environment
   region       = var.region
   project_name = var.project_name
 
   # Secrets Manager variables
-  db_secrets         = var.db_secrets
-  smtp_secrets       = var.smtp_secrets
-  kakao_secrets      = var.kakao_secrets
-  admin_secrets      = var.admin_secrets
-  app_secrets        = var.app_secrets
+  db_secrets          = var.db_secrets
+  smtp_secrets        = var.smtp_secrets
+  kakao_secrets       = var.kakao_secrets
+  admin_secrets       = var.admin_secrets
+  app_secrets         = var.app_secrets
   elasticache_secrets = var.elasticache_secrets
 
   vpc_id = module.network.vpc_id
@@ -99,9 +99,9 @@ module "security" {
   github_repo = var.github_repo
 
   # github actions IAM에 필요
-  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_bucket_name                = module.cicd.frontend_bucket_name
   frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
-  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
+  github_actions_frontend_role_arn    = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
@@ -132,7 +132,7 @@ module "eks" {
   # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
   access_entries = var.eks_access_entries != null ? {
     for k, v in var.eks_access_entries : k => {
-      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+      principal_arn       = "arn:aws:iam::${local.account_id}:user/${v.username}"
       policy_associations = v.policy_associations
     }
   } : {}
@@ -184,7 +184,7 @@ module "bastion" {
   elasticache_security_group_id = local.elasticache_security_group_id
   # eks_cluster_security_group_id는 EKS 클러스터 생성 후 주석 해제
   # eks_cluster_security_group_id = module.eks.cluster_security_group_id
-  
+
   depends_on = [module.network, module.security, module.eks]
 }
 
@@ -230,15 +230,15 @@ module "data" {
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
   # Passit User Configuration
-  create_passit_user     = var.create_passit_user
-  passit_user_name       = var.passit_user_name
-  passit_user_password   = var.passit_user_password
-  bastion_instance_id    = module.bastion.bastion_instance_id
+  create_passit_user   = var.create_passit_user
+  passit_user_name     = var.passit_user_name
+  passit_user_password = var.passit_user_password
+  bastion_instance_id  = module.bastion.bastion_instance_id
 
   # Existing Resources
-  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name  = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
@@ -248,12 +248,12 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name  = var.project_name
-  environment   = var.environment
-  cluster_name  = module.eks.cluster_name
-  region        = var.region
-  account_id    = local.account_id  # 자동 감지된 계정 ID 사용
-  tags          = var.tags
+  project_name = var.project_name
+  environment  = var.environment
+  cluster_name = module.eks.cluster_name
+  region       = var.region
+  account_id   = local.account_id # 자동 감지된 계정 ID 사용
+  tags         = var.tags
 
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
@@ -262,7 +262,7 @@ module "monitoring" {
 
   grafana_namespace = "monitoring"
 
-  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 }
 
@@ -287,9 +287,9 @@ module "cicd" {
   owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
   github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
@@ -300,9 +300,9 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = true
-  frontend_bucket_name   = var.frontend_bucket_name
-  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
+  enable_frontend      = true
+  frontend_bucket_name = var.frontend_bucket_name
+  alb_name             = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -312,8 +312,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile       = var.s3_bucket_profile
-  s3_bucket_ticket        = var.s3_bucket_ticket
+  s3_bucket_profile = var.s3_bucket_profile
+  s3_bucket_ticket  = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
@@ -322,18 +322,18 @@ module "cicd" {
   secret_kakao_arn       = module.security.kakao_secret_arn
 
   # SNS Topic ARNs
-  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
-  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_ticket_events_topic_arn  = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn    = module.sns.deal_events_topic_arn
   sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
 
   # SQS Queue URLs
-  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
-  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_chat_deal_events_queue_url    = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url  = module.sns.ticket_deal_events_queue_url
   sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
 
   # SQS Queue ARNs (for IAM policies)
-  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
-  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_chat_deal_events_queue_arn    = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn  = module.sns.ticket_deal_events_queue_arn
   sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
 
   depends_on = [module.eks, module.sns]
