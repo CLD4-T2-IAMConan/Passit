@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8085",
+  baseURL: process.env.REACT_APP_CS_API_URL || "http://cs-service.passit.com",
   headers: { "Content-Type": "application/json" },
 });
 

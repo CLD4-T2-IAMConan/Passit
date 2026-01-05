@@ -4,13 +4,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button, Stack, Typography, Box, Alert } from "@mui/material"; // Modal 제거
-import { userService } from "../api/services/userService";
+import userService from "../services/userService";
 import DealRejectModal from "../components/Ticket/DealRejectModal";
 import DealAcceptModal from "../components/Ticket/DealAcceptModal";
 import DealCancelModal from "../components/Ticket/DealCancelModal";
 import DealConfirmModal from "../components/Ticket/DealConfirmModal";
 
-const API_BASE_URL = "http://localhost:8083";
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
 
 const DealAcceptPage = () => {
   // URL에서 deal_id를 가져옵니다.

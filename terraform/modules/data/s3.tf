@@ -17,6 +17,9 @@ resource "aws_s3_bucket" "this" {
 
   bucket = local.s3_bucket_names[each.key]
 
+  # Destroy 시 버킷이 비어있지 않아도 삭제 가능
+  force_destroy = true
+
   tags = merge(
     local.common_tags,
     {

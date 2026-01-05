@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./LoginPage";
 import { AuthProvider } from "../contexts/AuthContext";
-import { userService } from "../services/userService";
+import userService from "../services/userService";
 import { useAuth } from "../contexts/AuthContext";
 import AuthPage from "./AuthPage";
 

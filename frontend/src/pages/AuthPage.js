@@ -26,7 +26,7 @@ const AuthPage = () => {
   const handleLoginSuccess = (user) => {
     console.log("로그인 성공:", user);
     // role에 따라 리다이렉트
-    if (user.role === "ADMIN") {
+    if (user?.role === "ADMIN") {
       navigate("/admin/users");
     } else {
       navigate("/");
@@ -35,6 +35,7 @@ const AuthPage = () => {
 
   const handleRegisterSuccess = (user) => {
     console.log("회원가입 성공:", user);
+    // 회원가입 후 로그인 폼으로 전환
     setIsLogin(true);
   };
 
@@ -225,4 +226,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-

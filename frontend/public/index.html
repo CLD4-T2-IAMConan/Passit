@@ -8,13 +8,11 @@
       content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
     />
     <meta name="theme-color" content="#4A90E2" />
-    <meta
-      name="description"
-      content="Passit - 정가 기반 안전한 티켓 양도 플랫폼"
-    />
+    <meta name="description" content="Passit - 정가 기반 안전한 티켓 양도 플랫폼" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Passit - 안전한 티켓 거래 플랫폼</title>
+    <!-- Dev 배포 테스트: 2025-12-30 -->
   </head>
   <body>
     <noscript>이 앱을 실행하려면 자바스크립트를 활성화해야 합니다.</noscript>
@@ -29,6 +27,17 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <!-- NICEPAY SDK (테스트 환경) -->
     <script src="https://pay.nicepay.co.kr/v1/js/"></script>
+    <script>
+      // SDK 로드 확인
+      window.addEventListener('load', function() {
+        if (typeof window.AUTHNICE !== 'undefined') {
+          console.log('✅ NICEPAY SDK 로드 성공');
+        } else {
+          console.error('❌ NICEPAY SDK 로드 실패');
+        }
+      });
+    </script>
   </body>
 </html>

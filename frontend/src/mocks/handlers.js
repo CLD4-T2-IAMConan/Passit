@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 
-const API_BASE_URL = "http://localhost:8081/api";
+const API_BASE_URL =
+  process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com/api";
 
 export const handlers = [
   // Auth endpoints

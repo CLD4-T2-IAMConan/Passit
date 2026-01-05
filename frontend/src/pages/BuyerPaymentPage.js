@@ -18,11 +18,12 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { ConfirmationNumber } from "@mui/icons-material";
 // 🚨 [추가] userService import
-import { userService } from "../api/services/userService";
+import userService from "../services/userService";
 
-// ⚠️ 임시 설정
-const API_BASE_URL = "http://localhost:8083";
+// Trade Service ALB URL
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
 
 // 🌟 MUI 커스텀 모달 스타일
 const modalStyle = {
@@ -50,6 +51,7 @@ const BuyerPaymentPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false); // 이미지 로드 실패 상태
 
   // 🚨 [추가] 인증된 사용자 정보를 위한 상태
   const [currentUser, setCurrentUser] = useState(undefined); // undefined: 로딩 중
@@ -128,6 +130,7 @@ const BuyerPaymentPage = () => {
   // 5. 버튼 핸들러 (결제 로직)
   // ----------------------------------------------------
   const handlePayClick = () => {
+    setImageLoadError(false); // 모달 열 때 이미지 로드 에러 상태 리셋
     setIsPaymentModalOpen(true);
   };
 
@@ -139,9 +142,16 @@ const BuyerPaymentPage = () => {
       return;
     }
 
+    if (!currentUserId) {
+      alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해주세요.");
+      return;
+    }
+
+    console.log("🔵 결제 준비 시작", { payment_id, currentUserId });
+
     try {
       // 1. 백엔드에서 결제 준비 데이터 가져오기 (GET /api/payments/{id}/prepare)
-      // 🚨 [수정] 결제 준비 API 호출 시에도 currentUserId 전송을 고려할 수 있습니다.
+      console.log("📤 API 호출: /api/payments/{id}/prepare");
       const prepareResponse = await axios.get(
         `${API_BASE_URL}/api/payments/${payment_id}/prepare`,
         {
@@ -151,13 +161,22 @@ const BuyerPaymentPage = () => {
         }
       );
       const data = prepareResponse.data;
+      console.log("✅ 결제 준비 데이터 수신:", data);
 
       // 2. NICEPAY SDK가 로드되었는지 확인
+      console.log("🔍 NICEPAY SDK 확인:", typeof window.AUTHNICE);
       if (!window.AUTHNICE) {
-        throw new Error("NICEPAY SDK가 로드되지 않았습니다. index.html을 확인하세요.");
+        throw new Error("NICEPAY SDK가 로드되지 않았습니다. 페이지를 새로고침해주세요.");
       }
 
       // 3. NICEPAY 결제창 호출
+      console.log("💳 NICEPAY 결제창 호출", {
+        clientId: data.clientId,
+        orderId: data.orderId,
+        amount: data.amount,
+        goodsName: data.goodsName,
+      });
+
       window.AUTHNICE.requestPay({
         clientId: data.clientId,
         method: "card",
@@ -167,17 +186,23 @@ const BuyerPaymentPage = () => {
         returnUrl: data.returnUrl,
 
         fnError: function (result) {
-          alert(`결제 실패: ${result.msg}`);
-          console.error("NICEPAY Error:", result);
+          console.error("❌ NICEPAY 결제 실패:", result);
+          alert(`결제 실패: ${result.msg || "알 수 없는 오류"}`);
           fetchPaymentData();
         },
       });
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message;
+      console.error("❌ 결제 준비 실패:", err);
+      console.error("에러 상세:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+
+      const errorMessage = err.response?.data?.error || err.response?.data || err.message;
       alert(`결제 준비 실패: ${errorMessage}`);
-      console.error("결제 준비 실패:", err);
     }
-  }, [payment_id, fetchPaymentData, currentUserId]); // 🚨 [수정] 의존성 배열에 currentUserId 추가
+  }, [payment_id, fetchPaymentData, currentUserId]);
 
   // ----------------------------------------------------
   // 6. 렌더링 및 UI
@@ -288,14 +313,31 @@ const BuyerPaymentPage = () => {
                   borderRadius: "12px",
                   overflow: "hidden",
                   border: "1px solid #e0e0e0",
+                  bgcolor: "grey.300",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
                 }}
               >
-                {/* 🚨 이미지 URL이 필요합니다. 임시 URL을 사용하거나 백엔드 데이터에 맞춰 수정하세요. */}
-                <img
-                  src={ticket.imageUrl || "https://via.placeholder.com/150"}
-                  alt={ticket.eventName}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
+                {(ticket.image1 || ticket.imageUrl) && !imageLoadError ? (
+                  <Box
+                    component="img"
+                    src={ticket.image1 || ticket.imageUrl}
+                    alt={ticket.eventName}
+                    onError={() => {
+                      // 이미지 로드 실패 시 상태 업데이트
+                      setImageLoadError(true);
+                    }}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <ConfirmationNumber sx={{ fontSize: 60, color: "grey.400" }} />
+                )}
               </Box>
 
               {/* 📝 우측: 티켓 정보 및 금액 */}
@@ -312,7 +354,16 @@ const BuyerPaymentPage = () => {
                     {ticket.eventName}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    공연일자: {ticket.eventDate}
+                    공연일자:{" "}
+                    {ticket.eventDate
+                      ? new Date(ticket.eventDate).toLocaleString("ko-KR", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "날짜 미정"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     좌석정보: {ticket.seatInfo || "정보 없음"}

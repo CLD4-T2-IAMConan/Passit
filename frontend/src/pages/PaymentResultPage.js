@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:8083";
+const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
 
 function PaymentResultPage() {
   const location = useLocation();

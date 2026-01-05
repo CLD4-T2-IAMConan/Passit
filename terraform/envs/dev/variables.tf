@@ -2,7 +2,7 @@
 # Common / Global Variables
 # ============================================
 variable "account_id" {
-  description = "AWS Account ID"
+  description = "AWS Account ID (deprecated - auto-detected from current credentials)"
   type        = string
   default     = "727646470302"
 }
@@ -260,14 +260,25 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
-variable "grafana_admin_user" {
+# ============================================
+# Monitoring - Grafana (EKS Helm)
+# ============================================
+variable "grafana_namespace" {
+  description = "Namespace to deploy Grafana"
   type        = string
-  default     = null
+  default     = "monitoring"
+}
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
 }
 
 variable "grafana_admin_password" {
+  description = "Grafana admin password"
   type        = string
-  default     = null
+  sensitive   = true
 }
 
 # ============================================
@@ -363,6 +374,24 @@ variable "account_image" {
 # 다른 서비스 추가
 variable "chat_image" {
   description = "Docker image for chat service"
+  type        = string
+  default     = ""
+}
+
+variable "cs_image" {
+  description = "Docker image for cs service"
+  type        = string
+  default     = ""
+}
+
+variable "ticket_image" {
+  description = "Docker image for ticket service"
+  type        = string
+  default     = ""
+}
+
+variable "trade_image" {
+  description = "Docker image for trade service"
   type        = string
   default     = ""
 }

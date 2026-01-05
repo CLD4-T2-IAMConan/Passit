@@ -15,9 +15,6 @@ spec:
     directory:
       recurse: false
       exclude: ''
-    # Submodule 비활성화
-    gitSubmodules:
-      enabled: false
 
   destination:
     server: https://kubernetes.default.svc

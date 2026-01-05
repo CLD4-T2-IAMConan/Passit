@@ -1,146 +1,186 @@
 /**
  * API 엔드포인트 정의
- * 모든 API 경로를 중앙에서 관리
+ * 백엔드 5개 마이크로서비스의 모든 API 경로를 중앙에서 관리
  */
 
 export const ENDPOINTS = {
-  // 인증 관련
+  // ============================================
+  // Account Service (8081)
+  // ============================================
   AUTH: {
-    LOGIN: "/auth/login",
-    REGISTER: "/auth/signup",
-    LOGOUT: "/auth/logout",
-    REFRESH: "/auth/refresh",
-    KAKAO: "/auth/kakao",
-    KAKAO_CALLBACK: "/auth/kakao/callback",
+    SIGNUP: "/api/auth/signup",
+    LOGIN: "/api/auth/login",
+    LOGOUT: "/api/auth/logout",
+    REFRESH: "/api/auth/refresh",
+    KAKAO: "/api/auth/kakao",
+    KAKAO_CALLBACK: "/api/auth/kakao/callback",
+    SEND_VERIFICATION_CODE: "/api/auth/send-verification-code",
+    VERIFY_EMAIL: "/api/auth/verify-email",
   },
 
-  // 사용자 관련
   USERS: {
-    ME: "/users/me",
-    UPDATE: "/users/me",
-    DELETE: "/users/me",
-    CHANGE_PASSWORD: "/users/me/password",
+    ME: "/api/users/me",
+    UPDATE_ME: "/api/users/me",
+    DELETE_ME: "/api/users/me",
+    CHANGE_PASSWORD: "/api/users/me/password",
+    SET_PASSWORD: "/api/users/me/set-password",
+    VERIFY_PASSWORD: "/api/users/me/verify-password",
+
+    // 관리자용
+    CREATE: "/api/users",
+    LIST: "/api/users",
+    SEARCH: "/api/users/search",
+    DETAIL: (userId) => `/api/users/${userId}`,
+    UPDATE: (userId) => `/api/users/${userId}`,
+    DELETE: (userId) => `/api/users/${userId}`,
+    HARD_DELETE: (userId) => `/api/users/${userId}/hard`,
+    UPDATE_ROLE: (userId) => `/api/users/${userId}/role`,
+    SUSPEND: (userId) => `/api/users/${userId}/suspend`,
+    ACTIVATE: (userId) => `/api/users/${userId}/activate`,
+    BY_EMAIL: (email) => `/api/users/email/${email}`,
+    BY_STATUS: (status) => `/api/users/status/${status}`,
   },
 
-  // 관리자 - 회원 관리
-  ADMIN: {
-    USERS: {
-      LIST: "/users",
-      SEARCH: "/users/search",
-      CREATE: "/users",
-      DETAIL: (userId) => `/users/${userId}`,
-      UPDATE: (userId) => `/users/${userId}`,
-      DELETE: (userId) => `/users/${userId}`,
-      HARD_DELETE: (userId) => `/users/${userId}/hard`,
-      UPDATE_ROLE: (userId) => `/users/${userId}/role`,
-      SUSPEND: (userId) => `/users/${userId}/suspend`,
-      ACTIVATE: (userId) => `/users/${userId}/activate`,
-      BY_EMAIL: (email) => `/users/email/${email}`,
-      BY_STATUS: (status) => `/users/status/${status}`,
-    },
-    CATEGORIES: {
-      LIST: "/admin/categories",
-      DETAIL: (id) => `/admin/categories/${id}`,
-      CREATE: "/admin/categories",
-      UPDATE: (id) => `/admin/categories/${id}`,
-      DELETE: (id) => `/admin/categories/${id}`,
-    },
+  ACTIVITIES: {
+    CREATE: "/api/activities",
+    MY: "/api/activities/me",
+    RECENT: "/api/activities/me/recent",
+    STATS: "/api/activities/me/stats",
   },
 
-  // 이메일 인증 관련
-  EMAIL: {
-    SEND_VERIFICATION: "/email/verification/send",
-    VERIFY_CODE: "/email/verification/verify",
-    SEND_PASSWORD_RESET: "/email/password-reset/send",
-    VERIFY_PASSWORD_RESET: "/email/password-reset/verify",
-    RESET_PASSWORD: "/users/reset-password",
-  },
-
-  // 티켓 관련
+  // ============================================
+  // Ticket Service (8082)
+  // ============================================
   TICKETS: {
-    LIST: "/tickets",
-    DETAIL: (id) => `/tickets/${id}`,
-    MY: "/sellers/tickets",
-    CREATE: "/sellers/tickets",
-    UPDATE: (id) => `/sellers/tickets/${id}`,
-    DELETE: (id) => `/sellers/tickets/${id}`,
+    // 사용자용
+    LIST: "/api/tickets",
+    DETAIL: (ticketId) => `/api/tickets/${ticketId}`,
+    SEARCH: "/api/tickets",
+
+    // 판매자용
+    MY_TICKETS: "/api/sellers/tickets",
+    CREATE: "/api/sellers/tickets",
+    UPDATE: (ticketId) => `/api/sellers/tickets/${ticketId}`,
+    DELETE: (ticketId) => `/api/sellers/tickets/${ticketId}`,
+    UPDATE_STATUS: (ticketId, newStatus) => `/api/tickets/${ticketId}/status/${newStatus}`,
   },
 
-  // 거래 관련
-  TRADES: {
-    LIST: "/trades",
-    DETAIL: (id) => `/trades/${id}`,
-    CREATE: "/trades",
-    UPDATE: (id) => `/trades/${id}`,
-    CANCEL: (id) => `/trades/${id}/cancel`,
+  // ============================================
+  // Trade Service (8083)
+  // ============================================
+  DEALS: {
+    REQUEST: "/api/deals/request",
+    DETAIL: (dealId) => `/api/deals/${dealId}/detail`,
+    ACCEPT: (dealId) => `/api/deals/${dealId}/accept`,
+    REJECT: (dealId) => `/api/deals/${dealId}/reject`,
+    CANCEL: (dealId) => `/api/deals/${dealId}/cancel`,
+    CONFIRM: (dealId) => `/api/deals/${dealId}/confirm`,
+    UPDATE_STATUS: (dealId, newStatus) => `/api/deals/${dealId}/status/${newStatus}`,
   },
 
-  // 채팅 관련
+  PAYMENTS: {
+    DETAIL: (paymentId) => `/api/payments/${paymentId}/detail`,
+    PREPARE: (paymentId) => `/api/payments/${paymentId}/prepare`,
+    COMPLETE: (paymentId) => `/api/payments/${paymentId}/complete`,
+    NICEPAY_CALLBACK: "/api/payments/nicepay/callback",
+  },
+
+  // ============================================
+  // Chat Service (8084)
+  // ============================================
   CHAT: {
+    // 채팅방
+    CREATE_ROOM: "/chat/rooms",
     ROOMS: "/chat/rooms",
-    MESSAGES: (roomId) => `/chat/rooms/${roomId}/messages`,
-    SEND: (roomId) => `/chat/rooms/${roomId}/messages`,
+    DELETE_ROOM: (chatroomId) => `/chat/rooms/${chatroomId}`,
+
+    // 메시지
+    MESSAGES: (chatroomId) => `/chat/rooms/${chatroomId}/messages`,
+    MARK_AS_READ: (chatroomId) => `/chat/rooms/${chatroomId}/read`,
+
+    // 시스템 액션
+    SYSTEM_ACTION: "/chat/rooms/system-action",
+
+    // WebSocket
+    WS_ENDPOINT: "/ws-stomp",
   },
 
-  // 고객 지원 관련
-  SUPPORT: {
-    TICKETS: "/support/tickets",
-    CREATE: "/support/tickets",
-    DETAIL: (id) => `/support/tickets/${id}`,
-  },
+  // ============================================
+  // CS Service (8085)
+  // ============================================
 
-  // 공지 (Notice)
-  NOTICE: {
-    USER_LIST: "/cs/notices",
-    DETAIL: (noticeId) => `/cs/notices/${noticeId}`,
-
-    // 관리자 (너희 백엔드가 /admin/notices 인지 /cs/admin/notices 인지에 따라 조정)
-    ADMIN_CREATE: "/admin/notices",
-  },
-
-  // 신고 (Reports)
-  REPORTS: {
-    // 사용자
-    CREATE: "/cs/reports",
-    MY_LIST: (userId) => "/cs/reports/" + userId,
-    MY_DETAIL: (reportId) => "/reports/" + reportId,
+  // 공지사항
+  NOTICES: {
+    LIST: "/notices",
+    DETAIL: (noticeId) => `/notices/${noticeId}`,
 
     // 관리자
-    ADMIN_LIST: "/admin/reports",
-    ADMIN_DETAIL: (reportId) => "/admin/reports/" + reportId,
-    UPDATE_STATUS: (reportId) => "/admin/reports/" + reportId + "/status",
+    ADMIN_LIST: "/admin/notices",
+    ADMIN_CREATE: "/admin/notices",
+    ADMIN_UPDATE: (noticeId) => `/admin/notices/${noticeId}`,
+    ADMIN_UPDATE_STATUS: (noticeId) => `/admin/notices/${noticeId}/status`,
+    ADMIN_DELETE: (noticeId) => `/admin/notices/${noticeId}`,
   },
-  // 문의 (Inquiries)
+
+  // 1:1 문의
   INQUIRIES: {
-    // 유저
+    // 사용자
     CREATE: "/cs/inquiries",
     LIST: "/cs/inquiries",
-    DETAIL: (inquiryId) => `/cs/inquiries/${inquiryId}`,
+    DELETE: (inquiryId) => `/cs/inquiries/${inquiryId}`,
 
     // 관리자
     ADMIN_LIST: "/admin/cs/inquiries",
     ADMIN_DETAIL: (inquiryId) => `/admin/cs/inquiries/${inquiryId}`,
-    ADMIN_ANSWER: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/answer`,
+    ADMIN_REPLY: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/reply`,
+    ADMIN_UPDATE_STATUS: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/status`,
+    ADMIN_DELETE: (inquiryId) => `/admin/cs/inquiries/${inquiryId}`,
   },
 
   // FAQ
   FAQ: {
-    USER_LIST: "/api/faqs",
-    DETAIL: (faqId) => `/api/faqs/${faqId}`,
+    LIST: "/faqs",
+    DETAIL: (faqId) => `/faqs/${faqId}`,
 
-    ADMIN_LIST: "/api/admin/faqs",
-    ADMIN_CREATE: "/api/admin/faqs",
-    ADMIN_DETAIL: (faqId) => `/api/admin/faqs/${faqId}`,
-    ADMIN_UPDATE: (faqId) => `/api/admin/faqs/${faqId}`,
-    ADMIN_DELETE: (faqId) => `/api/admin/faqs/${faqId}`,
+    // 관리자
+    ADMIN_LIST: "/admin/faqs",
+    ADMIN_CREATE: "/admin/faqs",
+    ADMIN_UPDATE: (faqId) => `/admin/faqs/${faqId}`,
+    ADMIN_DELETE: (faqId) => `/admin/faqs/${faqId}`,
   },
 
-  // 활동 내역 관련
-  ACTIVITIES: {
-    CREATE: "/activities",
-    MY: "/activities/me",
-    RECENT: "/activities/me/recent",
-    STATS: "/activities/me/stats",
+  // 신고
+  REPORTS: {
+    CREATE: "/reports",
+    MY_LIST: "/reports/me",
+
+    // 관리자
+    ADMIN_LIST: "/admin/reports",
+    ADMIN_DETAIL: (reportId) => `/admin/reports/${reportId}`,
+    ADMIN_UPDATE_STATUS: (reportId) => `/admin/reports/${reportId}/status`,
+  },
+
+  // 이용 가이드
+  GUIDES: {
+    LIST: "/guides",
+    DETAIL: (guideId) => `/guides/${guideId}`,
+
+    // 관리자
+    ADMIN_LIST: "/admin/guides",
+    ADMIN_CREATE: "/admin/guides",
+    ADMIN_UPDATE: (guideId) => `/admin/guides/${guideId}`,
+    ADMIN_DELETE: (guideId) => `/admin/guides/${guideId}`,
+  },
+
+  // 카테고리
+  CATEGORIES: {
+    LIST: "/categories",
+
+    // 관리자
+    ADMIN_LIST: "/admin/categories",
+    ADMIN_CREATE: "/admin/categories",
+    ADMIN_UPDATE: (categoryId) => `/admin/categories/${categoryId}`,
+    ADMIN_DELETE: (categoryId) => `/admin/categories/${categoryId}`,
   },
 };
 
