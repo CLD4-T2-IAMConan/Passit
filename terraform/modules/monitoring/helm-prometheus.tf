@@ -7,6 +7,15 @@ resource "helm_release" "kube_prometheus_stack" {
 
   version = "58.6.0"
 
+  # AWS Load Balancer Controller webhook이 준비될 때까지 충분한 시간 확보
+  timeout = 600  # 10분 timeout
+  
+  # 기존 release가 있으면 교체
+  replace = true
+  force_update = true
+  wait = true
+  wait_for_jobs = true
+
   ########################################
   # values.yaml 사용
   ########################################

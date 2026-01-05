@@ -76,10 +76,17 @@ module "security" {
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
 
-  # github actions IAM에 필요
-  frontend_bucket_name              = module.cicd.frontend_bucket_name
-  frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
-  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
+  # Frontend configuration (using variables to avoid circular dependency)
+  # Note: CloudFront distribution ID and GitHub Actions role will be created by cicd module
+  frontend_bucket_name                = var.frontend_bucket_name
+  frontend_cloudfront_distribution_id = "" # Will be created by cicd module
+  github_actions_frontend_role_arn    = "" # Will be created by cicd module
+
+  # Secrets Manager
+  db_secrets          = var.db_secrets
+  smtp_secrets        = var.smtp_secrets
+  kakao_secrets       = var.kakao_secrets
+  elasticache_secrets = var.elasticache_secrets
 }
 
 # ============================================
@@ -206,7 +213,10 @@ module "monitoring" {
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
 
   grafana_namespace = "monitoring"
 
@@ -248,7 +258,7 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = true
+  enable_frontend        = var.enable_frontend
   frontend_bucket_name  = var.frontend_bucket_name
 
   # registry (GHCR)

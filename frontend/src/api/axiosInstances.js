@@ -2,24 +2,20 @@
  * 백엔드 5개 마이크로서비스별 Axios 인스턴스
  */
 import axios from "axios";
+import { CLOUDFRONT_URL, API_SERVICES } from "../config/apiConfig";
 
-// CloudFront URL을 통한 백엔드 API 호출
-// CloudFront Distribution: https://d82dq0ggv7fb.cloudfront.net
-// 각 서비스는 CloudFront의 Path Pattern을 통해 라우팅됨
-const CLOUDFRONT_URL =
-  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
-
+// 중앙화된 API 설정 사용
 const BASE_URLS = {
   // Account Service: /api/auth/*, /api/users/* → alb-account-origin
-  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || CLOUDFRONT_URL,
+  ACCOUNT: API_SERVICES.ACCOUNT,
   // Ticket Service: /api/tickets/* → alb-ticket-origin
-  TICKET: process.env.REACT_APP_TICKET_API_URL || CLOUDFRONT_URL,
+  TICKET: API_SERVICES.TICKET,
   // Trade Service: /api/trades/*, /api/deals/* → alb-trade-origin
-  TRADE: process.env.REACT_APP_TRADE_API_URL || CLOUDFRONT_URL,
+  TRADE: API_SERVICES.TRADE,
   // Chat Service: /api/chat/*, /ws/* → alb-chat-origin
-  CHAT: process.env.REACT_APP_CHAT_API_URL || CLOUDFRONT_URL,
+  CHAT: API_SERVICES.CHAT,
   // CS Service: /api/cs/*, /api/notices/*, /api/faqs/*, /api/inquiries/* → alb-cs-origin
-  CS: process.env.REACT_APP_CS_API_URL || CLOUDFRONT_URL,
+  CS: API_SERVICES.CS,
 };
 
 /**

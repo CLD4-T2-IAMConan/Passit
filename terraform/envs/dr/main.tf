@@ -38,6 +38,11 @@ module "network" {
   use_existing_vpc = var.use_existing_vpc
   existing_vpc_id  = var.existing_vpc_id
 
+  # Existing Subnet IDs (기존 VPC 사용 시)
+  existing_public_subnet_ids     = var.existing_public_subnet_ids
+  existing_private_subnet_ids    = var.existing_private_subnet_ids
+  existing_private_db_subnet_ids = var.existing_private_db_subnet_ids
+
   # New VPC Configuration
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
@@ -69,12 +74,22 @@ module "security" {
   # EKS Configuration
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
+  
+  # EKS OIDC Provider URL (EKS 모듈에서 받음, 없으면 빈 문자열)
+  # 순환 의존성 방지를 위해 try() 사용
+  eks_oidc_provider_url = try(module.eks.oidc_provider_url, "")
 
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # Secrets Manager
+  db_secrets          = var.db_secrets
+  smtp_secrets        = var.smtp_secrets
+  kakao_secrets       = var.kakao_secrets
+  elasticache_secrets = var.elasticache_secrets
 }
 
 # ============================================
@@ -197,6 +212,12 @@ module "monitoring" {
   account_id    = var.account_id
 
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
 
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
@@ -236,7 +257,7 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = true
+  enable_frontend      = var.enable_frontend
   frontend_bucket_name = var.frontend_bucket_name
 
   # registry (GHCR)

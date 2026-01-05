@@ -4,6 +4,7 @@
  */
 import { chatAPI } from "../api/axiosInstances";
 import { ENDPOINTS } from "../api/endpoints";
+import { API_SERVICES } from "../config/apiConfig";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
@@ -157,11 +158,7 @@ class ChatService {
    */
   connect(accessToken, onConnected, onError) {
     // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
-    const baseURL =
-      process.env.REACT_APP_CHAT_API_URL ||
-      process.env.REACT_APP_CLOUDFRONT_URL ||
-      "https://d82dq0ggv7fb.cloudfront.net";
-    const wsURL = `${baseURL}${ENDPOINTS.CHAT.WS_ENDPOINT}`;
+    const wsURL = `${API_SERVICES.CHAT}${ENDPOINTS.CHAT.WS_ENDPOINT}`;
 
     // SockJS 사용
     const socket = new SockJS(wsURL);

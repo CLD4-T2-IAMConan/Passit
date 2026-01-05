@@ -69,9 +69,16 @@ locals {
   
   vpc_id = local.should_use_existing_vpc ? data.aws_vpc.existing[0].id : aws_vpc.main[0].id
   
-  existing_public_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_public[0].ids : []
-  existing_private_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_private_app[0].ids : []
-  existing_private_db_subnet_ids = local.should_use_existing_vpc ? data.aws_subnets.existing_private_db[0].ids : []
+  # 변수로 제공된 서브넷 ID가 있으면 우선 사용, 없으면 태그 기반 자동 감지
+  existing_public_subnet_ids = local.should_use_existing_vpc ? (
+    length(var.existing_public_subnet_ids) > 0 ? var.existing_public_subnet_ids : data.aws_subnets.existing_public[0].ids
+  ) : []
+  existing_private_subnet_ids = local.should_use_existing_vpc ? (
+    length(var.existing_private_subnet_ids) > 0 ? var.existing_private_subnet_ids : data.aws_subnets.existing_private_app[0].ids
+  ) : []
+  existing_private_db_subnet_ids = local.should_use_existing_vpc ? (
+    length(var.existing_private_db_subnet_ids) > 0 ? var.existing_private_db_subnet_ids : data.aws_subnets.existing_private_db[0].ids
+  ) : []
 }
 
 # ============================================
