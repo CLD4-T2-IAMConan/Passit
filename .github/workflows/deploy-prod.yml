@@ -90,9 +90,23 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add service-*/helm/values-prod.yaml
-          git diff --staged --quiet || git commit -m "chore: update Helm values from Terraform outputs [skip ci]"
-          git push
+          # 각 서비스의 values-prod.yaml 파일을 명시적으로 추가
+          for file in service-account/helm/values-prod.yaml \
+                      service-ticket/helm/values-prod.yaml \
+                      service-trade/helm/values-prod.yaml \
+                      service-cs/helm/values-prod.yaml \
+                      service-chat/helm/values-prod.yaml; do
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+          # 변경사항이 있으면 커밋 및 푸시
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update Helm values from Terraform outputs [skip ci]"
+            git push
+          else
+            echo "ℹ️  No changes to commit"
+          fi
 
   trigger-argocd-sync:
     name: Trigger ArgoCD Sync
