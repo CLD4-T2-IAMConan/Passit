@@ -5,7 +5,7 @@
 #   backend "s3" {
 #     bucket         = "passit-terraform-state-dr"
 #     key            = "dr/terraform.tfstate"
-#     region         = "ap-northeast-1"
+#     region         = "ap-northeast-2"
 #     dynamodb_table = "passit-terraform-locks-dr"
 #   }
 # }
