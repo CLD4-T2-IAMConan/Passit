@@ -135,7 +135,9 @@ jobs:
     needs: [build-and-test]
 
     # DR 배포를 체크했으면 무조건 실행 및 develop과 main 브랜치 push 시 배포
-    if: ${{ github.event.inputs.deploy_dr == 'true' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) }}
+    if: |
+      github.event.inputs.deploy_dr == 'true' || 
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'))
 
     permissions:
       id-token: write
