@@ -180,12 +180,14 @@ jobs:
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
             echo "bucket_name=passit-prod-frontend-bucket" >> $GITHUB_OUTPUT
             echo "cf_dist_id=${{ secrets.CF_DIST_ID_PROD }}" >> $GITHUB_OUTPUT
+            echo "region=ap-northeast-2" >> $GITHUB_OUTPUT
           # 3. 개발 브랜치 자동 배포 (Dev)
           else
             echo "env=dev" >> $GITHUB_OUTPUT
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_OUTPUT
             echo "bucket_name=passit-dev-frontend-bucket" >> $GITHUB_OUTPUT
             echo "cf_dist_id=${{ secrets.CF_DIST_ID_DEV }}" >> $GITHUB_OUTPUT
+            echo "region=ap-northeast-2" >> $GITHUB_OUTPUT
           fi
 
       - name: Configure AWS credentials
