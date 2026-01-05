@@ -135,7 +135,9 @@ jobs:
     needs: [build-and-test]
 
     # develop과 main 브랜치 push 시 배포
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'))
 
     permissions:
       id-token: write
@@ -173,7 +175,7 @@ jobs:
             echo "cf_dist_id=${{ secrets.CF_DIST_ID_DR }}" >> $GITHUB_OUTPUT
             echo "region=ap-northeast-1" >> $GITHUB_OUTPUT
           # 2. 메인 브랜치 자동 배포 (Prod)
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "env=prod" >> $GITHUB_OUTPUT
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
             echo "bucket_name=passit-prod-frontend-bucket" >> $GITHUB_OUTPUT
@@ -190,7 +192,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ steps.env.outputs.aws_role }}
-          aws-region: ap-northeast-2
+          aws-region: ${{ steps.env.outputs.region }}
 
       - name: Deploy to S3
         run: |
