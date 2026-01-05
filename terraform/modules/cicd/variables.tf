@@ -140,6 +140,18 @@ variable "frontend_spa_fallback" {
   default = true
 }
 
+variable "alb_name" {
+  description = "ALB name for backend services (used to lookup DNS name dynamically)"
+  type        = string
+  default     = ""
+}
+
+variable "alb_dns_name" {
+  description = "ALB DNS name for backend services (optional fallback, if alb_name is not provided)"
+  type        = string
+  default     = ""
+}
+
 # ============================================
 # irsa.tf
 # ============================================

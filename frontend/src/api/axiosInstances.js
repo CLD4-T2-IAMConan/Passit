@@ -3,13 +3,23 @@
  */
 import axios from "axios";
 
-// 환경변수 또는 ALB URL 설정
+// CloudFront URL을 통한 백엔드 API 호출
+// CloudFront Distribution: https://d82dq0ggv7fb.cloudfront.net
+// 각 서비스는 CloudFront의 Path Pattern을 통해 라우팅됨
+const CLOUDFRONT_URL =
+  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+
 const BASE_URLS = {
-  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com",
-  TICKET: process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com",
-  TRADE: process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com",
-  CHAT: process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com",
-  CS: process.env.REACT_APP_CS_API_URL || "http://cs-service.passit.com",
+  // Account Service: /api/auth/*, /api/users/* → alb-account-origin
+  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || CLOUDFRONT_URL,
+  // Ticket Service: /api/tickets/* → alb-ticket-origin
+  TICKET: process.env.REACT_APP_TICKET_API_URL || CLOUDFRONT_URL,
+  // Trade Service: /api/trades/*, /api/deals/* → alb-trade-origin
+  TRADE: process.env.REACT_APP_TRADE_API_URL || CLOUDFRONT_URL,
+  // Chat Service: /api/chat/*, /ws/* → alb-chat-origin
+  CHAT: process.env.REACT_APP_CHAT_API_URL || CLOUDFRONT_URL,
+  // CS Service: /api/cs/*, /api/notices/*, /api/faqs/*, /api/inquiries/* → alb-cs-origin
+  CS: process.env.REACT_APP_CS_API_URL || CLOUDFRONT_URL,
 };
 
 /**

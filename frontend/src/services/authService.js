@@ -45,16 +45,45 @@ class AuthService {
    */
   async login(email, password) {
     const response = await accountAPI.post(ENDPOINTS.AUTH.LOGIN, { email, password });
-    const { data } = response.data;
+
+    // 백엔드 응답 구조: ApiResponse<T>
+    // { success: true, data: { accessToken, refreshToken, userId, ... }, message: "..." }
+    // axios는 response.data에 JSON 응답을 파싱하므로:
+    // response.data = { success: true, data: { ... }, message: "..." }
+
+    if (!response || !response.data) {
+      throw new Error("로그인 응답 데이터가 없습니다");
+    }
+
+    // ApiResponse 구조에서 data 필드 추출
+    const apiResponse = response.data;
+    let data = null;
+
+    if (apiResponse.data) {
+      // 정상 구조: { success: true, data: { accessToken, ... }, message: "..." }
+      data = apiResponse.data;
+    } else if (apiResponse.success === false) {
+      // 에러 응답: { success: false, message: "..." }
+      throw new Error(apiResponse.message || "로그인에 실패했습니다");
+    } else {
+      // 예외 케이스: data 필드가 없는 경우
+      console.warn("예상치 못한 응답 구조:", apiResponse);
+      // 직접 접근 시도 (하위 호환성)
+      if (apiResponse.accessToken) {
+        data = apiResponse;
+      } else {
+        throw new Error("로그인 응답 형식이 올바르지 않습니다");
+      }
+    }
 
     // 토큰과 사용자 정보를 localStorage에 저장
-    if (data.accessToken) {
+    if (data && data.accessToken) {
       localStorage.setItem("accessToken", data.accessToken);
     }
-    if (data.refreshToken) {
+    if (data && data.refreshToken) {
       localStorage.setItem("refreshToken", data.refreshToken);
     }
-    if (data.userId) {
+    if (data && data.userId) {
       const userInfo = {
         userId: data.userId,
         email: data.email,
@@ -66,7 +95,7 @@ class AuthService {
       localStorage.setItem("user", JSON.stringify(userInfo));
     }
 
-    return data;
+    return data || {};
   }
 
   /**
@@ -105,7 +134,11 @@ class AuthService {
    * @returns {string}
    */
   getKakaoLoginUrl() {
-    const baseURL = process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com";
+    // CloudFront를 통한 Account Service 접근
+    const baseURL =
+      process.env.REACT_APP_ACCOUNT_API_URL ||
+      process.env.REACT_APP_CLOUDFRONT_URL ||
+      "https://d82dq0ggv7fb.cloudfront.net";
     return `${baseURL}${ENDPOINTS.AUTH.KAKAO}`;
   }
 

@@ -34,8 +34,10 @@ const TicketEditPage = () => {
 
         // 기존 이미지 미리보기
         if (ticket.image1) {
-          const ticketBaseURL =
-            process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com";
+          // CloudFront를 통한 Ticket Service 접근
+          const cloudfrontURL =
+            process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
+          const ticketBaseURL = process.env.REACT_APP_TICKET_API_URL || cloudfrontURL;
           setImagePreview(`${ticketBaseURL}${ticket.image1}`);
         }
       } catch (err) {

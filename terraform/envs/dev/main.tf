@@ -73,6 +73,14 @@ module "security" {
   region       = var.region
   project_name = var.project_name
 
+  # Secrets Manager variables
+  db_secrets         = var.db_secrets
+  smtp_secrets       = var.smtp_secrets
+  kakao_secrets      = var.kakao_secrets
+  admin_secrets      = var.admin_secrets
+  app_secrets        = var.app_secrets
+  elasticache_secrets = var.elasticache_secrets
+
   vpc_id = module.network.vpc_id
 
   # EKS Configuration
@@ -91,9 +99,9 @@ module "security" {
   github_repo = var.github_repo
 
   # github actions IAM에 필요
-  frontend_bucket_name              = module.cicd.frontend_bucket_name
+  frontend_bucket_name                = module.cicd.frontend_bucket_name
   frontend_cloudfront_distribution_id = module.cicd.frontend_cloudfront_distribution_id
-  github_actions_frontend_role_arn  = module.cicd.github_actions_frontend_role_arn
+  github_actions_frontend_role_arn    = module.cicd.github_actions_frontend_role_arn
 }
 
 # ============================================
@@ -119,6 +127,15 @@ module "eks" {
   node_min_size       = var.node_min_size
   node_desired_size   = var.node_desired_size
   node_max_size       = var.node_max_size
+
+  # Access entries - principal_arn은 동적으로 생성 (account_id 자동 감지)
+  # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
+  access_entries = var.eks_access_entries != null ? {
+    for k, v in var.eks_access_entries : k => {
+      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+      policy_associations = v.policy_associations
+    }
+  } : {}
 }
 
 # ============================================
@@ -201,6 +218,7 @@ module "data" {
 
   # S3 Configuration
   s3_kms_key_id = module.security.s3_kms_key_id
+  s3_buckets    = var.s3_buckets
 
   # RDS Configuration
   db_secret_name      = ""
@@ -217,11 +235,10 @@ module "data" {
   passit_user_name       = var.passit_user_name
   passit_user_password   = var.passit_user_password
   bastion_instance_id    = module.bastion.bastion_instance_id
-
   # Existing Resources
-  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name       = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name  = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
@@ -236,11 +253,14 @@ module "monitoring" {
   cluster_name  = module.eks.cluster_name
   region        = var.region
   account_id    = local.account_id  # 자동 감지된 계정 ID 사용
-
+  tags          = var.tags
 
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   depends_on = [module.eks]
+
+  grafana_namespace = "monitoring"
 
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
@@ -267,9 +287,9 @@ module "cicd" {
   owner        = var.owner
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (shared에서 만든 걸 사용)
   github_oidc_provider_arn = try(data.terraform_remote_state.shared.outputs.github_oidc_provider_arn, "")
@@ -281,7 +301,8 @@ module "cicd" {
 
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = true
-  frontend_bucket_name  = var.frontend_bucket_name
+  frontend_bucket_name   = var.frontend_bucket_name
+  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -291,8 +312,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile       = var.s3_bucket_profile
-  s3_bucket_ticket        = var.s3_bucket_ticket
+  s3_bucket_profile = var.s3_bucket_profile
+  s3_bucket_ticket  = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
