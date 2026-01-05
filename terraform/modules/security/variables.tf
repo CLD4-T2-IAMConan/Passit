@@ -40,6 +40,12 @@ variable "eks_cluster_name" {
   default     = ""
 }
 
+variable "eks_oidc_provider_url" {
+  description = "EKS OIDC Provider URL (optional, if provided, will be used instead of looking up from cluster)"
+  type        = string
+  default     = ""
+}
+
 variable "rds_security_group_id" {
   description = "RDS Security Group ID (optional, for cross-references)"
   type        = string
@@ -71,15 +77,18 @@ variable "github_repo" {
 }
 
 variable "frontend_bucket_name" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "frontend_cloudfront_distribution_id" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "github_actions_frontend_role_arn" {
-  type = string
+  type    = string
+  default = ""
 }
 
 # ============================================

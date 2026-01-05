@@ -160,15 +160,18 @@ data "aws_iam_policy_document" "github_actions" {
     ]
   }
 
-  statement {
-    sid    = "AllowCloudFrontInvalidation"
-    effect = "Allow"
-    actions = [
-      "cloudfront:CreateInvalidation"
-    ]
-    resources = [
-      "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
-    ]
+  dynamic "statement" {
+    for_each = var.frontend_cloudfront_distribution_id != null && var.frontend_cloudfront_distribution_id != "" ? [1] : []
+    content {
+      sid    = "AllowCloudFrontInvalidation"
+      effect = "Allow"
+      actions = [
+        "cloudfront:CreateInvalidation"
+      ]
+      resources = [
+        "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
+      ]
+    }
   }
 
   statement {
