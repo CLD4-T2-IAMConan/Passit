@@ -69,9 +69,23 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add service-*/helm/values-dr.yaml
-          git commit -m "chore: update DR Helm values [skip ci]"
-          git push
+          # 각 서비스의 values-dr.yaml 파일을 명시적으로 추가
+          for file in service-account/helm/values-dr.yaml \
+                      service-ticket/helm/values-dr.yaml \
+                      service-trade/helm/values-dr.yaml \
+                      service-cs/helm/values-dr.yaml \
+                      service-chat/helm/values-dr.yaml; do
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+          # 변경사항이 있으면 커밋 및 푸시
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update DR Helm values [skip ci]"
+            git push
+          else
+            echo "ℹ️  No changes to commit"
+          fi
 
   trigger-argocd-sync:
     name: Trigger ArgoCD Sync
