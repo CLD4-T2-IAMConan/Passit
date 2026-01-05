@@ -160,15 +160,19 @@ data "aws_iam_policy_document" "github_actions" {
     ]
   }
 
-  statement {
-    sid    = "AllowCloudFrontInvalidation"
-    effect = "Allow"
-    actions = [
-      "cloudfront:CreateInvalidation"
-    ]
-    resources = [
-      "arn:aws:cloudfront::*:distribution/${var.frontend_cloudfront_distribution_id}"
-    ]
+  dynamic "statement" {
+    for_each = var.frontend_cloudfront_distribution_id != null && var.frontend_cloudfront_distribution_id != "" ? [1] : []
+    content {
+      sid    = "AllowCloudFrontInvalidation"
+      effect = "Allow"
+      actions = [
+        "cloudfront:CreateInvalidation"
+      ]
+      # CloudFront는 리소스 레벨 권한을 지원하지 않으므로 * 사용
+      resources = [
+        "*"
+      ]
+    }
   }
 
   statement {

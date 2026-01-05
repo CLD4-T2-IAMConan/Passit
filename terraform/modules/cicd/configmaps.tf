@@ -6,8 +6,6 @@
 
 # Ticket Service AWS Configuration
 resource "kubernetes_config_map_v1" "ticket_aws_config" {
-  count = var.sns_ticket_deal_events_queue_url != "" ? 1 : 0
-
   metadata {
     name      = "ticket-aws-config"
     namespace = "ticket"
@@ -15,8 +13,8 @@ resource "kubernetes_config_map_v1" "ticket_aws_config" {
 
   data = {
     AWS_REGION                       = var.region
-    SNS_TICKET_EVENTS_TOPIC_ARN      = var.sns_ticket_events_topic_arn
-    SQS_TICKET_DEAL_EVENTS_QUEUE_URL = var.sns_ticket_deal_events_queue_url
+    SNS_TICKET_EVENTS_TOPIC_ARN      = try(var.sns_ticket_events_topic_arn, "")
+    SQS_TICKET_DEAL_EVENTS_QUEUE_URL = try(var.sns_ticket_deal_events_queue_url, "")
   }
 
   depends_on = [kubernetes_namespace_v1.services]
@@ -24,8 +22,6 @@ resource "kubernetes_config_map_v1" "ticket_aws_config" {
 
 # Chat Service AWS Configuration
 resource "kubernetes_config_map_v1" "chat_aws_config" {
-  count = var.sns_chat_deal_events_queue_url != "" ? 1 : 0
-
   metadata {
     name      = "chat-aws-config"
     namespace = "chat"
@@ -33,7 +29,7 @@ resource "kubernetes_config_map_v1" "chat_aws_config" {
 
   data = {
     AWS_REGION                     = var.region
-    SQS_CHAT_DEAL_EVENTS_QUEUE_URL = var.sns_chat_deal_events_queue_url
+    SQS_CHAT_DEAL_EVENTS_QUEUE_URL = try(var.sns_chat_deal_events_queue_url, "")
   }
 
   depends_on = [kubernetes_namespace_v1.services]
@@ -41,8 +37,6 @@ resource "kubernetes_config_map_v1" "chat_aws_config" {
 
 # Trade Service AWS Configuration
 resource "kubernetes_config_map_v1" "trade_aws_config" {
-  count = var.sns_trade_ticket_events_queue_url != "" ? 1 : 0
-
   metadata {
     name      = "trade-aws-config"
     namespace = "trade"
@@ -50,10 +44,10 @@ resource "kubernetes_config_map_v1" "trade_aws_config" {
 
   data = {
     AWS_REGION                        = var.region
-    SNS_DEAL_EVENTS_TOPIC_ARN         = var.sns_deal_events_topic_arn
-    SNS_TICKET_EVENTS_TOPIC_ARN       = var.sns_ticket_events_topic_arn
-    SNS_PAYMENT_EVENTS_TOPIC_ARN      = var.sns_payment_events_topic_arn
-    SQS_TRADE_TICKET_EVENTS_QUEUE_URL = var.sns_trade_ticket_events_queue_url
+    SNS_DEAL_EVENTS_TOPIC_ARN         = try(var.sns_deal_events_topic_arn, "")
+    SNS_TICKET_EVENTS_TOPIC_ARN       = try(var.sns_ticket_events_topic_arn, "")
+    SNS_PAYMENT_EVENTS_TOPIC_ARN      = try(var.sns_payment_events_topic_arn, "")
+    SQS_TRADE_TICKET_EVENTS_QUEUE_URL = try(var.sns_trade_ticket_events_queue_url, "")
   }
 
   depends_on = [kubernetes_namespace_v1.services]

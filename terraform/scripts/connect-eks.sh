@@ -47,11 +47,24 @@ if [ ! -d ".terraform" ]; then
     fi
 fi
 
+# AWS 프로필 설정 (환경에 따라 자동 선택)
+if [ -z "$AWS_PROFILE" ]; then
+    case "$ENVIRONMENT" in
+        dev|prod|dr)
+            export AWS_PROFILE=passit
+            echo "AWS_PROFILE을 'passit'으로 설정했습니다."
+            ;;
+        *)
+            echo "Warning: AWS_PROFILE이 설정되지 않았습니다. 기본 프로필을 사용합니다."
+            ;;
+    esac
+fi
+
 # AWS 자격 증명 확인
 if ! aws sts get-caller-identity > /dev/null 2>&1; then
     echo "Error: AWS 자격 증명이 설정되지 않았습니다."
     echo "다음 중 하나를 수행하세요:"
-    echo "  1. AWS_PROFILE 환경 변수 설정"
+    echo "  1. AWS_PROFILE 환경 변수 설정 (예: export AWS_PROFILE=passit)"
     echo "  2. aws configure 실행"
     echo "  3. AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY 설정"
     exit 1

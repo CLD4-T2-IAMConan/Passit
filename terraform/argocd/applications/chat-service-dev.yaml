@@ -33,9 +33,10 @@ spec:
             alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
             alb.ingress.kubernetes.io/backend-protocol: HTTP
           hosts:
-            - host: chat-service.passit.com
-              paths:
-                - path: /
+            - paths:
+                - path: /api/chat
+                  pathType: Prefix
+                - path: /ws
                   pathType: Prefix
           tls: []
 
