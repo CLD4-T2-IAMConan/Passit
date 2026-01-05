@@ -87,12 +87,20 @@ module "security" {
   # 주의: EKS 클러스터가 생성되기 전에는 빈 문자열("")로 설정해야 함
   # EKS 클러스터 생성 후 terraform.tfvars에서 클러스터 이름으로 업데이트
   eks_cluster_name = var.eks_cluster_name
+  
+  # EKS OIDC Provider URL (EKS 모듈에서 받음, 없으면 빈 문자열)
+  # 순환 의존성 방지를 위해 try() 사용
+  eks_oidc_provider_url = try(module.eks.oidc_provider_url, "")
 
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # EKS Node Security Group ID (for ElastiCache and RDS access)
+  # EKS 모듈이 생성한 실제 Node Security Group 사용
+  eks_node_security_group_id = try(module.eks.node_security_group_id, "")
 
   # GitHub OIDC Configuration
   github_org  = var.github_org
@@ -258,7 +266,10 @@ module "monitoring" {
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
 
   grafana_namespace = "monitoring"
 
@@ -300,9 +311,10 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = true
+  # ALB가 EKS Ingress에서 생성된 후 enable_frontend=true로 변경
+  enable_frontend        = var.enable_frontend
   frontend_bucket_name   = var.frontend_bucket_name
-  alb_name              = "passit-dev-alb" # ALB 이름으로 DNS를 동적으로 가져옴
+  alb_name              = "passit-dev-alb"
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret

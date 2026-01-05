@@ -17,8 +17,9 @@ module "eks" {
   enable_irsa = true
 
   # Cluster creator admin permissions
-  # Disabled because access entries are already configured for team members
-  enable_cluster_creator_admin_permissions = false
+  # Enabled to allow Terraform to manage Kubernetes resources
+  # Note: In production, consider using access_entries instead for better security
+  enable_cluster_creator_admin_permissions = true
 
   # Access entries for additional users
   # principal_arn은 var.access_entries에서 전달받음 (기본값: 빈 객체)

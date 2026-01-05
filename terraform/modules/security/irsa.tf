@@ -7,7 +7,20 @@
 # 
 # Note: destroy 시 클러스터가 이미 삭제되었을 수 있으므로, 
 # 이 data source는 destroy 시 무시됩니다 (state에서 제거 필요).
+# 
+# 주의: 클러스터가 아직 생성되지 않았거나 존재하지 않으면 이 data source는 실패합니다.
+# 
+# 해결 방법:
+# 1. 클러스터가 없으면: eks_cluster_name을 빈 문자열("")로 설정
+# 2. 클러스터가 있으면: eks_cluster_name을 설정하고 클러스터 조회 시도
+#
+# 주의: 
+# - eks_oidc_provider_url은 리소스 속성에 의존하므로 count 조건에서 사용할 수 없습니다.
+# - 클러스터가 아직 생성되지 않았으면 eks_cluster_name을 빈 문자열로 설정하세요.
+# - 클러스터가 생성된 후에는 eks_cluster_name을 설정하고 다시 실행하세요.
 data "aws_eks_cluster" "main" {
+  # eks_cluster_name이 설정되어 있으면 클러스터 조회 시도
+  # 클러스터가 없으면 이 data source는 실패하므로, 클러스터 생성 전에는 eks_cluster_name을 빈 문자열로 설정
   count = var.eks_cluster_name != "" ? 1 : 0
   name  = var.eks_cluster_name
 }
@@ -17,9 +30,20 @@ data "aws_eks_cluster" "main" {
 # 
 # Note: destroy 시 클러스터가 이미 삭제되었을 수 있으므로,
 # 이 data source는 destroy 시 무시됩니다 (state에서 제거 필요).
+# 
+# 주의: EKS 클러스터가 생성되고 OIDC Provider가 활성화된 후에만 사용 가능
+# 클러스터가 아직 생성되지 않았거나 OIDC Provider가 없으면 이 data source는 실패할 수 있음
+# 
+# 우선순위:
+# 1. var.eks_oidc_provider_url이 제공되면 그것을 사용 (EKS 모듈 output에서 받음)
+# 2. 그렇지 않으면 클러스터에서 조회
+locals {
+  oidc_provider_url = var.eks_oidc_provider_url != "" ? var.eks_oidc_provider_url : try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "")
+}
+
 data "aws_iam_openid_connect_provider" "eks" {
-  count = var.eks_cluster_name != "" ? 1 : 0
-  url   = try(data.aws_eks_cluster.main[0].identity[0].oidc[0].issuer, "")
+  count = var.eks_cluster_name != "" && local.oidc_provider_url != "" ? 1 : 0
+  url   = local.oidc_provider_url
 }
 
 # ============================================

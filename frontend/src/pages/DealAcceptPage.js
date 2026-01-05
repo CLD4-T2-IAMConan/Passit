@@ -11,9 +11,8 @@ import DealCancelModal from "../components/Ticket/DealCancelModal";
 import DealConfirmModal from "../components/Ticket/DealConfirmModal";
 
 // CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
-const CLOUDFRONT_URL =
-  process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
-const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || CLOUDFRONT_URL;
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE;
 
 const DealAcceptPage = () => {
   // URL에서 deal_id를 가져옵니다.

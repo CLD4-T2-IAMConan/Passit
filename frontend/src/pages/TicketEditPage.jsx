@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, TextField, Button, Stack, Alert } from "@mui/material";
 import ticketService from "../api/services/ticketService";
+import { API_SERVICES } from "../config/apiConfig";
 
 const TicketEditPage = () => {
   const { ticketId } = useParams();
@@ -35,10 +36,7 @@ const TicketEditPage = () => {
         // 기존 이미지 미리보기
         if (ticket.image1) {
           // CloudFront를 통한 Ticket Service 접근
-          const cloudfrontURL =
-            process.env.REACT_APP_CLOUDFRONT_URL || "https://d82dq0ggv7fb.cloudfront.net";
-          const ticketBaseURL = process.env.REACT_APP_TICKET_API_URL || cloudfrontURL;
-          setImagePreview(`${ticketBaseURL}${ticket.image1}`);
+          setImagePreview(`${API_SERVICES.TICKET}${ticket.image1}`);
         }
       } catch (err) {
         setError("티켓 정보를 불러올 수 없습니다.");

@@ -28,8 +28,20 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "eks_node_security_group_id" {
+  description = "EKS Node Security Group ID (for ElastiCache and RDS access). If not provided, uses eks_worker security group."
+  type        = string
+  default     = ""
+}
+
 variable "eks_cluster_name" {
   description = "EKS Cluster name for IRSA"
+  type        = string
+  default     = ""
+}
+
+variable "eks_oidc_provider_url" {
+  description = "EKS OIDC Provider URL (optional, if provided, will be used instead of looking up from cluster)"
   type        = string
   default     = ""
 }
@@ -65,15 +77,18 @@ variable "github_repo" {
 }
 
 variable "frontend_bucket_name" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "frontend_cloudfront_distribution_id" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "github_actions_frontend_role_arn" {
-  type = string
+  type    = string
+  default = ""
 }
 
 # ============================================

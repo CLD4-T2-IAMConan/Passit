@@ -90,7 +90,7 @@ resource "aws_security_group" "rds" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.eks_worker.id]
+    security_groups = var.eks_node_security_group_id != "" ? [var.eks_node_security_group_id] : [aws_security_group.eks_worker.id]
   }
 
   egress {
@@ -123,7 +123,7 @@ resource "aws_security_group" "elasticache" {
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
-    security_groups = [aws_security_group.eks_worker.id]
+    security_groups = var.eks_node_security_group_id != "" ? [var.eks_node_security_group_id] : [aws_security_group.eks_worker.id]
   }
 
   egress {
