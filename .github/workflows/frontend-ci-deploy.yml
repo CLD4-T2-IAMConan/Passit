@@ -9,6 +9,14 @@ on:
     branches: [main, develop]
     paths: ["frontend/**"]
 
+  workflow_dispatch: # dr 환경을 위해 수동 배포 추가
+    inputs:
+      deploy_dr:
+        description: 'Deploy to DR environment (Tokyo)'
+        required: true
+        type: boolean
+        default: false
+
 permissions:
   contents: read
   issues: write
@@ -157,11 +165,20 @@ jobs:
       - name: Set environment variables
         id: env
         run: |
+          # 1. DR 수동 배포인 경우
+          if [ "${{ github.event.inputs.deploy_dr }}" == "true" ]; then
+            echo "env=dr" >> $GITHUB_OUTPUT
+            echo "aws_role=${{ secrets.AWS_ROLE_ARN_DR }}" >> $GITHUB_OUTPUT
+            echo "bucket_name=passit-dr-frontend-bucket" >> $GITHUB_OUTPUT
+            echo "cf_dist_id=${{ secrets.CF_DIST_ID_DR }}" >> $GITHUB_OUTPUT
+            echo "region=ap-northeast-1" >> $GITHUB_OUTPUT
+          # 2. 메인 브랜치 자동 배포 (Prod)
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "env=prod" >> $GITHUB_OUTPUT
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
             echo "bucket_name=passit-prod-frontend-bucket" >> $GITHUB_OUTPUT
             echo "cf_dist_id=${{ secrets.CF_DIST_ID_PROD }}" >> $GITHUB_OUTPUT
+          # 3. 개발 브랜치 자동 배포 (Dev)
           else
             echo "env=dev" >> $GITHUB_OUTPUT
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_OUTPUT
