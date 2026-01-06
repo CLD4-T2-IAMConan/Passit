@@ -321,6 +321,7 @@ module "cicd" {
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = var.enable_frontend
   frontend_bucket_name  = var.frontend_bucket_name
+  alb_name              = var.alb_name
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
