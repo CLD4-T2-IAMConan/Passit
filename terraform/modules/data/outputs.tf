@@ -19,27 +19,29 @@ output "rds_reader_endpoint" {
 
 output "valkey_replication_group_id" {
   description = "ElastiCache Replication Group ID"
-  value       = aws_elasticache_replication_group.valkey.replication_group_id
+  # aws_elasticache_replication_group.valkey[0] 로 접근하고,
+  # 없으면(count=0) 빈 문자열을 반환합니다.
+  value       = try(aws_elasticache_replication_group.valkey[0].replication_group_id, "")
 }
 
 output "valkey_primary_endpoint" {
   description = "ElastiCache primary endpoint address"
-  value       = aws_elasticache_replication_group.valkey.primary_endpoint_address
+  value       = try(aws_elasticache_replication_group.valkey[0].primary_endpoint_address, "")
 }
 
 output "valkey_port" {
   description = "ElastiCache port"
-  value       = aws_elasticache_replication_group.valkey.port
+  value       = try(aws_elasticache_replication_group.valkey[0].port, null)
 }
 
 output "valkey_reader_endpoint" {
   description = "ElastiCache reader endpoint address"
-  value       = aws_elasticache_replication_group.valkey.reader_endpoint_address
+  value       = try(aws_elasticache_replication_group.valkey[0].reader_endpoint_address, "")
 }
 
 output "valkey_secret_arn" {
   description = "ARN of the Secrets Manager secret containing Valkey connection info"
-  value       = aws_secretsmanager_secret.valkey.arn
+  value       = try(aws_secretsmanager_secret.valkey[0].arn, "")
 }
 
 # ============================================

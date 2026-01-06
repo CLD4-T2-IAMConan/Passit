@@ -69,7 +69,7 @@ module "security" {
   # EKS Configuration
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
-  
+
   # EKS Node Security Group ID (for RDS and ElastiCache access)
   eks_node_security_group_id = try(module.eks.node_security_group_id, "")
 
@@ -99,6 +99,7 @@ module "security" {
 module "eks" {
   source = "../../modules/eks"
 
+  region       = var.region
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -152,14 +153,25 @@ module "autoscaling" {
 # ============================================
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
+resource "aws_rds_global_cluster" "this" {
+  global_cluster_identifier = "${var.project_name}-global-db"
+  engine                    = "aurora-mysql"
+  engine_version            = "8.0.mysql_aurora.3.08.2"
+  database_name             = "passit" # 초기 생성 시에만 필요
+  storage_encrypted         = true
+}
+
+
 module "data" {
   source = "../../modules/data"
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  team         = var.team
-  owner        = var.owner
+  project_name      = var.project_name
+  environment       = var.environment
+  is_dr_region      = false
+  region            = var.region
+  team              = var.team
+  owner             = var.owner
+  global_cluster_id = aws_rds_global_cluster.this.id
 
   # Network Configuration
   vpc_id                = local.vpc_id
@@ -199,6 +211,37 @@ module "data" {
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
+module "data_tokyo" {
+  source = "../../modules/data"
+
+  providers = {
+    aws = aws.tokyo
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+  region       = "ap-northeast-1"
+  team         = var.team
+  owner        = var.owner
+
+  is_dr_region       = true
+  global_cluster_id  = aws_rds_global_cluster.this.id
+  create_passit_user = false
+  create_s3          = false
+  create_elasticache = false
+
+  vpc_id                       = data.aws_vpc.tokyo_vpc.id
+  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
+  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg.id
+
+  # Security Groups
+  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg.id
+  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg.id
+
+  # ElastiCache/RDS 상세 설정 (서울과 동일하게 유지하거나 조정)
+  rds_instance_class = var.rds_instance_class # 동일하게 r6g.large 등 사용
+}
+
 # ============================================
 # Monitoring Module
 # ============================================
@@ -225,6 +268,20 @@ module "monitoring" {
 
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
+
+
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
+
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+
+  depends_on = [module.eks]
 }
 
 # ============================================
@@ -246,6 +303,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
+  vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name       = module.eks.cluster_name
@@ -263,6 +321,7 @@ module "cicd" {
   # Frontend CD (S3 / CloudFront)
   enable_frontend        = var.enable_frontend
   frontend_bucket_name  = var.frontend_bucket_name
+  alb_name              = var.alb_name
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -274,7 +333,7 @@ module "cicd" {
   # irsa (서비스들)
   s3_bucket_profile       = var.s3_bucket_profile
   s3_bucket_ticket        = var.s3_bucket_ticket
-  
+
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
   secret_elasticache_arn = module.security.elasticache_secret_arn
