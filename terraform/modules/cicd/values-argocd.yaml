@@ -30,7 +30,7 @@ configs:
   cm:
     # Enable in-cluster deployment
     cluster.inClusterEnabled: "true"
-    url: http://${alb_dns_name}
+    # url: http://${alb_dns_name}
 
 repoServer:
   dnsPolicy: ClusterFirst
