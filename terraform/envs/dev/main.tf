@@ -271,30 +271,22 @@ module "monitoring" {
   tags          = var.tags
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
-  oidc_provider_url = module.eks.oidc_provider_url
 
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
-  depends_on = [
-    module.eks,
-    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
-  ]
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+  # prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  # prometheus_namespace            = "monitoring"
+  # prometheus_service_account_name = "prometheus-agent"
 
   depends_on = [
     module.eks,
     module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
   ]
+
+  # log_retention_days          = var.log_retention_days
+  # application_error_threshold = var.application_error_threshold
+  # alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   grafana_namespace = "monitoring"
 
-  grafana_admin_user = var.grafana_admin_user
-  grafana_admin_password = var.grafana_admin_password
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 }
@@ -318,7 +310,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
-  vpc_id       = var.vpc_cidr
+  # vpc_id       = var.vpc_cidr
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
@@ -385,9 +377,4 @@ module "sns" {
   team         = var.team
   owner        = var.owner
   kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
-}
-
-import {
-  to = module.eks.module.eks.aws_eks_access_entry.this["cluster_creator"]
-  id = "passit-dev-eks:arn:aws:iam::727646470302:user/t2-daeun"
 }

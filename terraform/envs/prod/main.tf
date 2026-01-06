@@ -281,7 +281,6 @@ module "monitoring" {
   application_error_threshold = var.application_error_threshold
   alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
-  depends_on = [module.eks]
 }
 
 # ============================================
