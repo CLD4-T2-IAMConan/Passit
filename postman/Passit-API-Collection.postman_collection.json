@@ -1,0 +1,1581 @@
+{
+	"info": {
+		"_postman_id": "passit-api-collection",
+		"name": "Passit API Collection",
+		"description": "Passit 마이크로서비스 API 테스트 컬렉션\n\n주요 플로우:\n1. 인증 (Auth) - 회원가입/로그인\n2. 티켓 (Ticket) - 티켓 조회/생성\n3. 거래 (Trade) - 거래 요청/수락\n4. 채팅 (Chat) - 채팅방 생성/메시지\n5. 고객지원 (CS) - 공지사항/FAQ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Auth - 인증",
+			"item": [
+				{
+					"name": "회원가입",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.userId) {",
+									"        pm.environment.set(\"user_id\", jsonData.data.userId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test1234!\",\n  \"name\": \"테스트 사용자\",\n  \"phone\": \"010-1234-5678\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/signup",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "로그인",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data) {",
+									"        pm.environment.set(\"access_token\", jsonData.data.accessToken || jsonData.data.token);",
+									"        pm.environment.set(\"refresh_token\", jsonData.data.refreshToken || \"\");",
+									"        if (jsonData.data.userId) {",
+									"            pm.environment.set(\"user_id\", jsonData.data.userId);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test1234!\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/login",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "내 정보 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{account_service_url}}/api/users/me",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "토큰 갱신",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data) {",
+									"        pm.environment.set(\"access_token\", jsonData.data.accessToken || jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/refresh",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "이메일 인증 코드 전송",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/send-verification-code",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"send-verification-code"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "이메일 인증 코드 검증",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"code\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/verify-email",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"verify-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "로그아웃",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{account_service_url}}/api/auth/logout",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1-1. User - 사용자",
+			"item": [
+				{
+					"name": "내 정보 수정",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"수정된 이름\",\n  \"phone\": \"010-9999-9999\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/users/me",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "내 계정 삭제 (탈퇴)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{account_service_url}}/api/users/me",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "비밀번호 변경",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"OldPassword123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{account_service_url}}/api/users/me/password",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "1-2. Activity - 활동 내역",
+			"item": [
+				{
+					"name": "내 활동 내역 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{account_service_url}}/api/activities/me?page=0&size=20",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"activities",
+								"me"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "활동 내역 통계",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{account_service_url}}/api/activities/me/stats",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"api",
+								"activities",
+								"me",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Ticket - 티켓",
+			"item": [
+				{
+					"name": "티켓 목록 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/tickets?page=0&size=10",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"tickets"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "티켓 상세 조회",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set(\"ticket_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/tickets/{{ticket_id}}",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticket_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "티켓 생성 (판매자)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set(\"ticket_id\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"테스트 티켓\",\n  \"description\": \"테스트 티켓 설명\",\n  \"price\": 50000,\n  \"quantity\": 2,\n  \"eventDate\": \"2024-12-31T19:00:00\",\n  \"venue\": \"올림픽공원\",\n  \"category\": \"CONCERT\"\n}"
+						},
+						"url": {
+							"raw": "{{ticket_service_url}}/api/sellers/tickets",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"sellers",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "내 티켓 목록 (판매자)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/sellers/tickets?page=0&size=10",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"sellers",
+								"tickets"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "티켓 수정",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{ticket_service_url}}/api/sellers/tickets/{{ticket_id}}",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"sellers",
+								"tickets",
+								"{{ticket_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "티켓 삭제",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/sellers/tickets/{{ticket_id}}",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"sellers",
+								"tickets",
+								"{{ticket_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "티켓 상태 변경",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/tickets/{{ticket_id}}/status/SOLD",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticket_id}}",
+								"status",
+								"SOLD"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "찜하기 추가/제거",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/api/tickets/{{ticket_id}}/favorite",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticket_id}}",
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Trade - 거래",
+			"item": [
+				{
+					"name": "거래 요청",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.dealId) {",
+									"        pm.environment.set(\"deal_id\", jsonData.data.dealId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ticketId\": {{ticket_id}},\n  \"quantity\": 1,\n  \"message\": \"거래 요청합니다\"\n}"
+						},
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/request",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "거래 상세 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/{{deal_id}}/detail",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"{{deal_id}}",
+								"detail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "거래 수락",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/{{deal_id}}/accept",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"{{deal_id}}",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "거래 거절",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"거래 거절 사유\"\n}"
+						},
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/{{deal_id}}/reject",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"{{deal_id}}",
+								"reject"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "거래 확정",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/{{deal_id}}/confirm",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"{{deal_id}}",
+								"confirm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "거래 취소",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/api/deals/{{deal_id}}/cancel?buyerId={{user_id}}",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"deals",
+								"{{deal_id}}",
+								"cancel"
+							],
+							"query": [
+								{
+									"key": "buyerId",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3-1. Payment - 결제",
+			"item": [
+				{
+					"name": "결제 정보 상세 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/api/payments/{{payment_id}}/detail?currentUserId={{user_id}}",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"{{payment_id}}",
+								"detail"
+							],
+							"query": [
+								{
+									"key": "currentUserId",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "결제 준비",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/api/payments/{{payment_id}}/prepare?currentUserId={{user_id}}",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"{{payment_id}}",
+								"prepare"
+							],
+							"query": [
+								{
+									"key": "currentUserId",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "결제 최종 승인",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/api/payments/{{payment_id}}/complete?tid=test_tid&authToken=test_token",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"{{payment_id}}",
+								"complete"
+							],
+							"query": [
+								{
+									"key": "tid",
+									"value": "test_tid"
+								},
+								{
+									"key": "authToken",
+									"value": "test_token"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Chat - 채팅",
+			"item": [
+				{
+					"name": "채팅방 생성",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.chatroomId) {",
+									"        pm.environment.set(\"chatroom_id\", jsonData.data.chatroomId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dealId\": {{deal_id}},\n  \"participantId\": 2\n}"
+						},
+						"url": {
+							"raw": "{{chat_service_url}}/api/chat/rooms",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "채팅방 목록 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{chat_service_url}}/api/chat/rooms",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "메시지 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{chat_service_url}}/api/chat/rooms/{{chatroom_id}}/messages?page=0&size=20",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"rooms",
+								"{{chatroom_id}}",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "채팅방 삭제",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{chat_service_url}}/chat/rooms/{{chatroom_id}}?userId={{user_id}}",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"chat",
+								"rooms",
+								"{{chatroom_id}}"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "메시지 읽음 처리",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{chat_service_url}}/chat/rooms/{{chatroom_id}}/read?userId={{user_id}}&lastReadMessageId=1",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"chat",
+								"rooms",
+								"{{chatroom_id}}",
+								"read"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}"
+								},
+								{
+									"key": "lastReadMessageId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. CS - 고객지원",
+			"item": [
+				{
+					"name": "공지사항 목록",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/api/notices?page=0&size=10",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"api",
+								"notices"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FAQ 목록",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/api/faqs?page=0&size=10",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"api",
+								"faqs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1:1 문의 생성",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"문의 제목\",\n  \"content\": \"문의 내용\",\n  \"category\": \"GENERAL\"\n}"
+						},
+						"url": {
+							"raw": "{{cs_service_url}}/api/inquiries",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"api",
+								"inquiries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "공지사항 상세 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/notices/{{notice_id}}",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"notices",
+								"{{notice_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FAQ 상세 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/faqs/{{faq_id}}",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"faqs",
+								"{{faq_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "내 문의 목록 조회",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/cs/inquiries",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"cs",
+								"inquiries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "카테고리 목록 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/api/categories",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Health Check",
+			"item": [
+				{
+					"name": "Account Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{account_service_url}}/actuator/health",
+							"host": [
+								"{{account_service_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ticket Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ticket_service_url}}/actuator/health",
+							"host": [
+								"{{ticket_service_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Trade Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{trade_service_url}}/actuator/health",
+							"host": [
+								"{{trade_service_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chat Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{chat_service_url}}/actuator/health",
+							"host": [
+								"{{chat_service_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CS Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cs_service_url}}/actuator/health",
+							"host": [
+								"{{cs_service_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://dev-api.passit.xxx",
+			"type": "string"
+		}
+	]
+}
