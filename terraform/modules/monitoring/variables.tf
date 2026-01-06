@@ -30,10 +30,6 @@ variable "oidc_provider_url" {
   type = string
 }
 
-variable "oidc_provider_url" {
-  type = string
-}
-
 variable "account_id" {
   type        = string
   description = "AWS Account ID"
@@ -97,14 +93,65 @@ variable "alertmanager_namespace" {
   default = "monitoring"
 }
 
-variable "monitoring_namespace" {
-  description = "The namespace where monitoring tools will be installed"
+
+############################
+# Prometheus (AMP) & Workspace
+############################
+
+variable "prometheus_workspace_name" {
+  description = "The name of the Amazon Managed Service for Prometheus workspace"
+  type        = string
+}
+
+variable "prometheus_namespace" {
+  description = "Namespace for Prometheus"
   type        = string
   default     = "monitoring"
 }
 
-variable "alertmanager_namespace" {
-  type    = string
-  default = "monitoring"
+variable "prometheus_service_account_name" {
+  description = "Service account name for Prometheus"
+  type        = string
+  default     = "prometheus-agent"
 }
 
+############################
+# Fluent Bit Extensions
+############################
+
+variable "fluentbit_service_account_name" {
+  description = "Service account name for Fluent Bit"
+  type        = string
+  default     = "fluent-bit"
+}
+
+variable "fluentbit_chart_version" {
+  description = "The version of the Fluent Bit Helm chart"
+  type        = string
+}
+
+############################
+# CloudWatch & Alerts
+############################
+
+variable "log_retention_days" {
+  description = "Number of days to retain logs in CloudWatch"
+  type        = number
+  default     = 30
+}
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS topic ARN for monitoring alarms"
+  type        = string
+  default     = null
+}
+
+############################
+# Monitoring Thresholds
+############################
+
+variable "application_error_threshold" {
+  description = "The threshold value for application error rate alarms"
+  type        = number
+  default     = 5
+}

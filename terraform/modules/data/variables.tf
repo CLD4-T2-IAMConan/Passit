@@ -310,3 +310,8 @@ variable "create_s3" {
   type    = bool
   default = true
 }
+
+variable "create_elasticache" {
+  type        = bool
+  default     = true
+}

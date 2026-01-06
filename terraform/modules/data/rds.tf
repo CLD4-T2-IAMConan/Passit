@@ -137,7 +137,7 @@ resource "null_resource" "create_passit_user" {
       set -e
 
       BASTION_ID="${var.bastion_instance_id}"
-      RDS_ENDPOINT="${aws_rds_cluster.main.endpoint}"
+      RDS_ENDPOINT="${aws_rds_cluster.main[0].endpoint}"
       DB_NAME="${local.db_creds["DB_NAME"]}"
       MASTER_USER="${local.db_creds["DB_USER"]}"
       MASTER_PASSWORD="${local.db_creds["DB_PASSWORD"]}"
