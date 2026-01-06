@@ -19,7 +19,7 @@ module "eks" {
   # Cluster creator admin permissions
   # Enabled to allow Terraform to manage Kubernetes resources
   # Note: In production, consider using access_entries instead for better security
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
 
   # Access entries for additional users
   # principal_arn은 var.access_entries에서 전달받음 (기본값: 빈 객체)
@@ -33,6 +33,8 @@ module "eks" {
   # Disable KMS encryption (권한 문제)
   create_kms_key            = false
   cluster_encryption_config = {}
+
+  cluster_additional_security_group_ids = [var.node_security_group_id]
 
   eks_managed_node_groups = local.eks_managed_node_groups
 

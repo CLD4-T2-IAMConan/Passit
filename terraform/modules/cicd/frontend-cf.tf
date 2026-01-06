@@ -10,6 +10,10 @@ locals {
   alb_dns_name = var.enable_frontend && var.alb_name != "" ? try(data.aws_lb.backend[0].dns_name, var.alb_dns_name) : var.alb_dns_name
 }
 
+locals {
+  enable_alb_origin = true
+}
+
 # Lambda@Edge: Host 헤더를 동적으로 설정 (origin-request 이벤트)
 # Note: Lambda@Edge는 us-east-1 리전에 배포되어야 함
 # 현재는 각 서비스별로 다른 Origin을 사용하되, custom_header 없이 설정
@@ -34,7 +38,7 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
 
 # OAC ID를 사용하는 locals
 locals {
-  oac_id = var.enable_frontend ? aws_cloudfront_origin_access_control.frontend[0].id : ""
+  oac_id = var.enable_frontend ? try(aws_cloudfront_origin_access_control.frontend[0].id, "") : ""
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
@@ -57,70 +61,25 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   # ALB Origin for Account Service
-  origin {
-    domain_name = local.alb_dns_name != "" ? local.alb_dns_name : ""
-    origin_id   = "alb-account-origin"
+  dynamic "origin" {
+    for_each = local.alb_dns_name != "" ? [
+      "account", "ticket", "trade", "chat", "cs"
+    ] : []
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols    = ["TLSv1.2"]
+    content {
+      domain_name = local.alb_dns_name
+      origin_id   = "alb-${origin.value}-origin"
+
+      custom_origin_config {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "http-only"
+        origin_ssl_protocols   = ["TLSv1.2"]
+      }
     }
     # Note: Host 헤더는 forwarded_values의 headers에 포함되어 전달됨
   }
 
-  # ALB Origin for Ticket Service
-  origin {
-    domain_name = local.alb_dns_name != "" ? local.alb_dns_name : ""
-    origin_id   = "alb-ticket-origin"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols    = ["TLSv1.2"]
-    }
-  }
-
-  # ALB Origin for Trade Service
-  origin {
-    domain_name = local.alb_dns_name != "" ? local.alb_dns_name : ""
-    origin_id   = "alb-trade-origin"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols    = ["TLSv1.2"]
-    }
-  }
-
-  # ALB Origin for Chat Service
-  origin {
-    domain_name = local.alb_dns_name != "" ? local.alb_dns_name : ""
-    origin_id   = "alb-chat-origin"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols    = ["TLSv1.2"]
-    }
-  }
-
-  # ALB Origin for CS Service
-  origin {
-    domain_name = local.alb_dns_name != "" ? local.alb_dns_name : ""
-    origin_id   = "alb-cs-origin"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols    = ["TLSv1.2"]
-    }
-  }
 
   # Default Behavior: S3 (Frontend)
   default_cache_behavior {
@@ -140,267 +99,233 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   # Behavior for Account Service API: /api/auth/*, /api/users/* 등
-  ordered_cache_behavior {
-    path_pattern     = "/api/auth/*"
-    target_origin_id = "alb-account-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+  dynamic "ordered_cache_behavior" {
+    for_each = local.enable_alb_origin ? [
+      {
+        path = "/api/auth/*"
+        origin = "alb-account-origin"
+      },
+      {
+        path = "/api/users/*"
+        origin = "alb-account-origin"
       }
-    }
+    ] : []
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
+    content {
+      path_pattern     = ordered_cache_behavior.value.path
+      target_origin_id = ordered_cache_behavior.value.origin
 
-  ordered_cache_behavior {
-    path_pattern     = "/api/users/*"
-    target_origin_id = "alb-account-origin"
+      viewer_protocol_policy = "redirect-to-https"
 
-    viewer_protocol_policy = "redirect-to-https"
+      allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+      cached_methods  = ["GET", "HEAD", "OPTIONS"]
+      compress        = true
 
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+      forwarded_values {
+        query_string = true
+        headers      = ["Authorization", "Content-Type", "Origin"]
+        cookies {
+          forward = "all"
+        }
       }
-    }
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+      min_ttl     = 0
+      default_ttl = 0
+      max_ttl     = 0
+    }
   }
 
   # Behavior for Ticket Service API: /api/tickets/*
-  ordered_cache_behavior {
-    path_pattern     = "/api/tickets/*"
-    target_origin_id = "alb-ticket-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+  dynamic "ordered_cache_behavior" {
+    for_each = local.enable_alb_origin ? [
+      {
+        path   = "/api/tickets/*"
+        origin = "alb-ticket-origin"
       }
-    }
+    ] : []
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+    content {
+      path_pattern     = ordered_cache_behavior.value.path
+      target_origin_id = ordered_cache_behavior.value.origin
+
+      viewer_protocol_policy = "redirect-to-https"
+
+      allowed_methods = [
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ]
+      cached_methods = ["GET", "HEAD", "OPTIONS"]
+      compress       = true
+
+      forwarded_values {
+        query_string = true
+        headers      = ["Authorization", "Content-Type", "Origin"]
+        cookies {
+          forward = "all"
+        }
+      }
+
+      min_ttl     = 0
+      default_ttl = 0
+      max_ttl     = 0
+    }
   }
 
   # Behavior for Trade Service API: /api/trades/*, /api/deals/*
-  ordered_cache_behavior {
-    path_pattern     = "/api/trades/*"
-    target_origin_id = "alb-trade-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+  dynamic "ordered_cache_behavior" {
+    for_each = local.enable_alb_origin ? [
+      {
+        path   = "/api/trades/*"
+        origin = "alb-trade-origin"
+      },
+      {
+        path   = "/api/deals/*"
+        origin = "alb-trade-origin"
       }
-    }
+    ] : []
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
+    content {
+      path_pattern     = ordered_cache_behavior.value.path
+      target_origin_id = ordered_cache_behavior.value.origin
 
-  ordered_cache_behavior {
-    path_pattern     = "/api/deals/*"
-    target_origin_id = "alb-trade-origin"
+      viewer_protocol_policy = "redirect-to-https"
 
-    viewer_protocol_policy = "redirect-to-https"
+      allowed_methods = [
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ]
+      cached_methods = ["GET", "HEAD", "OPTIONS"]
+      compress       = true
 
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+      forwarded_values {
+        query_string = true
+        headers      = ["Authorization", "Content-Type", "Origin"]
+        cookies {
+          forward = "all"
+        }
       }
-    }
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+      min_ttl     = 0
+      default_ttl = 0
+      max_ttl     = 0
+    }
   }
 
   # Behavior for Chat Service: /api/chat/*, /ws/*
-  ordered_cache_behavior {
-    path_pattern     = "/api/chat/*"
-    target_origin_id = "alb-chat-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+  dynamic "ordered_cache_behavior" {
+    for_each = local.enable_alb_origin ? [
+      {
+        path   = "/api/chat/*"
+        origin = "alb-chat-origin"
+      },
+      {
+        path   = "/ws/*"
+        origin = "alb-chat-origin"
       }
-    }
+    ] : []
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
+    content {
+      path_pattern     = ordered_cache_behavior.value.path
+      target_origin_id = ordered_cache_behavior.value.origin
 
-  ordered_cache_behavior {
-    path_pattern     = "/ws/*"
-    target_origin_id = "alb-chat-origin"
+      viewer_protocol_policy = "redirect-to-https"
 
-    viewer_protocol_policy = "redirect-to-https"
+      allowed_methods = (
+        ordered_cache_behavior.value.path == "/ws/*"
+        ? ["GET", "HEAD", "OPTIONS"]
+        : ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+      )
 
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
+      cached_methods = ["GET", "HEAD", "OPTIONS"]
+      compress       = true
 
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+      forwarded_values {
+        query_string = true
+
+        headers = (
+          ordered_cache_behavior.value.path == "/ws/*"
+          ? ["Authorization", "Origin"]
+          : ["Authorization", "Content-Type", "Origin"]
+        )
+
+        cookies {
+          forward = "all"
+        }
       }
-    }
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
+      min_ttl     = 0
+      default_ttl = 0
+      max_ttl     = 0
+    }
   }
 
   # Behavior for CS Service: /api/cs/*, /api/notices/*, /api/faqs/*, /api/inquiries/*
-  ordered_cache_behavior {
-    path_pattern     = "/api/cs/*"
-    target_origin_id = "alb-cs-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+  dynamic "ordered_cache_behavior" {
+    for_each = local.enable_alb_origin ? [
+      {
+        path   = "/api/cs/*"
+        origin = "alb-cs-origin"
+      },
+      {
+        path   = "/api/notices/*"
+        origin = "alb-cs-origin"
+      },
+      {
+        path   = "/api/faqs/*"
+        origin = "alb-cs-origin"
+      },
+      {
+        path   = "/api/inquiries/*"
+        origin = "alb-cs-origin"
       }
-    }
+    ] : []
 
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
+    content {
+      path_pattern     = ordered_cache_behavior.value.path
+      target_origin_id = ordered_cache_behavior.value.origin
 
-  ordered_cache_behavior {
-    path_pattern     = "/api/notices/*"
-    target_origin_id = "alb-cs-origin"
+      viewer_protocol_policy = "redirect-to-https"
 
-    viewer_protocol_policy = "redirect-to-https"
+      allowed_methods = [
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ]
+      cached_methods = ["GET", "HEAD", "OPTIONS"]
+      compress       = true
 
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
+      forwarded_values {
+        query_string = true
+        headers      = ["Authorization", "Content-Type", "Origin"]
+        cookies {
+          forward = "all"
+        }
       }
+
+      min_ttl     = 0
+      default_ttl = 0
+      max_ttl     = 0
     }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
-
-  ordered_cache_behavior {
-    path_pattern     = "/api/faqs/*"
-    target_origin_id = "alb-cs-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
-  }
-
-  ordered_cache_behavior {
-    path_pattern     = "/api/inquiries/*"
-    target_origin_id = "alb-cs-origin"
-
-    viewer_protocol_policy = "redirect-to-https"
-
-    allowed_methods = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods  = ["GET", "HEAD", "OPTIONS"]
-    compress        = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization", "Content-Type", "Origin"]  # Origin 헤더 추가 - CORS 처리용
-      cookies {
-        forward = "all"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 0
-    max_ttl     = 0
   }
 
   dynamic "custom_error_response" {
-    for_each = var.frontend_spa_fallback ? [1] : []
+    for_each = var.frontend_spa_fallback ? [404, 403] : []
     content {
-      error_code            = 404
+      error_code            = custom_error_response.value
       response_code         = 200
       response_page_path    = "/index.html"
       error_caching_min_ttl = 0

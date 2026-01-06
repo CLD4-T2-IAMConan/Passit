@@ -87,7 +87,7 @@ module "security" {
   # 주의: EKS 클러스터가 생성되기 전에는 빈 문자열("")로 설정해야 함
   # EKS 클러스터 생성 후 terraform.tfvars에서 클러스터 이름으로 업데이트
   eks_cluster_name = var.eks_cluster_name
-  
+
   # EKS OIDC Provider URL (EKS 모듈에서 받음, 없으면 빈 문자열)
   # 순환 의존성 방지를 위해 try() 사용
   eks_oidc_provider_url = try(module.eks.oidc_provider_url, "")
@@ -119,6 +119,7 @@ module "security" {
 module "eks" {
   source = "../../modules/eks"
 
+  region       = var.region
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -138,12 +139,14 @@ module "eks" {
 
   # Access entries - principal_arn은 동적으로 생성 (account_id 자동 감지)
   # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
-  access_entries = var.eks_access_entries != null ? {
-    for k, v in var.eks_access_entries : k => {
-      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
-      policy_associations = v.policy_associations
-    }
-  } : {}
+  # access_entries = var.eks_access_entries != null ? {
+  #  for k, v in var.eks_access_entries : k => {
+  #    principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+  #    policy_associations = v.policy_associations
+  #  }
+  #} : {}
+  access_entries = {}
+  enable_cluster_creator_admin_permissions = false
 }
 
 # ============================================
@@ -190,9 +193,8 @@ module "bastion" {
   # Security Group References
   rds_security_group_id         = local.rds_security_group_id
   elasticache_security_group_id = local.elasticache_security_group_id
-  # eks_cluster_security_group_id는 EKS 클러스터 생성 후 주석 해제
-  # eks_cluster_security_group_id = module.eks.cluster_security_group_id
-  
+  eks_cluster_security_group_id = module.eks.cluster_security_group_id
+
   depends_on = [module.network, module.security, module.eks]
 }
 
@@ -211,6 +213,11 @@ module "data" {
   # Network Configuration
   vpc_id                = local.vpc_id
   private_db_subnet_ids = local.private_db_subnet_ids
+
+  global_cluster_id = null
+  is_dr_region      = false
+  enable_rds        = true
+
 
   depends_on = [module.network]
 
@@ -262,9 +269,22 @@ module "monitoring" {
   region        = var.region
   account_id    = local.account_id  # 자동 감지된 계정 ID 사용
   tags          = var.tags
-
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
+  oidc_provider_url = module.eks.oidc_provider_url
+
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
+
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
+
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
   depends_on = [
     module.eks,
@@ -273,6 +293,8 @@ module "monitoring" {
 
   grafana_namespace = "monitoring"
 
+  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 }
@@ -296,6 +318,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
+  vpc_id       = var.vpc_cidr
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
@@ -362,4 +385,9 @@ module "sns" {
   team         = var.team
   owner        = var.owner
   kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
+}
+
+import {
+  to = module.eks.module.eks.aws_eks_access_entry.this["cluster_creator"]
+  id = "passit-dev-eks:arn:aws:iam::727646470302:user/t2-daeun"
 }
