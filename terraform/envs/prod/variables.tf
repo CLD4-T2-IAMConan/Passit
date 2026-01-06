@@ -312,6 +312,12 @@ variable "frontend_bucket_name" {
   type = string
 }
 
+variable "alb_name" {
+  description = "ALB name for backend services (used by CloudFront to lookup DNS name dynamically)"
+  type        = string
+  default     = ""
+}
+
 variable "github_oidc_provider_arn" {
   description = "GitHub OIDC Provider ARN for GitHub Actions authentication (optional, can be created in shared resources)"
   type        = string

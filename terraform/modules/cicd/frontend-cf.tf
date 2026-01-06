@@ -323,9 +323,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   dynamic "custom_error_response" {
-    for_each = var.frontend_spa_fallback ? [1] : []
+    for_each = var.frontend_spa_fallback ? [404, 403] : []
     content {
-      error_code            = 404
+      error_code            = custom_error_response.value
       response_code         = 200
       response_page_path    = "/index.html"
       error_caching_min_ttl = 0
