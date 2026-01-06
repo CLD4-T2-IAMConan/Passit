@@ -19,7 +19,7 @@ module "eks" {
   # Cluster creator admin permissions
   # Enabled to allow Terraform to manage Kubernetes resources
   # Note: In production, consider using access_entries instead for better security
-  enable_cluster_creator_admin_permissions = true
+  enable_cluster_creator_admin_permissions = false
 
   # Access entries for additional users
   # principal_arn은 var.access_entries에서 전달받음 (기본값: 빈 객체)

@@ -139,12 +139,14 @@ module "eks" {
 
   # Access entries - principal_arn은 동적으로 생성 (account_id 자동 감지)
   # var.eks_access_entries가 있으면 사용, 없으면 빈 객체
-  access_entries = var.eks_access_entries != null ? {
-    for k, v in var.eks_access_entries : k => {
-      principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
-      policy_associations = v.policy_associations
-    }
-  } : {}
+  # access_entries = var.eks_access_entries != null ? {
+  #  for k, v in var.eks_access_entries : k => {
+  #    principal_arn      = "arn:aws:iam::${local.account_id}:user/${v.username}"
+  #    policy_associations = v.policy_associations
+  #  }
+  #} : {}
+  access_entries = {}
+  enable_cluster_creator_admin_permissions = false
 }
 
 # ============================================
@@ -383,4 +385,9 @@ module "sns" {
   team         = var.team
   owner        = var.owner
   kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
+}
+
+import {
+  to = module.eks.module.eks.aws_eks_access_entry.this["cluster_creator"]
+  id = "passit-dev-eks:arn:aws:iam::727646470302:user/t2-daeun"
 }
