@@ -43,7 +43,7 @@ locals {
 
 data "aws_iam_openid_connect_provider" "eks" {
   count = var.eks_cluster_name != "" && local.oidc_provider_url != "" ? 1 : 0
-  url   = local.oidc_provider_url
+  url   = "https://${local.oidc_provider_url}"
 }
 
 # ============================================
