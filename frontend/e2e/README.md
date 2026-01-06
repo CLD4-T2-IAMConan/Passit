@@ -36,13 +36,24 @@ frontend/e2e/
 │   ├── ChatListPage.js       # 채팅 목록 페이지
 │   ├── ChatRoomPage.js       # 채팅방 페이지
 │   ├── DealListPage.js       # 거래 목록 페이지
-│   └── DealAcceptPage.js     # 거래 수락 페이지
+│   ├── DealAcceptPage.js     # 거래 수락 페이지
+│   ├── NoticeListPage.js     # 공지사항 목록 페이지
+│   ├── NoticePage.js         # 공지사항 상세 페이지
+│   ├── InquiryListPage.js    # 문의 목록 페이지
+│   ├── InquiryCreatePage.js  # 문의 생성 페이지
+│   ├── InquiryDetailPage.js  # 문의 상세 페이지
+│   ├── ReportListPage.js     # 신고 목록 페이지
+│   ├── ReportCreatePage.js   # 신고 생성 페이지
+│   └── ReportDetailPage.js   # 신고 상세 페이지
 ├── user-auth.spec.js         # 사용자 인증 플로우 테스트
 ├── ticket-create.spec.js     # 티켓 생성 테스트
 ├── ticket-list.spec.js       # 티켓 목록 조회 테스트
 ├── ticket-flow.spec.js       # 티켓 전체 플로우 테스트
 ├── chat-flow.spec.js         # 채팅 플로우 테스트
 ├── deal-flow.spec.js         # 거래/양도 플로우 테스트
+├── cs-notice-flow.spec.js    # 공지사항 플로우 테스트
+├── cs-inquiry-flow.spec.js   # 문의 CRUD 플로우 테스트
+├── cs-report-flow.spec.js    # 신고 CRUD 플로우 테스트
 └── README.md                 # 이 파일
 ```
 
@@ -411,6 +422,17 @@ test.describe("티켓 목록 테스트", () => {
 - `e2e/pages/DealListPage.js` - 거래 목록 페이지
 - `e2e/pages/DealAcceptPage.js` - 거래 수락/상세 페이지
 
+**CS(고객지원) 관련:**
+
+- `e2e/pages/NoticeListPage.js` - 공지사항 목록 페이지
+- `e2e/pages/NoticePage.js` - 공지사항 상세 페이지
+- `e2e/pages/InquiryListPage.js` - 문의 목록 페이지
+- `e2e/pages/InquiryCreatePage.js` - 문의 생성 페이지
+- `e2e/pages/InquiryDetailPage.js` - 문의 상세 페이지
+- `e2e/pages/ReportListPage.js` - 신고 목록 페이지
+- `e2e/pages/ReportCreatePage.js` - 신고 생성 페이지
+- `e2e/pages/ReportDetailPage.js` - 신고 상세 페이지
+
 ---
 
 ## 베스트 프랙티스
@@ -659,11 +681,33 @@ npx playwright test --update-snapshots
    - 채팅방 나가기
 
 4. **거래/양도 플로우** (`deal-flow.spec.js`) ⭐ 새로 추가
+
    - 티켓 상세에서 거래 요청
    - 거래 목록 조회 (구매/판매)
    - 거래 상세 조회
    - 거래 수락/거절 (판매자)
    - 거래 확정 (구매자)
+
+5. **공지사항 플로우** (`cs-notice-flow.spec.js`) ⭐ 새로 추가
+
+   - 공지사항 목록 조회
+   - 공지사항 상세 조회
+   - 공지사항 목록으로 복귀
+
+6. **문의 CRUD 플로우** (`cs-inquiry-flow.spec.js`) ⭐ 새로 추가
+
+   - 문의 목록 조회
+   - 문의 생성
+   - 문의 상세 조회
+   - 문의 목록에서 상세로 이동
+   - 문의 생성 후 목록에서 확인
+
+7. **신고 CRUD 플로우** (`cs-report-flow.spec.js`) ⭐ 새로 추가
+   - 신고 목록 조회
+   - 신고 생성
+   - 신고 상세 조회
+   - 신고 목록에서 상세로 이동
+   - 신고 생성 후 목록에서 확인
 
 ### 테스트 실행 예제
 
@@ -674,8 +718,17 @@ npx playwright test chat-flow.spec.js
 # 거래 플로우만 실행
 npx playwright test deal-flow.spec.js
 
+# CS 플로우만 실행
+npx playwright test cs-notice-flow.spec.js
+npx playwright test cs-inquiry-flow.spec.js
+npx playwright test cs-report-flow.spec.js
+
+# 모든 CS 테스트 실행
+npx playwright test cs-*.spec.js
+
 # 특정 테스트만 실행
 npx playwright test chat-flow.spec.js -g "채팅방 입장"
+npx playwright test cs-inquiry-flow.spec.js -g "문의 생성"
 ```
 
 ## 체크리스트
