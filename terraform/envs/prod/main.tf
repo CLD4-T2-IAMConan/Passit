@@ -69,6 +69,9 @@ module "security" {
   # EKS Configuration
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
+  
+  # EKS Node Security Group ID (for RDS and ElastiCache access)
+  eks_node_security_group_id = try(module.eks.node_security_group_id, "")
 
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
@@ -277,4 +280,34 @@ module "cicd" {
   secret_elasticache_arn = module.security.elasticache_secret_arn
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
+
+  # SNS Topic ARNs
+  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
+
+  # SQS Queue URLs
+  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
+
+  # SQS Queue ARNs (for IAM policies)
+  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
+
+  depends_on = [module.eks, module.sns]
+}
+
+# ============================================
+# SNS Module (Event-Driven Architecture)
+# ============================================
+module "sns" {
+  source = "../../modules/sns"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
 }
