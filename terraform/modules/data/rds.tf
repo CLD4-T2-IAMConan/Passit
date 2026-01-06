@@ -107,8 +107,9 @@ resource "aws_rds_cluster_instance" "main" {
 
 # 3. passit_user 자동 생성 (Bastion Host를 통해)
 resource "null_resource" "create_passit_user" {
-  count = var.create_passit_user && var.passit_user_password != "" ? 1 : 0
-
+  # count = var.create_passit_user && var.passit_user_password != "" ? 1 : 0
+  count = 0
+  
   depends_on = [
     aws_rds_cluster.main,
     aws_rds_cluster_instance.main
@@ -124,6 +125,7 @@ resource "null_resource" "create_passit_user" {
   }
 
   provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
     command = <<-EOT
       set -e
       

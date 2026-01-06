@@ -316,7 +316,7 @@ module "cicd" {
   # ALB가 EKS Ingress에서 생성된 후 enable_frontend=true로 변경
   enable_frontend        = var.enable_frontend
   frontend_bucket_name   = var.frontend_bucket_name
-  alb_name              = ""  # ALB 생성 후 "passit-dev-alb"로 변경
+  alb_name              = "passit-dev-alb"  # ALB 생성 후 "passit-dev-alb"로 변경
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
