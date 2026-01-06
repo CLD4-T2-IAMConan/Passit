@@ -32,12 +32,18 @@ frontend/e2e/
 │   ├── TicketListPage.js
 │   ├── TicketCreatePage.js
 │   ├── TicketDetailPage.js
-│   └── DashboardPage.js
+│   ├── DashboardPage.js
+│   ├── ChatListPage.js       # 채팅 목록 페이지
+│   ├── ChatRoomPage.js       # 채팅방 페이지
+│   ├── DealListPage.js       # 거래 목록 페이지
+│   └── DealAcceptPage.js     # 거래 수락 페이지
 ├── user-auth.spec.js         # 사용자 인증 플로우 테스트
 ├── ticket-create.spec.js     # 티켓 생성 테스트
-├── ticket-list.spec.js      # 티켓 목록 조회 테스트
-├── ticket-flow.spec.js      # 티켓 전체 플로우 테스트
-└── README.md                # 이 파일
+├── ticket-list.spec.js       # 티켓 목록 조회 테스트
+├── ticket-flow.spec.js       # 티켓 전체 플로우 테스트
+├── chat-flow.spec.js         # 채팅 플로우 테스트
+├── deal-flow.spec.js         # 거래/양도 플로우 테스트
+└── README.md                 # 이 파일
 ```
 
 ---
@@ -384,11 +390,26 @@ test.describe("티켓 목록 테스트", () => {
 
 다음 파일들을 참고하여 새로운 Page Object를 작성하세요:
 
+**인증 관련:**
+
 - `e2e/pages/LoginPage.js` - 로그인 페이지
 - `e2e/pages/SignupPage.js` - 회원가입 페이지
+
+**티켓 관련:**
+
 - `e2e/pages/TicketListPage.js` - 티켓 목록 페이지
 - `e2e/pages/TicketCreatePage.js` - 티켓 생성 페이지
 - `e2e/pages/TicketDetailPage.js` - 티켓 상세 페이지
+
+**채팅 관련:**
+
+- `e2e/pages/ChatListPage.js` - 채팅 목록 페이지
+- `e2e/pages/ChatRoomPage.js` - 채팅방 페이지
+
+**거래 관련:**
+
+- `e2e/pages/DealListPage.js` - 거래 목록 페이지
+- `e2e/pages/DealAcceptPage.js` - 거래 수락/상세 페이지
 
 ---
 
@@ -612,6 +633,50 @@ npx playwright test --update-snapshots
 3. 팀 채널에서 질문
 
 ---
+
+## 테스트 시나리오
+
+### 사용 가능한 테스트
+
+1. **사용자 인증 플로우** (`user-auth.spec.js`)
+
+   - 회원가입 → 로그인 전체 플로우
+   - 기존 사용자 로그인
+   - 로그아웃
+
+2. **티켓 플로우** (`ticket-create.spec.js`, `ticket-list.spec.js`, `ticket-flow.spec.js`)
+
+   - 티켓 등록
+   - 티켓 목록 조회
+   - 티켓 상세 조회
+   - 티켓 전체 플로우 (등록 → 조회)
+
+3. **채팅 플로우** (`chat-flow.spec.js`) ⭐ 새로 추가
+
+   - 티켓 상세에서 채팅 시작
+   - 채팅방 목록 조회
+   - 채팅방 입장 및 메시지 전송
+   - 채팅방 나가기
+
+4. **거래/양도 플로우** (`deal-flow.spec.js`) ⭐ 새로 추가
+   - 티켓 상세에서 거래 요청
+   - 거래 목록 조회 (구매/판매)
+   - 거래 상세 조회
+   - 거래 수락/거절 (판매자)
+   - 거래 확정 (구매자)
+
+### 테스트 실행 예제
+
+```bash
+# 채팅 플로우만 실행
+npx playwright test chat-flow.spec.js
+
+# 거래 플로우만 실행
+npx playwright test deal-flow.spec.js
+
+# 특정 테스트만 실행
+npx playwright test chat-flow.spec.js -g "채팅방 입장"
+```
 
 ## 체크리스트
 
