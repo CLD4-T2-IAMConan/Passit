@@ -23,14 +23,25 @@ spec:
   
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true # 삭제된 리소스 자동 정리
+      selfHeal: true # Git과 클러스터 상태 자동 동기화
+      allowEmpty: false
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=true # namespace가 없으면 자동 생성
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+
     retry:
       limit: 5
       backoff:
         duration: 5s
         factor: 2
         maxDuration: 3m
+
+  # Health check 설정
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas # HPA 사용 시 replica 차이 무시
 
