@@ -68,12 +68,21 @@
         DB_NAME: ${DB_NAME:-passit_db}
         DB_USER: ${MYSQL_USER:-passit_user}
         DB_PASSWORD: ${MYSQL_PASSWORD:-passit_password}
+        # SMTP 이메일 설정 (profile: smtp)
         MAIL_USERNAME: ${MAIL_USERNAME}
         MAIL_PASSWORD: ${MAIL_PASSWORD}
+        # AWS SES 이메일 설정 (profile: ses)
+        AWS_SES_REGION: ${AWS_SES_REGION:-us-east-1}
+        AWS_SES_FROM_EMAIL: ${AWS_SES_FROM_EMAIL:-noreply@passit.com}
+        AWS_SES_FROM_NAME: ${AWS_SES_FROM_NAME:-Passit}
+        AWS_SES_ACCESS_KEY: ${AWS_SES_ACCESS_KEY}
+        AWS_SES_SECRET_KEY: ${AWS_SES_SECRET_KEY}
+        # Kakao OAuth
         KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
         KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
         KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8081/api/auth/kakao/callback}
         FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+        # Admin 계정
         ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@passit.com}
         ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123!}
         ADMIN_NAME: ${ADMIN_NAME:-관리자}
@@ -91,7 +100,7 @@
         start_period: 40s
 
     service-chat:
-      image: ghcr.io/cld4-t2-iamconan/service-chat:sha-187a9c8
+      image: ghcr.io/cld4-t2-iamconan/service-chat:sha-2bfea7b
       container_name: passit-service-chat
       platform: linux/amd64
       ports:

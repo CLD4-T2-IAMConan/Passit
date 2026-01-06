@@ -262,6 +262,28 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
+# ============================================
+# Monitoring - Grafana (EKS Helm)
+# ============================================
+variable "grafana_namespace" {
+  description = "Namespace to deploy Grafana"
+  type        = string
+  default     = "monitoring"
+}
+
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
+
 # =========================
 # CI/CD
 # =========================
@@ -355,30 +377,59 @@ variable "allowed_cidr_blocks_bastion" {
   default     = [] # prod에서는 빈 배열
 }
 
+# ============================================
+# Secrets Manager Variables
+# ============================================
 
-variable "is_dr_region" {
-  description = "현재 배포 리전이 DR(Secondary) 리전인지 여부"
-  type        = bool
-  default     = false
+variable "db_secrets" {
+  description = "Database credentials for Secrets Manager"
+  type = object({
+    db_host     = string
+    db_port     = string
+    db_name     = string
+    db_user     = string
+    db_password = string
+  })
+  sensitive = true
 }
 
-variable "create_passit_user" {
-  description = "DB 생성 후 애플리케이션용 유저(passit_user)를 자동으로 생성할지 여부"
-  type        = bool
-  default     = true
+variable "smtp_secrets" {
+  description = "SMTP email credentials for Secrets Manager"
+  type = object({
+    mail_username = string
+    mail_password = string
+  })
+  sensitive = true
+  default = {
+    mail_username = ""
+    mail_password = ""
+  }
 }
 
-# (참고) global_cluster_id도 도쿄에서 넘겨받아야 하니 확인해보세요!
-variable "global_cluster_id" {
-  description = "Aurora Global Cluster의 ID"
-  type        = string
-  default     = ""
+variable "kakao_secrets" {
+  description = "Kakao OAuth credentials for Secrets Manager"
+  type = object({
+    rest_api_key  = string
+    client_secret = string
+    admin_key     = string
+  })
+  sensitive = true
+  default = {
+    rest_api_key  = ""
+    client_secret = ""
+    admin_key     = ""
+  }
 }
 
-variable "enable_rds" {
-  description = "RDS 생성 여부"
-  type        = bool
-  default     = true # 기본값을 true로 주면 호출부에서 생략해도 작동합니다.
+variable "elasticache_secrets" {
+  description = "ElastiCache credentials for Secrets Manager"
+  type = object({
+    auth_token = string
+  })
+  sensitive = true
+  default = {
+    auth_token = ""
+  }
 }
 
 # ============================================

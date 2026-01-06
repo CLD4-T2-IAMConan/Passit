@@ -82,7 +82,7 @@ module "security" {
   # EKS Configuration
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
-  
+
   # EKS OIDC Provider URL (EKS 모듈에서 받음, 없으면 빈 문자열)
   # 순환 의존성 방지를 위해 try() 사용
   eks_oidc_provider_url = try(module.eks.oidc_provider_url, "")
@@ -176,8 +176,6 @@ module "data" {
   team         = var.team
   owner        = var.owner
 
-  enable_rds = var.enable_rds
-
   # Network Configuration
   vpc_id                = local.vpc_id
   private_db_subnet_ids = local.private_db_subnet_ids
@@ -222,13 +220,12 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = var.tags
-  region       = var.region
-  account_id   = var.account_id
+  project_name  = var.project_name
+  environment   = var.environment
+  cluster_name  = module.eks.cluster_name
+  region        = var.region
+  account_id    = var.account_id
 
-  cluster_name      = module.eks.cluster_name
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
 
@@ -237,21 +234,8 @@ module "monitoring" {
     module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
   ]
 
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
-
-  fluentbit_namespace            = "kube-system"
-  fluentbit_service_account_name = "fluent-bit"
-  fluentbit_chart_version        = "0.48.6"
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
-
-  depends_on = [module.eks]
+  grafana_admin_user     = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
 }
 
 # ============================================

@@ -20,5 +20,5 @@ provider "aws" {
 
 provider "aws" {
   alias  = "tokyo"
-  region = "ap-northeast-1"
+  region = "ap-northeast-1" # 도쿄 추가
 }

@@ -24,7 +24,7 @@ provider "aws" {
 }
 
 # Remote State - Shared 환경의 outputs 참조
-# Shared 리소스는 모든 환경에서 공유되므로 prod 버킷의 shared state를 참조
+# Shared state는 prod 버킷에 저장됨
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {

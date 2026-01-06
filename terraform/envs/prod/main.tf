@@ -133,9 +133,9 @@ module "autoscaling" {
   owner        = var.owner
   region       = var.region
 
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url = module.eks.oidc_provider_url
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_provider_url
 
   depends_on = [module.eks]
 }
@@ -197,7 +197,7 @@ module "data" {
   # RDS Configuration
   db_secret_name      = ""
   rds_master_username = "admin"
-  rds_master_password = "PassitProdPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
+  rds_master_password = "PassitProdPassword123!"  # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
   rds_database_name   = "passit"
 
   rds_instance_class     = var.rds_instance_class
@@ -205,9 +205,9 @@ module "data" {
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
   # Existing Resources
-  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name        = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name   = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
@@ -272,7 +272,6 @@ module "monitoring" {
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
 
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
@@ -307,9 +306,9 @@ module "cicd" {
   vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url = module.eks.oidc_provider_url
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_provider_url
 
   # GitHub OIDC (변수로 받기)
   github_oidc_provider_arn = local.github_oidc_provider_arn
@@ -331,8 +330,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile = var.s3_bucket_profile
-  s3_bucket_ticket  = var.s3_bucket_ticket
+  s3_bucket_profile       = var.s3_bucket_profile
+  s3_bucket_ticket        = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn

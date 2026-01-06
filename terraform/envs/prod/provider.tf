@@ -23,17 +23,6 @@ provider "aws" {
   region = var.region
 }
 
-# 도쿄 provider 추가
-provider "aws" {
-  alias  = "tokyo"
-  region = "ap-northeast-1" # 도쿄 (Secondary)
-}
-
-# EKS 인증 토큰
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
-
 # Kubernetes Provider
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint

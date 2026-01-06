@@ -68,13 +68,10 @@ locals {
     ) : "" # false일 때는 빈 문자열 반환
 }
 
-
-
+# 1. Aurora 클러스터 본체
 resource "aws_rds_cluster" "main" {
   count              = var.enable_rds ? 1 : 0
-  cluster_identifier = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
-  storage_encrypted = true
-  kms_key_id = var.is_dr_region ? (var.rds_kms_key_id != null ? var.rds_kms_key_id : data.aws_kms_alias.rds_default.target_key_arn) : var.rds_kms_key_id
+  cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
 
   # Global Cluster 연결
   global_cluster_identifier = var.global_cluster_id
@@ -138,8 +135,9 @@ resource "null_resource" "create_passit_user" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
+
       BASTION_ID="${var.bastion_instance_id}"
-      RDS_ENDPOINT="${aws_rds_cluster.main[0].endpoint}"
+      RDS_ENDPOINT="${aws_rds_cluster.main.endpoint}"
       DB_NAME="${local.db_creds["DB_NAME"]}"
       MASTER_USER="${local.db_creds["DB_USER"]}"
       MASTER_PASSWORD="${local.db_creds["DB_PASSWORD"]}"
@@ -147,29 +145,99 @@ resource "null_resource" "create_passit_user" {
       PASSIT_PASSWORD="${var.passit_user_password}"
       REGION="${var.region}"
 
+      # MySQL 클라이언트 확인
+      if ! command -v mysql &> /dev/null; then
+        echo "❌ MySQL 클라이언트가 설치되어 있지 않습니다."
+        echo "   macOS: brew install mysql-client"
+        echo "   Ubuntu: sudo apt-get install mysql-client"
+        exit 1
+      fi
+
+      echo "📋 RDS에 passit_user 생성 중..."
+      echo "   Endpoint: $RDS_ENDPOINT"
+      echo "   Database: $DB_NAME"
+      echo "   User: $PASSIT_USER"
+
+      # Session Manager를 통한 포트 포워딩 (백그라운드)
       LOCAL_PORT=13306
+
+      # 기존 SSM 세션이 있으면 종료
+      pkill -f "aws ssm start-session.*$LOCAL_PORT" 2>/dev/null || true
+      sleep 2
+
+      # SSM 세션 시작 (에러 확인을 위해 stderr는 보관)
+      SSM_LOG=$(mktemp)
       aws ssm start-session \
         --target "$BASTION_ID" \
-        --document-name AWS-StartPortForwardingSession \
-        --parameters "{\"portNumber\":[\"3306\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" \
-        --region "$REGION" > /dev/null 2>&1 &
+        --document-name AWS-StartPortForwardingSessionToRemoteHost \
+        --parameters "{\"host\":[\"$RDS_ENDPOINT\"],\"portNumber\":[\"3306\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" \
+        --region "$REGION" > /dev/null 2>"$SSM_LOG" &
 
       SSM_PID=$!
-      sleep 8
+      echo "   포트 포워딩 시작 (PID: $SSM_PID)"
 
-      mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" <<SQL || {
+      # SSM 세션이 시작될 때까지 대기 (최대 30초)
+      for i in {1..30}; do
+        if ps -p $SSM_PID > /dev/null 2>&1; then
+          # 프로세스가 살아있으면 포트 확인
+          if nc -z 127.0.0.1 $LOCAL_PORT 2>/dev/null; then
+            echo "   ✅ 포트 포워딩 연결 성공"
+            rm -f "$SSM_LOG"
+            break
+          fi
+        else
+          # 프로세스가 죽었으면 에러 확인
+          echo "   ❌ SSM 세션 시작 실패"
+          cat "$SSM_LOG" 2>/dev/null || true
+          rm -f "$SSM_LOG"
+          exit 1
+        fi
+        echo "   연결 대기 중... ($i/30)"
+        sleep 1
+      done
+
+      # 최종 포트 확인
+      if ! nc -z 127.0.0.1 $LOCAL_PORT 2>/dev/null; then
+        echo "   ❌ 포트 포워딩 실패 (30초 타임아웃)"
+        cat "$SSM_LOG" 2>/dev/null || true
+        kill $SSM_PID 2>/dev/null || true
+        rm -f "$SSM_LOG"
+        exit 1
+      fi
+
+      rm -f "$SSM_LOG"
+
+      # MySQL 명령을 임시 파일로 작성
+      SQL_FILE=$(mktemp)
+      cat > "$SQL_FILE" <<SQL
+      CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;
+      CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD';
+      GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$PASSIT_USER'@'%';
+      FLUSH PRIVILEGES;
+      SHOW GRANTS FOR '$PASSIT_USER'@'%';
+      SELECT User, Host FROM mysql.user WHERE User = '$PASSIT_USER';
+SQL
+
+      # MySQL 명령 실행
+      if ! mysql -h 127.0.0.1 -P $LOCAL_PORT -u "$MASTER_USER" -p"$MASTER_PASSWORD" < "$SQL_FILE" 2>&1; then
+        echo "❌ MySQL 명령 실행 실패"
+        rm -f "$SQL_FILE"
         kill $SSM_PID 2>/dev/null || true
         exit 1
-      }
-        CREATE USER IF NOT EXISTS '$PASSIT_USER'@'%' IDENTIFIED BY '$PASSIT_PASSWORD';
-        GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$PASSIT_USER'@'%';
-        FLUSH PRIVILEGES;
-      SQL
+      fi
 
+      # 임시 파일 정리
+      rm -f "$SQL_FILE"
+
+      echo "✅ passit_user 생성 완료!"
+
+      # SSM 세션 종료
       kill $SSM_PID 2>/dev/null || true
     EOT
 
-    environment = { AWS_REGION = var.region }
+    environment = {
+      AWS_REGION = var.region
+    }
   }
 }
 

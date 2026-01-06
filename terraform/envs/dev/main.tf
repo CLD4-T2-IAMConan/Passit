@@ -235,20 +235,19 @@ module "data" {
 
   # RDS Configuration
   db_secret_name      = ""
-  rds_master_username = "admin"
-  rds_master_password = "PassitProdPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
-  rds_database_name   = "passit"
+  rds_master_username = var.rds_master_username
+  rds_master_password = var.rds_master_password
+  rds_database_name   = var.rds_database_name
 
   rds_instance_class     = var.rds_instance_class
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
   # Passit User Configuration
-  create_passit_user   = var.create_passit_user
-  passit_user_name     = var.passit_user_name
-  passit_user_password = var.passit_user_password
-  bastion_instance_id  = module.bastion.bastion_instance_id
-
+  create_passit_user     = var.create_passit_user
+  passit_user_name       = var.passit_user_name
+  passit_user_password   = var.passit_user_password
+  bastion_instance_id    = module.bastion.bastion_instance_id
   # Existing Resources
   existing_db_subnet_group_name             = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
@@ -262,25 +261,24 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = var.tags
-  region       = var.region
-  account_id   = var.account_id
-  cluster_name      = module.eks.cluster_name
-
+  project_name  = var.project_name
+  environment   = var.environment
+  cluster_name  = module.eks.cluster_name
+  region        = var.region
+  account_id    = local.account_id  # 자동 감지된 계정 ID 사용
+  tags          = var.tags
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
   oidc_provider_url = module.eks.oidc_provider_url
 
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-  grafana_workspace_name = "${var.project_name}-${var.environment}-grafana"
-
-  fluentbit_namespace            = "kube-system"
-  fluentbit_service_account_name = "fluent-bit"
-  fluentbit_chart_version        = "0.48.6"
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
@@ -293,6 +291,8 @@ module "monitoring" {
 
   grafana_namespace = "monitoring"
 
+  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 }
@@ -332,6 +332,7 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
+  # ALB가 EKS Ingress에서 생성된 후 enable_frontend=true로 변경
   enable_frontend        = var.enable_frontend
   frontend_bucket_name   = var.frontend_bucket_name
   alb_name              = ""  # ALB 생성 후 "passit-dev-alb"로 변경

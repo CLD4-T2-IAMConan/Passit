@@ -76,12 +76,6 @@ output "rds_reader_endpoint" {
   value       = module.data.rds_reader_endpoint
 }
 
-# 도쿄 리전 (Secondary - Read Only)
-output "tokyo_rds_endpoint" {
-  description = "Tokyo (Secondary) Cluster Endpoint"
-  value       = module.data_tokyo.rds_cluster_endpoint
-}
-
 output "valkey_primary_endpoint" {
   description = "Valkey (ElastiCache) primary endpoint"
   value       = module.data.valkey_primary_endpoint
@@ -171,3 +165,23 @@ output "frontend_cloudfront_domain" {
 output "alb_controller_role_arn" {
   value = module.cicd.alb_controller_role_arn
 }
+
+output "frontend_cloudfront_distribution_id" {
+  value       = module.cicd.frontend_cloudfront_distribution_id
+  description = "CloudFront distribution ID for cache invalidation"
+}
+
+#######################################
+# Monitoring - In-Cluster Prometheus
+#######################################
+
+output "prometheus_namespace" {
+  description = "Kubernetes namespace where Prometheus is deployed"
+  value       = module.monitoring.prometheus_namespace
+}
+
+output "prometheus_service_url" {
+  description = "In-cluster Prometheus service URL for Grafana"
+  value       = module.monitoring.prometheus_service_url
+}
+

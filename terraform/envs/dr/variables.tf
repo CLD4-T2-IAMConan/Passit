@@ -370,6 +370,22 @@ variable "access_entries" {
   type    = any
   default = {}
 }
+
+# ============================================
+# Monitoring Module Variables
+# ============================================
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
+
 # ============================================
 # Secrets Manager Variables
 # ============================================

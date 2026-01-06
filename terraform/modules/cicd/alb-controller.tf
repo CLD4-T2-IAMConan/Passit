@@ -12,10 +12,6 @@ resource "helm_release" "alb_controller" {
 
   set = [
     {
-        name  = "vpcId"
-        value = var.vpc_id # 도쿄 VPC ID
-    },
-    {
       name  = "clusterName"
       value = var.cluster_name
     },

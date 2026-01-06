@@ -16,16 +16,16 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${RED}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${RED}║                                                            ║${NC}"
-echo -e "${RED}║  ⚠️  ⚠️  ⚠️  PASSIT 관련 모든 리소스 완전 삭제 ⚠️  ⚠️  ⚠️  ║${NC}"
-echo -e "${RED}║                                                            ║${NC}"
-echo -e "${RED}║  이 스크립트는 다음을 모두 찾아서 삭제합니다:              ║${NC}"
-echo -e "${RED}║  - passit 태그가 있는 모든 리소스                         ║${NC}"
-echo -e "${RED}║  - passit-로 시작하는 모든 리소스                         ║${NC}"
-echo -e "${RED}║  - passit/ 경로의 모든 리소스                             ║${NC}"
-echo -e "${RED}║                                                            ║${NC}"
-echo -e "${RED}╚════════════════════════════════════════════════════════════╝${NC}"
+echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
+echo -e "${RED}                                                            ${NC}"
+echo -e "${RED}  ⚠️  ⚠️  ⚠️  PASSIT 관련 모든 리소스 완전 삭제 ⚠️  ⚠️  ⚠️        ${NC}"
+echo -e "${RED}                                                            ${NC}"
+echo -e "${RED}  이 스크립트는 다음을 모두 찾아서 삭제합니다:                         ${NC}"
+echo -e "${RED}  - passit 태그가 있는 모든 리소스                                ${NC}"
+echo -e "${RED}  - passit-로 시작하는 모든 리소스                                ${NC}"
+echo -e "${RED}  - passit/ 경로의 모든 리소스                                   ${NC}"
+echo -e "${RED}                                                            ${NC}"
+echo -e "${RED}════════════════════════════════════════════════════════════${NC}"
 echo ""
 
 # 최종 확인
@@ -37,20 +37,8 @@ if [ "$CONFIRM1" != "yes" ]; then
     exit 0
 fi
 
-read -p "다시 한 번 확인: 'DELETE ALL PASSIT'를 입력하세요: " CONFIRM2
-if [ "$CONFIRM2" != "DELETE ALL PASSIT" ]; then
-    echo -e "${GREEN}✅ 취소되었습니다.${NC}"
-    exit 0
-fi
-
-read -p "마지막 확인: 'CONFIRM NUCLEAR DELETE'를 입력하세요: " CONFIRM3
-if [ "$CONFIRM3" != "CONFIRM NUCLEAR DELETE" ]; then
-    echo -e "${GREEN}✅ 취소되었습니다.${NC}"
-    exit 0
-fi
-
 echo ""
-echo -e "${RED}🚨 핵 삭제 시작...${NC}"
+echo -e "${RED}🚨 삭제 시작...${NC}"
 echo ""
 
 # 1. EKS Clusters (passit로 시작하는 모든 클러스터)
@@ -76,12 +64,79 @@ for CLUSTER_NAME in $CLUSTERS; do
 done
 echo ""
 
-# 2. RDS Clusters (passit로 시작하는 모든 클러스터)
-echo "📦 2. RDS Clusters 삭제 중..."
+# 2. RDS Clusters 및 Instances (Aurora 포함)
+echo "📦 2. RDS Clusters 및 Instances 삭제 중..."
+
+# 먼저 모든 RDS Instances 삭제 (Cluster와 독립적인 것들)
+RDS_INSTANCES=$(aws rds describe-db-instances --region $REGION --query "DBInstances[?starts_with(DBInstanceIdentifier, 'passit') && DBClusterIdentifier==null].DBInstanceIdentifier" --output text 2>/dev/null || echo "")
+for INSTANCE_ID in $RDS_INSTANCES; do
+    if [ -n "$INSTANCE_ID" ] && [ "$INSTANCE_ID" != "None" ]; then
+        echo "   RDS Instance 삭제: $INSTANCE_ID"
+        aws rds delete-db-instance --db-instance-identifier "$INSTANCE_ID" --skip-final-snapshot --region $REGION 2>/dev/null || true
+    fi
+done
+
+# Aurora Cluster의 Instances 삭제
 RDS_CLUSTERS=$(aws rds describe-db-clusters --region $REGION --query "DBClusters[?starts_with(DBClusterIdentifier, 'passit')].DBClusterIdentifier" --output text 2>/dev/null || echo "")
 for CLUSTER_ID in $RDS_CLUSTERS; do
-    echo "   RDS Cluster 발견: $CLUSTER_ID"
-    aws rds delete-db-cluster --db-cluster-identifier $CLUSTER_ID --skip-final-snapshot --region $REGION 2>/dev/null || true
+    if [ -n "$CLUSTER_ID" ] && [ "$CLUSTER_ID" != "None" ]; then
+        echo "   RDS Cluster 발견: $CLUSTER_ID"
+        
+        # Cluster에 속한 모든 Instances 삭제
+        CLUSTER_INSTANCES=$(aws rds describe-db-instances --region $REGION --query "DBInstances[?DBClusterIdentifier=='$CLUSTER_ID'].DBInstanceIdentifier" --output text 2>/dev/null || echo "")
+        for INSTANCE_ID in $CLUSTER_INSTANCES; do
+            if [ -n "$INSTANCE_ID" ] && [ "$INSTANCE_ID" != "None" ]; then
+                echo "     Cluster Instance 삭제: $INSTANCE_ID"
+                aws rds delete-db-instance --db-instance-identifier "$INSTANCE_ID" --skip-final-snapshot --region $REGION 2>/dev/null || true
+            fi
+        done
+        
+        # Instances 삭제 대기 (Aurora는 Instance가 모두 삭제되어야 Cluster 삭제 가능)
+        if [ -n "$CLUSTER_INSTANCES" ] && [ "$CLUSTER_INSTANCES" != "None" ]; then
+            echo "     Instances 삭제 대기 중... (최대 5분)"
+            for i in {1..30}; do
+                REMAINING=$(aws rds describe-db-instances --region $REGION --query "DBInstances[?DBClusterIdentifier=='$CLUSTER_ID'].DBInstanceIdentifier" --output text 2>/dev/null || echo "")
+                if [ -z "$REMAINING" ] || [ "$REMAINING" = "None" ]; then
+                    echo "     ✅ 모든 Instances 삭제 완료"
+                    break
+                fi
+                echo "     대기 중... ($i/30)"
+                sleep 10
+            done
+        fi
+        
+        # Cluster 삭제
+        echo "     Cluster 삭제: $CLUSTER_ID"
+        aws rds delete-db-cluster --db-cluster-identifier "$CLUSTER_ID" --skip-final-snapshot --region $REGION 2>/dev/null || true
+    fi
+done
+
+# RDS Subnet Groups 삭제 (passit로 시작하는 것들)
+echo "📦 2-1. RDS Subnet Groups 삭제 중..."
+SUBNET_GROUPS=$(aws rds describe-db-subnet-groups --region $REGION --query "DBSubnetGroups[?starts_with(DBSubnetGroupName, 'passit')].DBSubnetGroupName" --output text 2>/dev/null || echo "")
+for SUBNET_GROUP in $SUBNET_GROUPS; do
+    if [ -n "$SUBNET_GROUP" ] && [ "$SUBNET_GROUP" != "None" ]; then
+        echo "   RDS Subnet Group 삭제: $SUBNET_GROUP"
+        aws rds delete-db-subnet-group --db-subnet-group-name "$SUBNET_GROUP" --region $REGION 2>/dev/null || true
+    fi
+done
+
+# RDS Parameter Groups 삭제 (passit로 시작하는 것들)
+echo "📦 2-2. RDS Parameter Groups 삭제 중..."
+CLUSTER_PARAM_GROUPS=$(aws rds describe-db-cluster-parameter-groups --region $REGION --query "DBClusterParameterGroups[?starts_with(DBClusterParameterGroupName, 'passit') && DBClusterParameterGroupFamily!='default'].DBClusterParameterGroupName" --output text 2>/dev/null || echo "")
+for PARAM_GROUP in $CLUSTER_PARAM_GROUPS; do
+    if [ -n "$PARAM_GROUP" ] && [ "$PARAM_GROUP" != "None" ]; then
+        echo "   RDS Cluster Parameter Group 삭제: $PARAM_GROUP"
+        aws rds delete-db-cluster-parameter-group --db-cluster-parameter-group-name "$PARAM_GROUP" --region $REGION 2>/dev/null || true
+    fi
+done
+
+PARAM_GROUPS=$(aws rds describe-db-parameter-groups --region $REGION --query "DBParameterGroups[?starts_with(DBParameterGroupName, 'passit') && DBParameterGroupFamily!='default'].DBParameterGroupName" --output text 2>/dev/null || echo "")
+for PARAM_GROUP in $PARAM_GROUPS; do
+    if [ -n "$PARAM_GROUP" ] && [ "$PARAM_GROUP" != "None" ]; then
+        echo "   RDS Parameter Group 삭제: $PARAM_GROUP"
+        aws rds delete-db-parameter-group --db-parameter-group-name "$PARAM_GROUP" --region $REGION 2>/dev/null || true
+    fi
 done
 echo ""
 
@@ -113,8 +168,19 @@ for BUCKET_NAME in $BUCKETS; do
 done
 echo ""
 
-# 5. Prometheus Workspaces (passit 태그 또는 이름)
-echo "📦 5. Prometheus Workspaces 삭제 중..."
+# 5. DynamoDB Tables (passit로 시작하는 모든 테이블)
+echo "📦 5. DynamoDB Tables 삭제 중..."
+TABLES=$(aws dynamodb list-tables --region $REGION --query "TableNames[?starts_with(@, 'passit')]" --output text 2>/dev/null || echo "")
+for TABLE_NAME in $TABLES; do
+    if [ -n "$TABLE_NAME" ] && [ "$TABLE_NAME" != "None" ]; then
+        echo "   DynamoDB Table 삭제: $TABLE_NAME"
+        aws dynamodb delete-table --table-name "$TABLE_NAME" --region $REGION 2>/dev/null || true
+    fi
+done
+echo ""
+
+# 6. Prometheus Workspaces (passit 태그 또는 이름)
+echo "📦 6. Prometheus Workspaces 삭제 중..."
 WORKSPACES=$(aws amp list-workspaces --region $REGION --query "workspaces[?contains(alias, 'passit')].workspaceId" --output text 2>/dev/null || echo "")
 for WORKSPACE_ID in $WORKSPACES; do
     echo "   Prometheus Workspace 발견: $WORKSPACE_ID"
@@ -122,8 +188,8 @@ for WORKSPACE_ID in $WORKSPACES; do
 done
 echo ""
 
-# 6. Secrets Manager (passit/ 경로의 모든 시크릿)
-echo "📦 6. Secrets Manager 삭제 중..."
+# 7. Secrets Manager (passit/ 경로의 모든 시크릿)
+echo "📦 7. Secrets Manager 삭제 중..."
 SECRETS=$(aws secretsmanager list-secrets --region $REGION --query "SecretList[?starts_with(Name, 'passit/') || starts_with(Name, 'passit-')].Name" --output text 2>/dev/null || echo "")
 for SECRET_NAME in $SECRETS; do
     echo "   Secret 발견: $SECRET_NAME"
@@ -131,8 +197,8 @@ for SECRET_NAME in $SECRETS; do
 done
 echo ""
 
-# 7. IAM Roles (passit로 시작하는 모든 역할)
-echo "📦 7. IAM Roles 삭제 중..."
+# 8. IAM Roles (passit로 시작하는 모든 역할)
+echo "📦 8. IAM Roles 삭제 중..."
 ROLES=$(aws iam list-roles --query "Roles[?starts_with(RoleName, 'passit-')].RoleName" --output text 2>/dev/null || echo "")
 for ROLE_NAME in $ROLES; do
     echo "   IAM Role 발견: $ROLE_NAME"
@@ -151,8 +217,8 @@ for ROLE_NAME in $ROLES; do
 done
 echo ""
 
-# 8. IAM Policies (passit로 시작하는 모든 정책)
-echo "📦 8. IAM Policies 삭제 중..."
+# 9. IAM Policies (passit로 시작하는 모든 정책)
+echo "📦 9. IAM Policies 삭제 중..."
 POLICIES=$(aws iam list-policies --scope Local --query "Policies[?starts_with(PolicyName, 'passit-')].Arn" --output text 2>/dev/null || echo "")
 for POLICY_ARN in $POLICIES; do
     echo "   IAM Policy 발견: $POLICY_ARN"
@@ -166,8 +232,32 @@ for POLICY_ARN in $POLICIES; do
 done
 echo ""
 
-# 9. VPC 및 네트워크 리소스 (passit 태그)
-echo "📦 9. VPC 및 네트워크 리소스 삭제 중..."
+# 10. EBS Volumes (passit 관련 볼륨)
+echo "📦 10. EBS Volumes 삭제 중..."
+# Project 태그로 볼륨 찾기
+VOLUMES_PROJECT=$(aws ec2 describe-volumes \
+    --filters "Name=tag:Project,Values=$PROJECT_NAME" "Name=status,Values=available" \
+    --query 'Volumes[].VolumeId' \
+    --output text \
+    --region $REGION 2>/dev/null || echo "")
+# EKS 클러스터 태그로 볼륨 찾기
+VOLUMES_EKS=$(aws ec2 describe-volumes \
+    --filters "Name=tag:eks:cluster-name,Values=passit-*" "Name=status,Values=available" \
+    --query 'Volumes[].VolumeId' \
+    --output text \
+    --region $REGION 2>/dev/null || echo "")
+# 모든 볼륨 ID 합치기 (중복 제거)
+ALL_VOLUMES=$(echo "$VOLUMES_PROJECT $VOLUMES_EKS" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+for VOL_ID in $ALL_VOLUMES; do
+    if [ -n "$VOL_ID" ] && [ "$VOL_ID" != "None" ]; then
+        echo "   EBS Volume 삭제: $VOL_ID"
+        aws ec2 delete-volume --volume-id "$VOL_ID" --region $REGION 2>/dev/null || true
+    fi
+done
+echo ""
+
+# 11. VPC 및 네트워크 리소스 (passit 태그)
+echo "📦 11. VPC 및 네트워크 리소스 삭제 중..."
 VPCS=$(aws ec2 describe-vpcs --filters "Name=tag:Project,Values=$PROJECT_NAME" --query 'Vpcs[].VpcId' --output text --region $REGION 2>/dev/null || echo "")
 if [ -z "$VPCS" ]; then
     # 태그로 못 찾으면 이름으로
@@ -214,8 +304,12 @@ for VPC_ID in $VPCS; do
             aws ec2 delete-route-table --route-table-id $RT_ID --region $REGION 2>/dev/null || true
         done
         
-        # Security Groups (passit 태그)
+        # Security Groups (passit 태그 또는 이름)
         SGS=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Project,Values=$PROJECT_NAME" --query 'SecurityGroups[].GroupId' --output text --region $REGION 2>/dev/null || echo "")
+        if [ -z "$SGS" ]; then
+            # 태그로 못 찾으면 이름으로
+            SGS=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=group-name,Values=passit-*" --query 'SecurityGroups[].GroupId' --output text --region $REGION 2>/dev/null || echo "")
+        fi
         for SG_ID in $SGS; do
             if [ -n "$SG_ID" ] && [ "$SG_ID" != "None" ] && [ "$SG_ID" != "null" ]; then
                 echo "     Security Group 삭제: $SG_ID"
@@ -230,8 +324,8 @@ for VPC_ID in $VPCS; do
 done
 echo ""
 
-# 10. EC2 Instances (passit 태그)
-echo "📦 10. EC2 Instances 삭제 중..."
+# 12. EC2 Instances (passit 태그)
+echo "📦 12. EC2 Instances 삭제 중..."
 INSTANCES=$(aws ec2 describe-instances --filters "Name=tag:Project,Values=$PROJECT_NAME" "Name=instance-state-name,Values=running,stopped" --query 'Reservations[].Instances[].InstanceId' --output text --region $REGION 2>/dev/null || echo "")
 for INSTANCE_ID in $INSTANCES; do
     if [ -n "$INSTANCE_ID" ] && [ "$INSTANCE_ID" != "None" ]; then
@@ -241,8 +335,8 @@ for INSTANCE_ID in $INSTANCES; do
 done
 echo ""
 
-# 11. Load Balancers (passit 태그)
-echo "📦 11. Load Balancers 삭제 중..."
+# 13. Load Balancers (passit 태그)
+echo "📦 13. Load Balancers 삭제 중..."
 ALBS=$(aws elbv2 describe-load-balancers --region $REGION --query "LoadBalancers[?contains(LoadBalancerName, 'passit')].LoadBalancerArn" --output text 2>/dev/null || echo "")
 for ALB_ARN in $ALBS; do
     if [ -n "$ALB_ARN" ] && [ "$ALB_ARN" != "None" ]; then
@@ -252,8 +346,8 @@ for ALB_ARN in $ALBS; do
 done
 echo ""
 
-# 12. CloudFront Distributions (passit 관련)
-echo "📦 12. CloudFront Distributions 삭제 중..."
+# 14. CloudFront Distributions (passit 관련)
+echo "📦 14. CloudFront Distributions 삭제 중..."
 DISTRIBUTIONS=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, 'passit') || contains(Aliases.Items[0], 'passit')].Id" --output text 2>/dev/null || echo "")
 for DIST_ID in $DISTRIBUTIONS; do
     if [ -n "$DIST_ID" ] && [ "$DIST_ID" != "None" ]; then
@@ -269,8 +363,8 @@ for DIST_ID in $DISTRIBUTIONS; do
 done
 echo ""
 
-# 13. KMS Keys (passit 태그)
-echo "📦 13. KMS Keys 삭제 중..."
+# 15. KMS Keys (passit 태그)
+echo "📦 15. KMS Keys 삭제 중..."
 KEYS=$(aws kms list-keys --region $REGION --query 'Keys[].KeyId' --output text 2>/dev/null || echo "")
 for KEY_ID in $KEYS; do
     KEY_ALIAS=$(aws kms list-aliases --key-id $KEY_ID --region $REGION --query "Aliases[?contains(AliasName, 'passit')].AliasName" --output text 2>/dev/null || echo "")
