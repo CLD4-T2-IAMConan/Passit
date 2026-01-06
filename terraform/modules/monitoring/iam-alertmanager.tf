@@ -16,7 +16,8 @@ resource "aws_iam_role" "alertmanager" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${var.oidc_provider_url}:sub" = "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack"
+            "${var.oidc_provider_url}:sub" =
+            "system:serviceaccount:${var.alertmanager_namespace}:alertmanager-kube-prometheus-stack"
           }
         }
       }
@@ -25,17 +26,14 @@ resource "aws_iam_role" "alertmanager" {
 }
 
 resource "aws_iam_policy" "alertmanager_sns_publish" {
-  name        = "${var.project_name}-${var.environment}-alertmanager-sns-publish"
-  description = "Allow Alertmanager to publish alerts to SNS"
+  name = "${var.project_name}-${var.environment}-alertmanager-sns-publish"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "sns:Publish"
-        ]
+        Effect   = "Allow"
+        Action   = ["sns:Publish"]
         Resource = aws_sns_topic.alertmanager.arn
       }
     ]
