@@ -21,8 +21,9 @@ import {
 // 🚨 [추가] userService import
 import { userService } from "../api/services/userService";
 
-// ⚠️ 임시 설정
-const API_BASE_URL = "http://localhost:8083";
+// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE;
 
 // 🌟 MUI 커스텀 모달 스타일
 const modalStyle = {

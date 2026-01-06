@@ -184,3 +184,84 @@ output "s3_ticket_bucket_id" {
 output "alb_controller_role_arn" {
   value = module.cicd.alb_controller_role_arn
 }
+
+output "frontend_cloudfront_distribution_id" {
+  value       = module.cicd.frontend_cloudfront_distribution_id
+  description = "CloudFront distribution ID for cache invalidation"
+}
+
+#######################################
+# Monitoring - In-Cluster Prometheus
+#######################################
+
+output "prometheus_namespace" {
+  description = "Kubernetes namespace where Prometheus is deployed"
+  value       = module.monitoring.prometheus_namespace
+}
+
+output "prometheus_service_url" {
+  description = "In-cluster Prometheus service URL for Grafana"
+  value       = module.monitoring.prometheus_service_url
+}
+
+# ============================================
+# SNS Module Outputs
+# ============================================
+
+# SNS Topic ARNs
+output "sns_user_events_topic_arn" {
+  description = "User events SNS topic ARN"
+  value       = module.sns.user_events_topic_arn
+}
+
+output "sns_deal_events_topic_arn" {
+  description = "Deal events SNS topic ARN"
+  value       = module.sns.deal_events_topic_arn
+}
+
+output "sns_ticket_events_topic_arn" {
+  description = "Ticket events SNS topic ARN"
+  value       = module.sns.ticket_events_topic_arn
+}
+
+output "sns_payment_events_topic_arn" {
+  description = "Payment events SNS topic ARN"
+  value       = module.sns.payment_events_topic_arn
+}
+
+output "sns_chat_events_topic_arn" {
+  description = "Chat events SNS topic ARN"
+  value       = module.sns.chat_events_topic_arn
+}
+
+# SQS Queue URLs
+output "sns_chat_deal_events_queue_url" {
+  description = "Chat service deal events queue URL"
+  value       = module.sns.chat_deal_events_queue_url
+}
+
+output "sns_ticket_deal_events_queue_url" {
+  description = "Ticket service deal events queue URL"
+  value       = module.sns.ticket_deal_events_queue_url
+}
+
+output "sns_trade_ticket_events_queue_url" {
+  description = "Trade service ticket events queue URL"
+  value       = module.sns.trade_ticket_events_queue_url
+}
+
+# SQS Queue ARNs
+output "sns_chat_deal_events_queue_arn" {
+  description = "Chat service deal events queue ARN"
+  value       = module.sns.chat_deal_events_queue_arn
+}
+
+output "sns_ticket_deal_events_queue_arn" {
+  description = "Ticket service deal events queue ARN"
+  value       = module.sns.ticket_deal_events_queue_arn
+}
+
+output "sns_trade_ticket_events_queue_arn" {
+  description = "Trade service ticket events queue ARN"
+  value       = module.sns.trade_ticket_events_queue_arn
+}

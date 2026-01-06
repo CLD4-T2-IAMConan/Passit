@@ -10,9 +10,10 @@ import RequestSuccessModal from "../components/Ticket/RequestSuccessModal";
 import defaultTicket from "../assets/images/defaultTicket.png";
 import { userService } from "../api/services/userService";
 
-// 백엔드 서버의 기본 URL (Java Spring Boot, 8083 포트 가정)
-const API_BASE_URL = "http://localhost:8083";
-const TICKET_API_BASE_URL = "http://localhost:8082"; // 💡 8082 포트로 고정
+// CloudFront를 통한 백엔드 서버 접근
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE; // Trade Service: /api/trades/*, /api/deals/*
+const TICKET_API_BASE_URL = API_SERVICES.TICKET; // Ticket Service: /api/tickets/*
 
 const TicketDetailPage = () => {
   const { ticket_id } = useParams();

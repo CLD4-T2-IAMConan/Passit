@@ -10,7 +10,9 @@ import DealAcceptModal from "../components/Ticket/DealAcceptModal";
 import DealCancelModal from "../components/Ticket/DealCancelModal";
 import DealConfirmModal from "../components/Ticket/DealConfirmModal";
 
-const API_BASE_URL = "http://localhost:8083";
+// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE;
 
 const DealAcceptPage = () => {
   // URL에서 deal_id를 가져옵니다.

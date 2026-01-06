@@ -22,26 +22,9 @@ resource "aws_iam_role_policy_attachment" "fargate_logging" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   role       = aws_iam_role.fargate.name
 }
-#
-# # 3. 팀원 권한 설정 (Access Entry)
-# resource "aws_eks_access_entry" "member1" {
-#   cluster_name  = module.eks.cluster_name
-#   principal_arn = "arn:aws:iam::727646470302:user/t2-yejin"
-#   type          = "STANDARD"
-#   depends_on    = [module.eks]
-# }
-#
-# resource "aws_eks_access_policy_association" "member1_admin" {
-#   cluster_name  = module.eks.cluster_name
-#   policy_arn    = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
-#   principal_arn = "arn:aws:iam::727646470302:user/t2-yejin"
-#
-#   access_scope {
-#     type = "cluster"
-#   }
-# }
 
-# 4. Fargate Profile 설정
+
+# 3. Fargate Profile 설정
 resource "aws_eks_fargate_profile" "main" {
   cluster_name           = module.eks.cluster_name
   fargate_profile_name   = "fp-default"
@@ -54,7 +37,7 @@ resource "aws_eks_fargate_profile" "main" {
   selector { namespace = "monitoring" }
 }
 
-# 5. CoreDNS 애드온 설정 (Fargate 전용)
+# 4. CoreDNS 애드온 설정 (Fargate 전용)
 resource "aws_eks_addon" "coredns" {
   cluster_name                = module.eks.cluster_name
   addon_name                  = "coredns"

@@ -304,3 +304,20 @@ variable "is_dr_region" {
   type        = bool
   default     = false
 }
+
+variable "create_s3" {
+  type    = bool
+  default = true
+}
+
+variable "create_elasticache" {
+  description = "ElastiCache 생성 여부 스위치"
+  type        = bool
+  default     = true
+}
+
+variable "rds_kms_key_id" {
+  type        = string
+  description = "The ARN of the KMS key to encrypt the RDS cluster. For DR region, this must be a key in that region."
+  default     = null
+}

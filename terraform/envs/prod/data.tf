@@ -1,10 +1,21 @@
 # 도쿄 리전의 네트워크 정보를 가져옵니다 (도쿄 프로바이더 사용)
+# data "aws_vpc" "tokyo_vpc" {
+#   provider   = aws.tokyo
+#   cidr_block = "10.3.0.0/16"
+#   id         = "vpc-04bae7f4b39c4cd49"
+#   tags = {
+#     Name = "${var.project_name}-dr-vpc"
+#   }
+# }
 data "aws_vpc" "tokyo_vpc" {
   provider = aws.tokyo
-  cidr_block = "10.3.0.0/16"
-  id = "vpc-0d755b086a33ef801"
-  tags = {
-    Name = "${var.project_name}-dr-vpc"
+  filter {
+    name   = "tag:Name"
+    values = ["${var.project_name}-dr-vpc"]
+  }
+  filter {
+    name   = "tag:Env"
+    values = ["dr"]
   }
 }
 

@@ -6,7 +6,8 @@ set -e
 
 PROJECT_NAME="passit"
 REGION="ap-northeast-2"
-ACCOUNT_ID="727646470302"
+# 계정 ID 자동 감지 (motionbit profile 사용)
+ACCOUNT_ID=$(aws sts get-caller-identity --profile motionbit --query Account --output text 2>/dev/null || aws sts get-caller-identity --query Account --output text 2>/dev/null || echo "")
 
 # 색상 정의
 RED='\033[0;31m'

@@ -70,11 +70,26 @@ module "security" {
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
 
+  # EKS Node Security Group ID (for RDS and ElastiCache access)
+  eks_node_security_group_id = try(module.eks.node_security_group_id, "")
+
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # Frontend configuration (using variables to avoid circular dependency)
+  # Note: CloudFront distribution ID and GitHub Actions role will be created by cicd module
+  frontend_bucket_name                = var.frontend_bucket_name
+  frontend_cloudfront_distribution_id = "" # Will be created by cicd module
+  github_actions_frontend_role_arn    = "" # Will be created by cicd module
+
+  # Secrets Manager
+  db_secrets          = var.db_secrets
+  smtp_secrets        = var.smtp_secrets
+  kakao_secrets       = var.kakao_secrets
+  elasticache_secrets = var.elasticache_secrets
 }
 
 # ============================================
@@ -212,6 +227,8 @@ module "data_tokyo" {
   is_dr_region       = true
   global_cluster_id  = aws_rds_global_cluster.this.id
   create_passit_user = false
+  create_s3          = false
+  create_elasticache = false
 
   vpc_id                       = data.aws_vpc.tokyo_vpc.id
   private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
@@ -231,15 +248,26 @@ module "data_tokyo" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name = var.project_name
-  environment  = var.environment
+  project_name  = var.project_name
+  environment   = var.environment
+  cluster_name  = module.eks.cluster_name
+  region            = var.region
+  account_id        = var.account_id
   tags         = var.tags
-  region       = var.region
-  account_id   = var.account_id
 
-  cluster_name      = module.eks.cluster_name
+
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
+
+  grafana_namespace = "monitoring"
+
+  grafana_admin_user = var.grafana_admin_user
+  grafana_admin_password = var.grafana_admin_password
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
@@ -292,8 +320,8 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = true
-  frontend_bucket_name = var.frontend_bucket_name
+  enable_frontend        = var.enable_frontend
+  frontend_bucket_name  = var.frontend_bucket_name
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -311,4 +339,34 @@ module "cicd" {
   secret_elasticache_arn = module.security.elasticache_secret_arn
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
+
+  # SNS Topic ARNs
+  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
+
+  # SQS Queue URLs
+  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
+
+  # SQS Queue ARNs (for IAM policies)
+  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
+
+  depends_on = [module.eks, module.sns]
+}
+
+# ============================================
+# SNS Module (Event-Driven Architecture)
+# ============================================
+module "sns" {
+  source = "../../modules/sns"
+
+  project_name = var.project_name
+  environment  = var.environment
+  team         = var.team
+  owner        = var.owner
+  kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
 }

@@ -11,11 +11,13 @@ locals {
 # ============================================
 # S3 Buckets
 # ============================================
-
 resource "aws_s3_bucket" "this" {
-  for_each = { for bucket in var.s3_buckets : bucket.name => bucket }
+  for_each = var.create_s3 ? { for bucket in var.s3_buckets : bucket.name => bucket } : {}
 
   bucket = local.s3_bucket_names[each.key]
+
+  # Destroy 시 버킷이 비어있지 않아도 삭제 가능
+  force_destroy = true
 
   tags = merge(
     local.common_tags,
@@ -29,23 +31,21 @@ resource "aws_s3_bucket" "this" {
 # ============================================
 # S3 Bucket Versioning
 # ============================================
-
 resource "aws_s3_bucket_versioning" "this" {
-  for_each = { for bucket in var.s3_buckets : bucket.name => bucket }
+  for_each = var.create_s3 ? { for bucket in var.s3_buckets : bucket.name => bucket } : {}
 
   bucket = aws_s3_bucket.this[each.key].id
 
   versioning_configuration {
-    status = each.value.versioning_enabled ? "Enabled" : "Disabled"
+    status = each.value.versioning_enabled ? "Enabled" : "Suspended"
   }
 }
 
 # ============================================
 # S3 Bucket Public Access Block
 # ============================================
-
 resource "aws_s3_bucket_public_access_block" "this" {
-  for_each = { for bucket in var.s3_buckets : bucket.name => bucket }
+  for_each = var.create_s3 ? { for bucket in var.s3_buckets : bucket.name => bucket } : {}
 
   bucket = aws_s3_bucket.this[each.key].id
 
@@ -58,9 +58,8 @@ resource "aws_s3_bucket_public_access_block" "this" {
 # ============================================
 # S3 Bucket Server-Side Encryption
 # ============================================
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  for_each = { for bucket in var.s3_buckets : bucket.name => bucket }
+  for_each = var.create_s3 ? { for bucket in var.s3_buckets : bucket.name => bucket } : {}
 
   bucket = aws_s3_bucket.this[each.key].id
 
@@ -76,13 +75,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 # ============================================
 # S3 Bucket Lifecycle Configuration
 # ============================================
-
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  for_each = {
+  for_each = var.create_s3 ? {
     for bucket in var.s3_buckets :
     bucket.name => bucket
     if length(bucket.lifecycle_rules) > 0
-  }
+  } : {}
 
   bucket = aws_s3_bucket.this[each.key].id
 
@@ -93,25 +91,20 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
       id     = rule.value.id
       status = rule.value.enabled ? "Enabled" : "Disabled"
 
-      # Filter (prefix)
       filter {
         prefix = rule.value.prefix != null ? rule.value.prefix : ""
       }
 
-      # Transitions
       dynamic "transition" {
         for_each = rule.value.transitions != null ? rule.value.transitions : []
-
         content {
           days          = transition.value.days
           storage_class = transition.value.storage_class
         }
       }
 
-      # Expiration
       dynamic "expiration" {
         for_each = rule.value.expiration_days != null ? [1] : []
-
         content {
           days = rule.value.expiration_days
         }
@@ -121,11 +114,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 }
 
 # ============================================
-# S3 Bucket Policy for Uploads Bucket
+# S3 Bucket Policy (count 조건 수정)
 # ============================================
-
 resource "aws_s3_bucket_policy" "uploads" {
-  count = contains([for b in var.s3_buckets : b.name], "uploads") ? 1 : 0
+  count = (var.create_s3 && contains([for b in var.s3_buckets : b.name], "uploads")) ? 1 : 0
 
   bucket = aws_s3_bucket.this["uploads"].id
 
@@ -142,21 +134,15 @@ resource "aws_s3_bucket_policy" "uploads" {
           "${aws_s3_bucket.this["uploads"].arn}/*"
         ]
         Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
+          Bool = { "aws:SecureTransport" = "false" }
         }
       }
     ]
   })
 }
 
-# ============================================
-# S3 Bucket Policy for Logs Bucket
-# ============================================
-
 resource "aws_s3_bucket_policy" "logs" {
-  count = contains([for b in var.s3_buckets : b.name], "logs") ? 1 : 0
+  count = (var.create_s3 && contains([for b in var.s3_buckets : b.name], "logs")) ? 1 : 0
 
   bucket = aws_s3_bucket.this["logs"].id
 
@@ -173,21 +159,15 @@ resource "aws_s3_bucket_policy" "logs" {
           "${aws_s3_bucket.this["logs"].arn}/*"
         ]
         Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
+          Bool = { "aws:SecureTransport" = "false" }
         }
       }
     ]
   })
 }
 
-# ============================================
-# S3 Bucket Policy for Backup Bucket
-# ============================================
-
 resource "aws_s3_bucket_policy" "backup" {
-  count = contains([for b in var.s3_buckets : b.name], "backup") ? 1 : 0
+  count = (var.create_s3 && contains([for b in var.s3_buckets : b.name], "backup")) ? 1 : 0
 
   bucket = aws_s3_bucket.this["backup"].id
 
@@ -204,9 +184,7 @@ resource "aws_s3_bucket_policy" "backup" {
           "${aws_s3_bucket.this["backup"].arn}/*"
         ]
         Condition = {
-          Bool = {
-            "aws:SecureTransport" = "false"
-          }
+          Bool = { "aws:SecureTransport" = "false" }
         }
       }
     ]

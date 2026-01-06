@@ -66,7 +66,13 @@ variable "alarm_sns_topic_arn" {
 
 variable "prometheus_workspace_name" {
   description = "Amazon Managed Service for Prometheus workspace name"
+variable "oidc_provider_url" {
+  type = string
+}
+
+variable "account_id" {
   type        = string
+  description = "AWS Account ID"
 }
 
 ############################
@@ -99,6 +105,11 @@ variable "grafana_authentication_providers" {
   description = "Grafana authentication providers (e.g. AWS_SSO)"
   type        = list(string)
   default     = ["AWS_SSO"]
+}
+
+variable "grafana_namespace" {
+  type    = string
+  default = "monitoring"
 }
 
 ############################
@@ -145,4 +156,21 @@ variable "grafana_admin_password" {
   description = "Admin password for Grafana"
   type        = string
   default     = "admin1234!" # 실제 운영시에는 tfvars에서 관리하세요.
+}
+
+variable "monitoring_namespace" {
+  description = "The namespace where monitoring tools will be installed"
+  type        = string
+  default     = "monitoring"
+}
+
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
 }

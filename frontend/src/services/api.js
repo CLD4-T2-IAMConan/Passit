@@ -1,8 +1,10 @@
 // frontend/src/services/api.js
 import axios from "axios";
+import { API_SERVICES } from "../config/apiConfig";
 
+// CloudFront를 통한 CS Service 접근
 const api = axios.create({
-  baseURL: "http://localhost:8085",
+  baseURL: API_SERVICES.CS,
   headers: { "Content-Type": "application/json" },
 });
 

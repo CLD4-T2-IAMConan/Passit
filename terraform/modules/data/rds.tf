@@ -45,7 +45,7 @@ data "aws_rds_cluster_parameter_group" "existing" {
 
 resource "aws_rds_cluster_parameter_group" "main" {
   count       = (var.enable_rds && var.existing_rds_parameter_group_name == "") ? 1 : 0
-  name        = "${var.project_name}-${var.environment}-aurora-pg"
+  name        = "${var.project_name}-${var.environment}-aurora-pg-2"
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
 
@@ -72,7 +72,9 @@ locals {
 
 resource "aws_rds_cluster" "main" {
   count              = var.enable_rds ? 1 : 0
-  cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
+  cluster_identifier = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
+  storage_encrypted = true
+  kms_key_id = var.is_dr_region ? (var.rds_kms_key_id != null ? var.rds_kms_key_id : data.aws_kms_alias.rds_default.target_key_arn) : var.rds_kms_key_id
 
   # Global Cluster 연결
   global_cluster_identifier = var.global_cluster_id
@@ -95,14 +97,16 @@ resource "aws_rds_cluster" "main" {
   deletion_protection     = var.environment == "prod" ? true : false
   skip_final_snapshot     = true
 
-  tags = { Name = "${var.project_name}-${var.environment}-aurora-cluster" }
+  tags = {
+      Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
+  }
 }
 
 # 4. 클러스터 인스턴스 (노드 생성)
 resource "aws_rds_cluster_instance" "main" {
   count = var.enable_rds ? (var.environment == "prod" ? 2 : 1) : 0
 
-  identifier         = "${var.project_name}-${var.environment}-db-${count.index}"
+  identifier         = var.is_dr_region ? "${var.project_name}-dr-db-${count.index}" : "${var.project_name}-${var.environment}-db-${count.index}"
   cluster_identifier = aws_rds_cluster.main[0].id
   engine             = aws_rds_cluster.main[0].engine
   engine_version     = aws_rds_cluster.main[0].engine_version
@@ -111,12 +115,11 @@ resource "aws_rds_cluster_instance" "main" {
   db_subnet_group_name = local.db_subnet_group_name
   publicly_accessible  = false
 
-  tags = { Name = "${var.project_name}-${var.environment}-db-${count.index}" }
+  tags = { Name = var.is_dr_region ? "${var.project_name}-dr-db-${count.index}" : "${var.project_name}-${var.environment}-db-${count.index}" }
 }
 
 # 5. passit_user 자동 생성 (서울 리전에서만 실행)
 resource "null_resource" "create_passit_user" {
-  # 🚨 DR 리전이 아니고(is_dr_region = false), 생성 옵션이 켜져 있을 때만 실행
   count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
 
   depends_on = [
@@ -168,4 +171,9 @@ resource "null_resource" "create_passit_user" {
 
     environment = { AWS_REGION = var.region }
   }
+}
+
+data "aws_kms_alias" "rds_default" {
+  # 도쿄 리전용 프로바이더가 적용된 모듈에서 호출되므로 해당 리전의 기본 키를 찾습니다.
+  name = "alias/passit-rds-dr"
 }

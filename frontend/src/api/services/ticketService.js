@@ -1,11 +1,13 @@
 import axios from "axios";
 import { ENDPOINTS } from "../endpoints";
+import { API_SERVICES } from "../../config/apiConfig";
 
 /**
- *  ticket 서비스 전용 API Client (8082)
+ *  ticket 서비스 전용 API Client
+ *  CloudFront를 통한 Ticket Service 접근 (/api/tickets/*)
  */
 const ticketApiClient = axios.create({
-  baseURL: "http://localhost:8082/api",
+  baseURL: API_SERVICES.TICKET, // /api는 endpoints.js에 포함되어 있음
 });
 
 /**
@@ -75,6 +77,22 @@ export const ticketService = {
    */
   deleteTicket: async (ticketId) => {
     const response = await ticketApiClient.delete(ENDPOINTS.TICKETS.DELETE(ticketId));
+    return response.data;
+  },
+
+  /**
+   * 찜하기 추가/제거 (토글) - 로그인 필요
+   */
+  toggleFavorite: async (ticketId) => {
+    const response = await ticketApiClient.post(`/api/tickets/${ticketId}/favorite`);
+    return response.data;
+  },
+
+  /**
+   * 찜하기 여부 확인 - 로그인 필요
+   */
+  checkFavorite: async (ticketId) => {
+    const response = await ticketApiClient.get(`/api/tickets/${ticketId}/favorite`);
     return response.data;
   },
 };

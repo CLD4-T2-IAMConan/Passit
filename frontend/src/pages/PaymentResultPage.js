@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:8083";
+// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE;
 
 function PaymentResultPage() {
   const location = useLocation();
