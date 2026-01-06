@@ -1,0 +1,16 @@
+# 테스트 결과 파일
+results/
+*.json
+*.csv
+
+# 리포트
+reports/
+*.html
+
+# 로그
+*.log
+
+# 임시 파일
+*.tmp
+.DS_Store
+
