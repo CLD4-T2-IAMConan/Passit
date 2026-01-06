@@ -312,6 +312,12 @@ variable "frontend_bucket_name" {
   type = string
 }
 
+variable "alb_name" {
+  description = "ALB name for backend services (used by CloudFront to lookup DNS name dynamically)"
+  type        = string
+  default     = ""
+}
+
 variable "github_oidc_provider_arn" {
   description = "GitHub OIDC Provider ARN for GitHub Actions authentication (optional, can be created in shared resources)"
   type        = string
@@ -375,6 +381,61 @@ variable "allowed_cidr_blocks_bastion" {
   description = "CIDR blocks allowed to SSH into Bastion Host (prod에서는 사용되지 않음)"
   type        = list(string)
   default     = [] # prod에서는 빈 배열
+}
+
+# ============================================
+# Secrets Manager Variables
+# ============================================
+
+variable "db_secrets" {
+  description = "Database credentials for Secrets Manager"
+  type = object({
+    db_host     = string
+    db_port     = string
+    db_name     = string
+    db_user     = string
+    db_password = string
+  })
+  sensitive = true
+}
+
+variable "smtp_secrets" {
+  description = "SMTP email credentials for Secrets Manager"
+  type = object({
+    mail_username = string
+    mail_password = string
+  })
+  sensitive = true
+  default = {
+    mail_username = ""
+    mail_password = ""
+  }
+}
+
+variable "kakao_secrets" {
+  description = "Kakao OAuth credentials for Secrets Manager"
+  type = object({
+    rest_api_key  = string
+    client_secret = string
+    admin_key     = string
+  })
+  sensitive = true
+  default = {
+    rest_api_key  = ""
+    client_secret = ""
+    admin_key     = ""
+  }
+}
+
+variable "elasticache_secrets" {
+  description = "ElastiCache credentials for Secrets Manager"
+  type = object({
+    auth_token = string
+  })
+  sensitive = true
+  default = {
+    auth_token = ""
+  }
 }
 
 # ============================================
