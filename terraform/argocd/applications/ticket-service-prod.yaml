@@ -9,10 +9,10 @@ spec:
   project: default
 
   source:
-    # ⭐ 직접 service-ticket repository 참조 (submodule 대신)
-    repoURL: https://github.com/CLD4-T2-IAMConan/service-ticket.git
-    targetRevision: main  # service-ticket repo의 기본 브랜치
-    path: helm
+    # ⭐ Passit 메인 저장소 참조 (Ingress 설정 포함)
+    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
+    targetRevision: main
+    path: service-ticket/helm
     helm:
       valueFiles:
         - values-prod.yaml
@@ -23,10 +23,14 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true # 삭제된 리소스 자동 정리
+      selfHeal: true # Git과 클러스터 상태 자동 동기화
+      allowEmpty: false
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=true # namespace가 없으면 자동 생성
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+
     retry:
       limit: 5
       backoff:
@@ -34,3 +38,9 @@ spec:
         factor: 2
         maxDuration: 3m
 
+  # Health check 설정
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas # HPA 사용 시 replica 차이 무시

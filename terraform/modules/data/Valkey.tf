@@ -26,20 +26,15 @@ locals {
 # 현재는 리소스가 없을 때를 대비하여 항상 새로 생성하도록 설정합니다.
 # 기존 리소스를 사용하려면 terraform import를 사용하세요.
 
-# 기존 Subnet Group 조회 시도 (optional)
-# 주의: 리소스가 존재하지 않으면 Terraform이 실패합니다.
-# 리소스가 확실히 존재하는 경우에만 사용하세요.
-# 리소스가 없으면 existing_elasticache_subnet_group_name을 빈 문자열로 설정하세요.
-# 
-# 현재는 주석 처리하여 항상 새로 생성하도록 합니다.
-# 기존 리소스를 사용하려면 주석을 해제하고 terraform import를 사용하세요.
-# data "aws_elasticache_subnet_group" "existing" {
-#   count = var.existing_elasticache_subnet_group_name != "" ? 1 : 0
-#   name  = var.existing_elasticache_subnet_group_name
-# }
+# 기존 Subnet Group 조회 (있는 경우)
+data "aws_elasticache_subnet_group" "existing" {
+  count = var.existing_elasticache_subnet_group_name != "" ? 1 : 0
+  name  = var.existing_elasticache_subnet_group_name
+}
 
+# 새 Subnet Group 생성 (없는 경우)
 resource "aws_elasticache_subnet_group" "valkey" {
-  # 항상 새로 생성 (기존 리소스가 있으면 import 필요)
+  count      = var.existing_elasticache_subnet_group_name != "" ? 0 : 1
   name       = "${var.project_name}-${var.environment}-valkey-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
@@ -52,9 +47,8 @@ resource "aws_elasticache_subnet_group" "valkey" {
 }
 
 locals {
-  # 항상 새로 생성한 Subnet Group 사용
-  # 기존 리소스를 사용하려면 terraform import를 사용하세요.
-  elasticache_subnet_group_name = aws_elasticache_subnet_group.valkey.name
+  # 기존 리소스가 있으면 기존 것 사용, 없으면 새로 생성한 것 사용
+  elasticache_subnet_group_name = var.existing_elasticache_subnet_group_name != "" ? data.aws_elasticache_subnet_group.existing[0].name : aws_elasticache_subnet_group.valkey[0].name
 }
 
 # ============================================
