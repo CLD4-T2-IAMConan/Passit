@@ -9,10 +9,10 @@ spec:
   project: default
 
   source:
-    # ⭐ 직접 service-ticket repository 참조 (submodule 대신)
-    repoURL: https://github.com/CLD4-T2-IAMConan/service-ticket.git
-    targetRevision: main  # service-ticket repo의 기본 브랜치
-    path: helm
+    # ⭐ Passit 메인 저장소 참조 (Ingress 설정 포함)
+    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
+    targetRevision: main
+    path: service-ticket/helm
     helm:
       valueFiles:
         - values-prod.yaml
@@ -33,4 +33,3 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-
