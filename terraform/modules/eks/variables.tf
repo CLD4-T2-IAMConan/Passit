@@ -1,4 +1,9 @@
 # EKS Module Variables
+variable "region" {
+  description = "AWS Region"
+  type        = string
+}
+
 variable "project_name" {
   description = "Project name tag for all EKS resources"
   type        = string
@@ -79,6 +84,11 @@ variable "node_desired_size" {
 variable "node_max_size" {
   description = "Maximum number of worker nodes"
   type        = number
+}
+
+variable "enable_cluster_creator_admin_permissions" {
+  type    = bool
+  default = true
 }
 
 variable "access_entries" {

@@ -285,3 +285,28 @@ variable "s3_kms_key_id" {
   type        = string
   default     = ""
 }
+
+# DR 환경에서 RDS 생성을 생략하기 위한 변수
+variable "enable_rds" {
+  description = "RDS를 생성할지 여부"
+  type        = bool
+  default     = true
+}
+
+variable "global_cluster_id" {
+  description = "ID of the Aurora Global Cluster"
+  type        = string
+  default     = null # 중요: 값을 안 주면 일반 DB로 동작하게 함
+}
+
+variable "is_dr_region" {
+  description = "현재 배포 리전이 DR(Secondary) 리전인지 여부"
+  type        = bool
+  default     = false
+}
+
+
+variable "create_s3" {
+  type    = bool
+  default = true
+}

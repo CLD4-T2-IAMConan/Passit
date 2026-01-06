@@ -34,6 +34,8 @@ module "eks" {
   create_kms_key            = false
   cluster_encryption_config = {}
 
+  cluster_additional_security_group_ids = [var.node_security_group_id]
+
   eks_managed_node_groups = local.eks_managed_node_groups
 
   tags = {

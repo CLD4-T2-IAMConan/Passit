@@ -21,11 +21,13 @@ variable "cluster_name" {
   type        = string
 }
 
-
-
 variable "oidc_provider_arn" {
   type        = string
   description = "OIDC Provider ARN from EKS"
+}
+
+variable "oidc_provider_url" {
+  type = string
 }
 
 variable "oidc_provider_url" {
@@ -94,3 +96,15 @@ variable "alertmanager_namespace" {
   type    = string
   default = "monitoring"
 }
+
+variable "monitoring_namespace" {
+  description = "The namespace where monitoring tools will be installed"
+  type        = string
+  default     = "monitoring"
+}
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
+}
+

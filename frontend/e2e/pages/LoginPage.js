@@ -20,7 +20,7 @@ export class LoginPage {
         'input[name="password"], input[type="password"], input[placeholder*="비밀번호"], input[placeholder*="password"]'
       )
       .first();
-    this.submitButton = page.getByRole("button", { name: /로그인/i });
+    this.submitButton = page.locator('form').getByRole("button", { name: /로그인/i });
     this.errorMessage = page.getByRole("alert");
     this.signupLink = page.getByText(/회원가입|가입하기/i).first();
     this.forgotPasswordLink = page.getByText(/비밀번호 찾기|forgot password/i).first();
