@@ -1,28 +1,5 @@
-import axios from "axios";
+import { ticketAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../endpoints";
-import { API_SERVICES } from "../../config/apiConfig";
-
-/**
- *  ticket 서비스 전용 API Client
- *  CloudFront를 통한 Ticket Service 접근 (/api/tickets/*)
- */
-const ticketApiClient = axios.create({
-  baseURL: API_SERVICES.TICKET, // /api는 endpoints.js에 포함되어 있음
-});
-
-/**
- *  요청마다 JWT 자동 첨부
- */
-ticketApiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 /**
  * 티켓 관련 API 서비스
@@ -32,7 +9,7 @@ export const ticketService = {
    * 티켓 목록 조회 + 필터링 (공개 API)
    */
   getTickets: async (params = {}) => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.LIST, { params });
+    const response = await ticketAPI.get(ENDPOINTS.TICKETS.LIST, { params });
     return response.data;
   },
 
@@ -40,7 +17,7 @@ export const ticketService = {
    * 티켓 상세 조회 (공개 API)
    */
   getTicketDetail: async (ticketId) => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
+    const response = await ticketAPI.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
     return response.data;
   },
 
@@ -48,7 +25,7 @@ export const ticketService = {
    * 내 티켓 조회 (판매자 / JWT 필요)
    */
   getMyTickets: async () => {
-    const response = await ticketApiClient.get(ENDPOINTS.TICKETS.MY);
+    const response = await ticketAPI.get(ENDPOINTS.TICKETS.MY);
     return response.data;
   },
 
@@ -56,7 +33,7 @@ export const ticketService = {
    * 티켓 등록 (판매자 / JWT 필요)
    */
   createTicket: async (formData) => {
-    const response = await ticketApiClient.post(ENDPOINTS.TICKETS.CREATE, formData, {
+    const response = await ticketAPI.post(ENDPOINTS.TICKETS.CREATE, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -66,7 +43,7 @@ export const ticketService = {
    * 티켓 수정 (판매자 / JWT 필요)
    */
   updateTicket: async (ticketId, formData) => {
-    const response = await ticketApiClient.put(ENDPOINTS.TICKETS.UPDATE(ticketId), formData, {
+    const response = await ticketAPI.put(ENDPOINTS.TICKETS.UPDATE(ticketId), formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -76,7 +53,7 @@ export const ticketService = {
    * 티켓 삭제 (판매자 / JWT 필요)
    */
   deleteTicket: async (ticketId) => {
-    const response = await ticketApiClient.delete(ENDPOINTS.TICKETS.DELETE(ticketId));
+    const response = await ticketAPI.delete(ENDPOINTS.TICKETS.DELETE(ticketId));
     return response.data;
   },
 
@@ -84,7 +61,7 @@ export const ticketService = {
    * 찜하기 추가/제거 (토글) - 로그인 필요
    */
   toggleFavorite: async (ticketId) => {
-    const response = await ticketApiClient.post(`/api/tickets/${ticketId}/favorite`);
+    const response = await ticketAPI.post(`/api/tickets/${ticketId}/favorite`);
     return response.data;
   },
 
@@ -92,7 +69,7 @@ export const ticketService = {
    * 찜하기 여부 확인 - 로그인 필요
    */
   checkFavorite: async (ticketId) => {
-    const response = await ticketApiClient.get(`/api/tickets/${ticketId}/favorite`);
+    const response = await ticketAPI.get(`/api/tickets/${ticketId}/favorite`);
     return response.data;
   },
 };
