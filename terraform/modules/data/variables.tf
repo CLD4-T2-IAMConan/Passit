@@ -310,3 +310,9 @@ variable "create_s3" {
   type    = bool
   default = true
 }
+
+variable "enable_rds_dr" {
+  description = "Enable RDS DR resources"
+  type        = bool
+  default     = false
+}

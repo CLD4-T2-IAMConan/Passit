@@ -49,6 +49,10 @@ resource "aws_rds_cluster_parameter_group" "main" {
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   parameter {
     name  = "time_zone"
     value = "Asia/Seoul"
@@ -118,6 +122,7 @@ resource "aws_rds_cluster_instance" "main" {
 # 5. passit_user 자동 생성 (서울 리전에서만 실행)
 resource "null_resource" "create_passit_user" {
   count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
+  # count = 0
 
   depends_on = [
     aws_rds_cluster.main,
@@ -133,11 +138,12 @@ resource "null_resource" "create_passit_user" {
   }
 
   provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
     command = <<-EOT
       set -e
 
       BASTION_ID="${var.bastion_instance_id}"
-      RDS_ENDPOINT="${aws_rds_cluster.main.endpoint}"
+      RDS_ENDPOINT="${try(aws_rds_cluster.main[0].endpoint, "")}"
       DB_NAME="${local.db_creds["DB_NAME"]}"
       MASTER_USER="${local.db_creds["DB_USER"]}"
       MASTER_PASSWORD="${local.db_creds["DB_PASSWORD"]}"
@@ -242,6 +248,7 @@ SQL
 }
 
 data "aws_kms_alias" "rds_default" {
+  count = var.enable_rds_dr ? 1 : 0
   # 도쿄 리전용 프로바이더가 적용된 모듈에서 호출되므로 해당 리전의 기본 키를 찾습니다.
   name = "alias/passit-rds-dr"
 }

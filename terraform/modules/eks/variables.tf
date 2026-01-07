@@ -86,10 +86,12 @@ variable "node_max_size" {
   type        = number
 }
 
-# variable "enable_cluster_creator_admin_permissions" {
-#   type    = bool
-#   default = true
-# }
+
+#variable "enable_cluster_creator_admin_permissions" {
+#  type    = bool
+#  default = true
+#}
+
 
 variable "access_entries" {
   description = "Map of access entries to add to the EKS cluster. Key is the entry name, value is the access entry configuration."
@@ -110,4 +112,9 @@ variable "enable_cluster_creator_admin_permissions" {
   description = "EKS 클러스터 생성자에게 관리자 권한 자동 부여 여부"
   type        = bool
   default     = false # 기본값을 false로 두어 충돌을 방지합니다.
+}
+
+variable "node_security_group_id" {
+  type    = string
+  default = null
 }
