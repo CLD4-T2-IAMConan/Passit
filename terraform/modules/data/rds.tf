@@ -104,7 +104,7 @@ resource "aws_rds_cluster" "main" {
   # Secondary는 백업 권한이 없으므로 최소치 설정
   backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
   preferred_backup_window = "03:00-04:00"
-  deletion_protection     = var.environment == "prod" ? true : false  # prod는 삭제 방지
+  deletion_protection     = var.rds_deletion_protection != null ? var.rds_deletion_protection : (var.environment == "prod" ? true : false)  # 변수로 제어 가능, 기본값은 환경에 따라 설정
   skip_final_snapshot     = true  # destroy 시 스냅샷 없이 삭제 (자동 백업은 backup_retention_period로 관리)
 
   tags = {

@@ -322,3 +322,9 @@ variable "enable_elasticache" {
   type        = bool
   default     = true
 }
+
+variable "rds_deletion_protection" {
+  description = "RDS Cluster deletion protection (false로 설정하면 terraform destroy 가능)"
+  type        = bool
+  default     = null # null이면 environment에 따라 자동 설정 (prod: true, 기타: false)
+}
