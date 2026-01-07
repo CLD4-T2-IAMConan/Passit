@@ -108,13 +108,16 @@ resource "aws_subnet" "public" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
-  tags = {
-    Name                     = length(var.public_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-public" : "${var.project_name}-${var.environment}-public${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
-    Project                  = var.project_name
-    Environment              = var.environment
-    Type                     = "public"
-    "kubernetes.io/role/elb" = "1"
-  }
+  tags = merge(
+    {
+      Name                     = length(var.public_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-public" : "${var.project_name}-${var.environment}-public${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
+      Project                  = var.project_name
+      Environment              = var.environment
+      Type                     = "public"
+      "kubernetes.io/role/elb" = "1"
+    },
+    var.public_subnet_tags
+  )
 }
 
 # ============================================
@@ -128,13 +131,16 @@ resource "aws_subnet" "private_app" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
 
-  tags = {
-    Name                              = length(var.private_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-private-app" : "${var.project_name}-${var.environment}-private-app${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
-    Project                           = var.project_name
-    Environment                       = var.environment
-    Type                              = "private-app"
-    "kubernetes.io/role/internal-elb" = "1"
-  }
+  tags = merge(
+    {
+      Name                              = length(var.private_subnet_cidrs) == 1 ? "${var.project_name}-${var.environment}-private-app" : "${var.project_name}-${var.environment}-private-app${count.index == 0 ? "-a" : count.index == 1 ? "-c" : ""}"
+      Project                           = var.project_name
+      Environment                       = var.environment
+      Type                              = "private-app"
+      "kubernetes.io/role/internal-elb" = "1"
+    },
+    var.private_subnet_tags
+  )
 }
 
 # ============================================
