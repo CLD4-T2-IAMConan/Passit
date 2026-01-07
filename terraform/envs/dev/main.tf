@@ -277,12 +277,6 @@ module "monitoring" {
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-
-
-
   depends_on = [
     module.eks,
     module.cicd # AWS Load Balancer Controller webhook이 준비될 때까지 대기
@@ -292,12 +286,6 @@ module "monitoring" {
 
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
-
-
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
 
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
