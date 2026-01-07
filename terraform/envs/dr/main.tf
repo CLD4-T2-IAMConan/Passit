@@ -256,6 +256,9 @@ module "monitoring" {
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
   fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 600
+  fluentbit_wait                 = true
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
