@@ -1,4 +1,4 @@
-import { chatAPI } from "../../axiosInstances";
+import { chatAPI } from "../../../lib/api/client";
 
 // 채팅방 목록 조회 // 완료
 export const getChatRooms = async (userId) => {
