@@ -143,7 +143,7 @@ module "eks" {
 
       policy_associations = {
         admin = {
-          policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type = "cluster"
           }
@@ -200,7 +200,7 @@ module "data" {
   # RDS Configuration
   db_secret_name      = ""
   rds_master_username = "admin"
-  rds_master_password = "PassitProdPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
+  rds_master_password = "PassitDrPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
   rds_database_name   = "passit"
 
   rds_instance_class     = var.rds_instance_class
