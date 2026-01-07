@@ -128,20 +128,18 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           rm argocd-linux-amd64
 
-      - name: Port forward and Login to ArgoCD
+      - name: Port forward ArgoCD Server
         run: |
-          # 1. 패스워드 미리 가져오기
-          ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-          
-          # 2. 포트 포워딩 실행 (백그라운드)
           kubectl port-forward svc/argocd-server -n argocd 8080:443 &
-          
-          # 3. 포트가 열릴 때까지 기다림 (15초 정도 넉넉히)
-          echo "Waiting for port-forwarding to be ready..."
           sleep 15
-          
-          # 4. 로그인 시도
+        continue-on-error: true
+
+      - name: Login to ArgoCD
+        run: |
+          ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+          ARGOCD_SERVER=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.clusterIP}')
           argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+        continue-on-error: true
 
       - name: Sync ArgoCD Application
         run: |
