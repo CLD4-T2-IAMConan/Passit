@@ -25,8 +25,10 @@ resource "helm_release" "argocd" {
 
   # 기존 리소스를 Helm이 adopt하도록 설정
   force_update  = true
+  atomic        = false # immutable 필드 변경 시 실패 방지를 위해 false로 설정
   wait          = true
   wait_for_jobs = true
+  reuse_values  = false # 기존 값 재사용하지 않음
 
   depends_on = [
     kubernetes_namespace_v1.argocd,
