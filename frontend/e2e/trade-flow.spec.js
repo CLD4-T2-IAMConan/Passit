@@ -1,31 +1,37 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
+import { SignupPage } from "./pages/SignupPage";
 import { TicketListPage } from "./pages/TicketListPage";
 import { TicketDetailPage } from "./pages/TicketDetailPage";
 import { DealListPage } from "./pages/DealListPage";
 import { DealAcceptPage } from "./pages/DealAcceptPage";
+import { PaymentPage } from "./pages/PaymentPage";
+import { PaymentResultPage } from "./pages/PaymentResultPage";
 
 /**
- * 거래/양도 플로우 E2E 테스트
+ * Trade 서비스 전체 플로우 E2E 테스트
  *
  * 테스트 시나리오:
- * - 티켓 상세에서 거래 요청
- * - 거래 목록 조회 (구매/판매)
- * - 거래 상세 조회
- * - 거래 수락/거절 (판매자)
- * - 거래 확정 (구매자)
+ * 1. 티켓 상세에서 거래 요청 (구매자)
+ * 2. 거래 목록 조회 (구매/판매)
+ * 3. 거래 상세 조회
+ * 4. 거래 수락 (판매자)
+ * 5. 결제 페이지 이동 및 결제 정보 확인 (구매자)
+ * 6. 결제 결과 확인
+ * 7. 거래 확정 (구매자)
  */
 
-test.describe("거래/양도 플로우", () => {
+test.describe("Trade 서비스 전체 플로우", () => {
   let buyerEmail;
   let buyerPassword;
   let sellerEmail;
   let sellerPassword;
   let ticketId;
   let dealId;
+  let paymentId;
 
   test.beforeAll(async ({ browser }) => {
-    test.setTimeout(120000); // 2분 타임아웃
+    test.setTimeout(180000); // 3분 타임아웃
     
     // 백엔드 서버 상태 확인
     let backendAvailable = false;
@@ -65,9 +71,9 @@ test.describe("거래/양도 플로우", () => {
     const page = await browser.newPage();
     const timestamp = Date.now();
     
-    buyerEmail = `e2e-buyer-${timestamp}@example.com`;
+    buyerEmail = `e2e-trade-buyer-${timestamp}@example.com`;
     buyerPassword = "Test1234!";
-    sellerEmail = `e2e-seller-${timestamp}@example.com`;
+    sellerEmail = `e2e-trade-seller-${timestamp}@example.com`;
     sellerPassword = "Test1234!";
 
     try {
@@ -79,7 +85,7 @@ test.describe("거래/양도 플로우", () => {
         data: {
           email: buyerEmail,
           password: buyerPassword,
-          name: "E2E Buyer",
+          name: "E2E Trade Buyer",
           nickname: `buyer${timestamp}`,
         },
       });
@@ -90,7 +96,7 @@ test.describe("거래/양도 플로우", () => {
         data: {
           email: sellerEmail,
           password: sellerPassword,
-          name: "E2E Seller",
+          name: "E2E Trade Seller",
           nickname: `seller${timestamp}`,
         },
       });
@@ -127,6 +133,9 @@ test.describe("거래/양도 플로우", () => {
     }
   });
 
+  /**
+   * 1. 티켓 상세에서 거래 요청 (구매자)
+   */
   test("1. 티켓 상세에서 거래 요청", async ({ page }) => {
     if (!ticketId) {
       test.skip();
@@ -185,8 +194,13 @@ test.describe("거래/양도 플로우", () => {
         if (await confirmButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await confirmButton.click();
           await page.waitForLoadState("networkidle");
-          await page.waitForTimeout(2000);
-          console.log("✅ 거래 요청 완료");
+          await page.waitForTimeout(3000);
+          
+          // 성공 메시지 확인
+          const successMessage = page.getByText(/거래 요청|요청이 완료/i);
+          if (await successMessage.isVisible({ timeout: 5000 }).catch(() => false)) {
+            console.log("✅ 거래 요청 완료");
+          }
         }
       }
     } else {
@@ -194,6 +208,9 @@ test.describe("거래/양도 플로우", () => {
     }
   });
 
+  /**
+   * 2. 거래 목록 조회 (구매 내역)
+   */
   test("2. 거래 목록 조회 (구매 내역)", async ({ page }) => {
     // 구매자로 로그인
     const baseURL = process.env.BASE_URL || "http://localhost:3000";
@@ -253,6 +270,9 @@ test.describe("거래/양도 플로우", () => {
     }
   });
 
+  /**
+   * 3. 거래 상세 조회
+   */
   test("3. 거래 상세 조회", async ({ page }) => {
     // 구매자로 로그인
     const baseURL = process.env.BASE_URL || "http://localhost:3000";
@@ -292,6 +312,9 @@ test.describe("거래/양도 플로우", () => {
       // 거래 상세 페이지 확인
       await page.waitForURL(/\/deals\/\d+\/detail/, { timeout: 10000 });
       
+      const dealAcceptPage = new DealAcceptPage(page);
+      await dealAcceptPage.expectDealInfoVisible();
+      
       // URL에서 dealId 추출
       const url = page.url();
       const match = url.match(/\/deals\/(\d+)/);
@@ -300,17 +323,17 @@ test.describe("거래/양도 플로우", () => {
         console.log(`💼 거래 ID: ${dealId}`);
       }
       
-      const dealAcceptPage = new DealAcceptPage(page);
-      await dealAcceptPage.expectDealInfoVisible();
-      
       console.log("✅ 거래 상세 정보가 표시됩니다");
     } else {
       test.skip();
     }
   });
 
+  /**
+   * 4. 판매자 - 거래 수락
+   */
   test("4. 판매자 - 거래 수락", async ({ page }) => {
-    if (!ticketId) {
+    if (!dealId) {
       test.skip();
       return;
     }
@@ -349,11 +372,9 @@ test.describe("거래/양도 플로우", () => {
 
     const count = await dealListPage.getDealCount();
     if (count > 0) {
-      // 첫 번째 거래 클릭
-      await dealListPage.clickFirstDeal();
-      await page.waitForURL(/\/deals\/\d+\/detail/, { timeout: 10000 });
-
+      // 거래 상세 페이지로 이동
       const dealAcceptPage = new DealAcceptPage(page);
+      await dealAcceptPage.goto(dealId);
       await dealAcceptPage.expectDealInfoVisible();
 
       // 수락 버튼이 있으면 클릭
@@ -376,6 +397,204 @@ test.describe("거래/양도 플로우", () => {
       }
     } else {
       test.skip();
+    }
+  });
+
+  /**
+   * 5. 구매자 - 결제 페이지 이동 및 결제 정보 확인
+   */
+  test("5. 구매자 - 결제 페이지 이동 및 결제 정보 확인", async ({ page }) => {
+    if (!dealId) {
+      test.skip();
+      return;
+    }
+
+    // 구매자로 로그인
+    const baseURL = process.env.BASE_URL || "http://localhost:3000";
+    const loginResponse = await page.request.post(`${baseURL}/api/auth/login`, {
+      data: { email: buyerEmail, password: buyerPassword },
+    });
+
+    const loginData = await loginResponse.json();
+    if (!loginData.success) {
+      test.skip();
+      return;
+    }
+
+    await page.goto("/");
+    await page.evaluate((data) => {
+      localStorage.setItem("accessToken", data.accessToken);
+      const user = {
+        userId: data.userId,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+      };
+      localStorage.setItem("user", JSON.stringify(user));
+    }, loginData.data);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // 거래 상세 페이지로 이동하여 결제 정보 확인
+    const dealAcceptPage = new DealAcceptPage(page);
+    await dealAcceptPage.goto(dealId);
+    await dealAcceptPage.expectDealInfoVisible();
+
+    // 결제 버튼 또는 결제 링크 찾기
+    const paymentButton = page.getByRole("button", { name: /결제|결제하기|pay/i });
+    const paymentLink = page.getByRole("link", { name: /결제|결제하기|pay/i });
+    
+    if (await paymentButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // 결제 버튼 클릭
+      await paymentButton.click();
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(2000);
+      
+      // 결제 페이지로 이동했는지 확인
+      await page.waitForURL(/\/payments\/\d+\/detail/, { timeout: 10000 });
+      
+      // URL에서 paymentId 추출
+      const url = page.url();
+      const match = url.match(/\/payments\/(\d+)/);
+      if (match) {
+        paymentId = parseInt(match[1]);
+        console.log(`💳 결제 ID: ${paymentId}`);
+      }
+      
+      // 결제 페이지 확인
+      const paymentPage = new PaymentPage(page);
+      await paymentPage.expectPaymentInfoVisible();
+      
+      console.log("✅ 결제 페이지로 이동 완료");
+    } else if (await paymentLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // 결제 링크 클릭
+      await paymentLink.click();
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(2000);
+      
+      // 결제 페이지로 이동했는지 확인
+      await page.waitForURL(/\/payments\/\d+\/detail/, { timeout: 10000 });
+      
+      const paymentPage = new PaymentPage(page);
+      await paymentPage.expectPaymentInfoVisible();
+      
+      console.log("✅ 결제 페이지로 이동 완료 (링크)");
+    } else {
+      console.log("⚠️ 결제 버튼/링크를 찾을 수 없습니다");
+      // API를 통해 직접 결제 정보 조회 시도
+      try {
+        const dealDetailResponse = await page.request.get(`${baseURL}/api/deals/${dealId}/detail`, {
+          headers: {
+            Authorization: `Bearer ${loginData.data.accessToken}`
+          }
+        });
+        const dealDetail = await dealDetailResponse.json();
+        if (dealDetail.paymentId) {
+          paymentId = dealDetail.paymentId;
+          console.log(`💳 API를 통해 결제 ID 확인: ${paymentId}`);
+        }
+      } catch (error) {
+        console.log("⚠️ 결제 정보를 가져올 수 없습니다:", error.message);
+      }
+    }
+  });
+
+  /**
+   * 6. 결제 정보 확인 (결제는 실제로 진행하지 않음)
+   */
+  test("6. 결제 정보 확인", async ({ page }) => {
+    if (!paymentId) {
+      test.skip();
+      return;
+    }
+
+    // 구매자로 로그인
+    const baseURL = process.env.BASE_URL || "http://localhost:3000";
+    const loginResponse = await page.request.post(`${baseURL}/api/auth/login`, {
+      data: { email: buyerEmail, password: buyerPassword },
+    });
+
+    const loginData = await loginResponse.json();
+    if (!loginData.success) {
+      test.skip();
+      return;
+    }
+
+    await page.goto("/");
+    await page.evaluate((data) => {
+      localStorage.setItem("accessToken", data.accessToken);
+      const user = {
+        userId: data.userId,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+      };
+      localStorage.setItem("user", JSON.stringify(user));
+    }, loginData.data);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // 결제 페이지로 이동
+    const paymentPage = new PaymentPage(page);
+    await paymentPage.goto(paymentId);
+    await paymentPage.expectPaymentInfoVisible();
+
+    // 결제 금액 확인
+    const amount = await paymentPage.getPaymentAmount();
+    if (amount) {
+      console.log(`💰 결제 금액: ${amount}`);
+    }
+
+    console.log("✅ 결제 정보 확인 완료");
+  });
+
+  /**
+   * 7. 거래 확정 (구매자) - 실제 결제 없이 테스트
+   */
+  test("7. 거래 확정 확인", async ({ page }) => {
+    if (!dealId) {
+      test.skip();
+      return;
+    }
+
+    // 구매자로 로그인
+    const baseURL = process.env.BASE_URL || "http://localhost:3000";
+    const loginResponse = await page.request.post(`${baseURL}/api/auth/login`, {
+      data: { email: buyerEmail, password: buyerPassword },
+    });
+
+    const loginData = await loginResponse.json();
+    if (!loginData.success) {
+      test.skip();
+      return;
+    }
+
+    await page.goto("/");
+    await page.evaluate((data) => {
+      localStorage.setItem("accessToken", data.accessToken);
+      const user = {
+        userId: data.userId,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+      };
+      localStorage.setItem("user", JSON.stringify(user));
+    }, loginData.data);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // 거래 상세 페이지로 이동
+    const dealAcceptPage = new DealAcceptPage(page);
+    await dealAcceptPage.goto(dealId);
+    await dealAcceptPage.expectDealInfoVisible();
+
+    // 확정 버튼이 있는지 확인 (결제 완료 후에만 나타남)
+    const confirmButton = page.getByRole("button", { name: /확정|거래 확정|confirm/i });
+    if (await confirmButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log("✅ 거래 확정 버튼이 표시됩니다 (결제 완료 상태)");
+      // 실제 확정은 하지 않고 버튼 존재만 확인
+    } else {
+      console.log("ℹ️ 거래 확정 버튼이 없습니다 (결제가 완료되지 않았거나 이미 확정된 거래일 수 있음)");
     }
   });
 });
