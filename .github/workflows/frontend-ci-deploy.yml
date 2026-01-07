@@ -171,7 +171,7 @@ jobs:
           if [ "${{ github.event.inputs.deploy_dr }}" == "true" ]; then
             echo "env=dr" >> $GITHUB_OUTPUT
             echo "aws_role=${{ secrets.AWS_ROLE_ARN_DR }}" >> $GITHUB_OUTPUT
-            echo "bucket_name=passit-dr-frontend-bucket-1" >> $GITHUB_OUTPUT
+            echo "bucket_name=passit-dr-frontend-bucket" >> $GITHUB_OUTPUT
             echo "cf_dist_id=${{ secrets.CF_DIST_ID_DR }}" >> $GITHUB_OUTPUT
             echo "region=ap-northeast-1" >> $GITHUB_OUTPUT
           # 2. 메인 브랜치 자동 배포 (Prod)
