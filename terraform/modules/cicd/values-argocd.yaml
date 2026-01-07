@@ -1,19 +1,22 @@
 server:
   extraArgs:
     - --insecure
-    - --rootpath
-    - /
+    #- --rootpath
+    #- /
 
   service:
     enabled: true
     type: ClusterIP
+    port: 80
+    targetPort: 8080
 
   ingress:
     enabled: true
     ingressClassName: alb
-    # hosts: []
-    paths:
-      - /
+    hosts:
+      - host: argocd-${environment}.passit.cloud 
+        paths:
+          - /
     pathType: Prefix
 
     annotations:
@@ -30,7 +33,7 @@ configs:
   cm:
     # Enable in-cluster deployment
     cluster.inClusterEnabled: "true"
-    # url: http://${alb_dns_name}
+    url: http://argocd-${environment}.passit.cloud
 
 repoServer:
   dnsPolicy: ClusterFirst

@@ -65,3 +65,42 @@ allowed_cidr_blocks = ["0.0.0.0/0"]
 # existing_rds_parameter_group_name          = "passit-prod-aurora-pg"
 # existing_elasticache_subnet_group_name     = "passit-prod-valkey-subnet-group"
 # existing_elasticache_parameter_group_name  = "passit-prod-valkey-pg"
+
+# =========================
+# S3
+# =========================
+
+# 기존 코드 호환용 (base name)
+s3_bucket_profile  = "profile-images"
+s3_bucket_ticket   = "ticket-images"
+s3_bucket_frontend = "frontend"
+
+# Terraform 관리 S3 버킷
+# 실제 버킷명: passit-${environment}-${name}
+s3_buckets = [
+  {
+    name               = "uploads"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "backup"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "logs"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "profile-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  },
+  {
+    name               = "ticket-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  }
+]

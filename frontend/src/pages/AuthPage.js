@@ -12,6 +12,7 @@ const AuthPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     const error = searchParams.get("error");
@@ -35,8 +36,14 @@ const AuthPage = () => {
 
   const handleRegisterSuccess = (user) => {
     console.log("회원가입 성공:", user);
+    // 회원가입 성공 메시지 표시
+    setSuccessMessage("회원가입이 완료되었습니다. 로그인해주세요.");
     // 회원가입 후 로그인 폼으로 전환
     setIsLogin(true);
+    // 5초 후 성공 메시지 자동 제거
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
   };
 
   const switchToLogin = () => {
@@ -196,6 +203,23 @@ const AuthPage = () => {
                 onClose={() => setErrorMessage(null)}
               >
                 {errorMessage}
+              </Alert>
+            )}
+            {successMessage && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 2,
+                  width: "100%",
+                  position: "absolute",
+                  top: errorMessage ? 80 : 16,
+                  left: { xs: 3, sm: 4, md: 5, lg: 6 },
+                  right: { xs: 3, sm: 4, md: 5, lg: 6 },
+                  zIndex: 1,
+                }}
+                onClose={() => setSuccessMessage(null)}
+              >
+                {successMessage}
               </Alert>
             )}
             <Box

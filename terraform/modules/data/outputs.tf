@@ -5,12 +5,12 @@
 # ============================================
 output "rds_cluster_endpoint" {
   description = "The cluster endpoint for RDS Aurora"
-  value       = aws_rds_cluster.main[0].endpoint
+  value       = try(aws_rds_cluster.main[0].endpoint, "")
 }
 
 output "rds_reader_endpoint" {
   description = "The reader endpoint for RDS Aurora"
-  value       = aws_rds_cluster.main[0].reader_endpoint
+  value       = try(aws_rds_cluster.main[0].reader_endpoint, "")
 }
 
 # ============================================

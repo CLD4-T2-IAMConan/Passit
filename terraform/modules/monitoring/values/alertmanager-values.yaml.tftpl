@@ -19,7 +19,7 @@ alertmanager:
     receivers:
       - name: "sns-notifications"
         sns_configs:
-          - topic_arn: ${sns_topic_arn}
+          - topic_arn: ${alarm_sns_topic_arn}
             sigv4:
               region: ap-northeast-2
             subject: "[PASSIT][{{ .Status | toUpper }}] {{ .CommonAnnotations.summary }}"

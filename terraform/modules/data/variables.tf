@@ -311,6 +311,12 @@ variable "create_s3" {
   default = true
 }
 
+variable "enable_rds_dr" {
+  description = "Enable RDS DR resources"
+  type        = bool
+  default     = false
+}
+
 variable "create_elasticache" {
   type        = bool
   default     = true

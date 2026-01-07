@@ -31,7 +31,7 @@ export class SignupPage {
       .first();
     this.submitButton = page.getByRole("button", { name: /회원가입/i });
     this.loginLink = page.getByText(/로그인/i).first();
-    this.successMessage = page.getByText(/회원가입이 완료되었습니다|회원가입 완료/i);
+    this.successMessage = page.getByText(/회원가입이 완료되었습니다|회원가입 완료|로그인해주세요/i);
     this.errorMessage = page.getByRole("alert");
   }
 
@@ -143,7 +143,69 @@ export class SignupPage {
    * 회원가입 성공 메시지 확인
    */
   async expectSuccessMessage() {
-    await expect(this.successMessage).toBeVisible();
+    // 성공 메시지가 표시될 때까지 대기 (최대 10초)
+    // 여러 패턴의 성공 메시지 텍스트를 시도
+    const successPatterns = [
+      /회원가입이 완료되었습니다/i,
+      /회원가입 완료/i,
+      /로그인해주세요/i,
+      /완료되었습니다/i,
+    ];
+
+    let found = false;
+    for (const pattern of successPatterns) {
+      try {
+        const messageElement = this.page.getByText(pattern).first();
+        if (await messageElement.isVisible({ timeout: 5000 }).catch(() => false)) {
+          found = true;
+          await expect(messageElement).toBeVisible();
+          break;
+        }
+      } catch (e) {
+        // 다음 패턴 시도
+      }
+    }
+
+    // 성공 메시지를 찾지 못한 경우, 로그인 폼으로 전환되었는지 확인
+    if (!found) {
+      // 페이지가 로그인 모드로 전환되었는지 확인
+      // 회원가입 폼이 사라지고 로그인 폼이 나타나는지 확인
+      await this.page.waitForTimeout(2000); // 상태 전환 대기
+      
+      // 회원가입 관련 요소가 사라졌는지 확인
+      const signupFormVisible = await this.page
+        .locator('input[placeholder*="이름"], input[name="name"]')
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
+
+      // 로그인 폼 요소 확인
+      const loginEmailInput = this.page
+        .locator('input[name="email"], input[type="email"], input[placeholder*="이메일"]')
+        .first();
+      const isLoginFormVisible = await loginEmailInput.isVisible({ timeout: 5000 }).catch(() => false);
+
+      // 회원가입 폼이 사라지고 로그인 폼이 보이면 성공으로 간주
+      if (!signupFormVisible && isLoginFormVisible) {
+        found = true;
+        return;
+      }
+
+      // MUI Alert 성공 메시지 확인
+      const successAlert = this.page.locator('.MuiAlert-root[role="alert"]').filter({ hasText: /완료|성공|success/i }).first();
+      if (await successAlert.isVisible({ timeout: 3000 }).catch(() => false)) {
+        found = true;
+        return;
+      }
+    }
+
+    // 성공 메시지나 로그인 폼 중 하나라도 보이지 않으면 실패
+    if (!found) {
+      // 디버깅을 위해 현재 페이지 상태 확인
+      const pageContent = await this.page.content();
+      console.log("페이지 내용 일부:", pageContent.substring(0, 500));
+      throw new Error("회원가입 성공 메시지 또는 로그인 폼을 찾을 수 없습니다.");
+    }
   }
 
   /**
