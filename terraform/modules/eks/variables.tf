@@ -111,9 +111,5 @@ variable "access_entries" {
 variable "node_security_group_id" {
   description = "The ID of the security group for EKS nodes"
   type        = string
-}
-
-variable "node_security_group_id" {
-  type    = string
-  default = null
+  default     = null
 }

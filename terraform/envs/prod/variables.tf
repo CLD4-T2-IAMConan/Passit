@@ -204,6 +204,18 @@ variable "existing_elasticache_parameter_group_name" {
 # ============================================
 # Data Module (RDS / Valkey) Variables
 # ============================================
+variable "rds_master_username" {
+  description = "Master username for RDS"
+  type        = string
+  default     = "admin"
+}
+
+variable "rds_master_password" {
+  description = "Master password for RDS"
+  type        = string
+  sensitive   = true
+}
+
 variable "rds_instance_class" {
   description = "Instance class for RDS (e.g., db.t3.medium)"
   type        = string
@@ -262,6 +274,11 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
+variable "alertmanager_role_arn" {
+  description = "IAM Role ARN used by Alertmanager via IRSA (optional - will be created by monitoring module if not provided)"
+  type        = string
+  default     = null
+}
 
 # ============================================
 # Monitoring - Grafana (EKS Helm)
@@ -437,4 +454,19 @@ variable "elasticache_secrets" {
   default = {
     auth_token = ""
   }
+}
+
+# ============================================
+# DR Region Variables
+# ============================================
+variable "enable_dr" {
+  description = "Enable DR region (Tokyo) resources"
+  type        = bool
+  default     = false
+}
+
+variable "dr_vpc_id" {
+  description = "DR region (Tokyo) VPC ID (optional - if empty, will try to find by tags)"
+  type        = string
+  default     = ""
 }
