@@ -143,7 +143,7 @@ module "eks" {
 
       policy_associations = {
         admin = {
-          policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type = "cluster"
           }
@@ -200,7 +200,7 @@ module "data" {
   # RDS Configuration
   db_secret_name      = ""
   rds_master_username = "admin"
-  rds_master_password = "PassitProdPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
+  rds_master_password = "PassitDrPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
   rds_database_name   = "passit"
 
   rds_instance_class     = var.rds_instance_class
@@ -220,22 +220,35 @@ module "data" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name  = var.project_name
-  environment   = var.environment
-  cluster_name  = module.eks.cluster_name
-  region        = var.region
-  account_id    = var.account_id
+  project_name = var.project_name
+  environment  = var.environment
+  cluster_name = module.eks.cluster_name
+  region       = var.region
+  account_id   = var.account_id
 
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
 
   depends_on = [
     module.eks,
-    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+    module.cicd # AWS Load Balancer Controller webhook이 준비될 때까지 대기
   ]
 
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
+
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
+
+
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
+
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 }
 
 # ============================================

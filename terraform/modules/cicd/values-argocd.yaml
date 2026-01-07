@@ -14,9 +14,9 @@ server:
     enabled: true
     ingressClassName: alb
     hosts:
-      - argocd-dev.passit.cloud
-    paths:
-      - /
+      - host: argocd-${environment}.passit.cloud 
+        paths:
+          - /
     pathType: Prefix
 
     annotations:
@@ -33,7 +33,7 @@ configs:
   cm:
     # Enable in-cluster deployment
     cluster.inClusterEnabled: "true"
-    url: http://${alb_dns_name}
+    url: http://argocd-${environment}.passit.cloud
 
 repoServer:
   dnsPolicy: ClusterFirst

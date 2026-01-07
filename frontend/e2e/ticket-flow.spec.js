@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 import { TicketCreatePage } from "./pages/TicketCreatePage";
 import { TicketListPage } from "./pages/TicketListPage";
 import { TicketDetailPage } from "./pages/TicketDetailPage";
+import { SignupPage } from "./pages/SignupPage";
+import { LoginPage } from "./pages/LoginPage";
 
 /**
  * 티켓 전체 플로우 E2E 테스트
@@ -28,73 +30,33 @@ test.describe("티켓 전체 플로우 (등록 → 조회)", () => {
     createdTicketName = `E2E 플로우 테스트 티켓 ${Date.now()}`;
 
     try {
-      const baseURL = process.env.BASE_URL || "https://di1d1oxqewykn.cloudfront.net";
+      // 브라우저를 통한 회원가입 및 로그인
+      const signupPage = new SignupPage(page);
+      const loginPage = new LoginPage(page);
 
-      // 회원가입
       console.log(`📝 회원가입: ${testEmail}`);
-      const signupResponse = await page.request.post(`${baseURL}/api/auth/signup`, {
-        data: {
-          email: testEmail,
-          password: testPassword,
-          name: "E2E Flow Tester",
-          nickname: testNickname,
-        },
+
+      // 1. 회원가입
+      await signupPage.goto();
+      await signupPage.signup({
+        email: testEmail,
+        password: testPassword,
+        name: "E2E Flow Tester",
+        phone: "010-1234-5678",
       });
 
-      const signupData = await signupResponse.json();
-      if (!signupData.success) {
-        console.log("⚠️ 회원가입 실패:", signupData.message);
-        await page.close();
-        return;
-      }
-
-      // 로그인 재시도
-      let loginData;
-      let attempts = 0;
-      const maxAttempts = 6;
-
-      while (attempts < maxAttempts) {
-        attempts++;
-        if (attempts > 1) {
-          await page.waitForTimeout(5000);
-        }
-
-        const loginResponse = await page.request.post(`${baseURL}/api/auth/login`, {
-          data: { email: testEmail, password: testPassword },
-        });
-
-        loginData = await loginResponse.json();
-        if (loginData.success) {
-          console.log(`✅ 로그인 성공 (${attempts}번째 시도)`);
-          break;
-        }
-      }
-
-      if (!loginData.success) {
-        console.log("⚠️ 로그인 실패");
-        await page.close();
-        return;
-      }
-
-      // 인증 상태 설정
-      await page.goto("/");
-      await page.evaluate((data) => {
-        localStorage.setItem("accessToken", data.accessToken);
-        if (data.refreshToken) {
-          localStorage.setItem("refreshToken", data.refreshToken);
-        }
-        const user = {
-          userId: data.userId,
-          email: data.email,
-          name: data.name,
-          role: data.role,
-          provider: data.provider,
-        };
-        localStorage.setItem("user", JSON.stringify(user));
-      }, loginData.data);
-
-      await page.reload();
+      // 회원가입 성공 대기
       await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(2000);
+
+      // 2. 로그인
+      console.log(`🔐 로그인: ${testEmail}`);
+      await loginPage.goto();
+      await loginPage.login(testEmail, testPassword);
+
+      // 로그인 성공 대기
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(2000);
 
       // 티켓 생성
       console.log(`🎫 티켓 생성: ${createdTicketName}`);

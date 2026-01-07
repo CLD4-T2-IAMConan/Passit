@@ -4,7 +4,7 @@
 variable "account_id" {
   description = "AWS Account ID (deprecated - auto-detected from current credentials via data.aws_caller_identity.current)"
   type        = string
-  default     = ""  # 기본값 제거 - main.tf에서 자동 감지된 값 사용
+  default     = "" # 기본값 제거 - main.tf에서 자동 감지된 값 사용
 }
 
 variable "project_name" {
@@ -145,9 +145,9 @@ variable "node_max_size" {
 variable "eks_access_entries" {
   description = "EKS access entries configuration. Username will be used to construct principal_arn with auto-detected account_id."
   type = map(object({
-    username          = string
+    username = string
     policy_associations = map(object({
-      policy_arn   = string
+      policy_arn = string
       access_scope = optional(object({
         type       = string
         namespaces = optional(list(string))
@@ -363,9 +363,6 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
-variable "alertmanager_role_arn" {
-  type = string
-}
 
 
 # ============================================

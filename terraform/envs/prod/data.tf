@@ -11,11 +11,7 @@ data "aws_vpc" "tokyo_vpc" {
   provider = aws.tokyo
   filter {
     name   = "tag:Name"
-    values = ["${var.project_name}-dr-vpc"]
-  }
-  filter {
-    name   = "tag:Env"
-    values = ["dr"]
+    values = ["passit-dr-vpc"]
   }
 }
 

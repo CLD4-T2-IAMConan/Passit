@@ -15,11 +15,11 @@ prometheus:
 
     serviceMonitorSelector:
       matchLabels:
-        observability: enabled
+        release: kube-prometheus-stack
 
-      podMonitorSelector:
-        matchLabels:
-          observability: enabled
+    podMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
 
     # 빠른 dev용 (재시작 시 데이터 삭제)
     storageSpec:

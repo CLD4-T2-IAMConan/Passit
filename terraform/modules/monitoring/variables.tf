@@ -94,25 +94,13 @@ variable "alertmanager_namespace" {
   default = "monitoring"
 }
 
-variable "alarm_sns_topic_arn" {
-  type        = string
-  description = "SNS Topic ARN for Alertmanager notifications"
-}
-
-variable "alertmanager_role_arn" {
-  type        = string
-  description = "IAM Role ARN used by Alertmanager via IRSA"
-}
-
+############################
+# Prometheus (AMP) & Workspace
+############################
 
 variable "prometheus_workspace_name" {
+  description = "The name of the Amazon Managed Service for Prometheus workspace"
   type        = string
-  description = "AMP workspace name"
-}
-
-variable "prometheus_namespace" {
-  type        = string
-  default     = "monitoring"
 }
 
 variable "prometheus_service_account_name" {
@@ -128,6 +116,23 @@ variable "application_error_threshold" {
   type        = number
 }
 
-variable "alarm_sns_topic_arn" {
+variable "prometheus_namespace" {
+  description = "Namespace for Prometheus"
+  type        = string
+  default     = "monitoring"
+}
+
+############################
+# Fluent Bit Extensions
+############################
+
+variable "fluentbit_service_account_name" {
+  description = "Service account name for Fluent Bit"
+  type        = string
+  default     = "fluent-bit"
+}
+
+variable "fluentbit_chart_version" {
+  description = "The version of the Fluent Bit Helm chart"
   type        = string
 }

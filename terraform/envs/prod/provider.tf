@@ -23,6 +23,11 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  alias  = "tokyo"
+  region = "ap-northeast-1"
+}
+
 # Kubernetes Provider
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint

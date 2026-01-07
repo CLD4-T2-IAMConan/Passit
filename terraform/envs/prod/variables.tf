@@ -262,9 +262,6 @@ variable "alarm_sns_topic_arn" {
   default     = null
 }
 
-variable "alertmanager_role_arn" {
-  type = string
-}
 
 # ============================================
 # Monitoring - Grafana (EKS Helm)

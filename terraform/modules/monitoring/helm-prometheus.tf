@@ -22,12 +22,12 @@ resource "helm_release" "kube_prometheus_stack" {
   values = [
 
     templatefile(
-          "${path.module}/values/alertmanager-values.yaml.tftpl",
-          {
-            alertmanager_role_arn = aws_iam_role.alertmanager.arn
-            sns_topic_arn         = aws_sns_topic.alertmanager.arn
-          }
-        ),
+      "${path.module}/values/alertmanager-values.yaml.tftpl",
+      {
+        alertmanager_role_arn = aws_iam_role.alertmanager.arn
+        alarm_sns_topic_arn   = aws_sns_topic.alertmanager.arn
+      }
+    ),
 
     file("${path.module}/prometheus-values.yaml")
   ]
