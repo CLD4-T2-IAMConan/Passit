@@ -8,8 +8,13 @@ resource "helm_release" "fluentbit" {
   chart      = "fluent-bit"
   namespace = kubernetes_namespace_v1.logging.metadata[0].name
 
-
   create_namespace = false
+  
+  # 기존 release가 있으면 교체
+  replace = true
+  force_update = true
+  wait = true
+  timeout = 600  # 10분 타임아웃 (기본값 300초에서 증가)
 
   set = [
     # ---------------------------------------
