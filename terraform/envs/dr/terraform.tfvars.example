@@ -18,3 +18,43 @@ allowed_cidr_blocks = ["0.0.0.0/0"]
 # 선택적 변수
 rds_security_group_id       = ""
 elasticache_security_group_id = ""
+
+
+# =========================
+# S3
+# =========================
+
+# 기존 코드 호환용 (base name)
+s3_bucket_profile  = "profile-images"
+s3_bucket_ticket   = "ticket-images"
+s3_bucket_frontend = "frontend"
+
+# DR 환경에서 존재하는 S3 버킷 정의
+# 실제 버킷명: passit-${environment}-${name}
+s3_buckets = [
+  {
+    name               = "uploads"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "backup"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "logs"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "profile-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  },
+  {
+    name               = "ticket-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  }
+]

@@ -271,20 +271,17 @@ module "monitoring" {
   tags          = var.tags
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
-  oidc_provider_url = module.eks.oidc_provider_url
 
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
+  # prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  # prometheus_namespace            = "monitoring"
+  # prometheus_service_account_name = "prometheus-agent"
 
-  depends_on = [
-    module.eks,
-    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
-  ]
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+
+  alarm_sns_topic_arn = aws_sns_topic.alertmanager.arn
+  alertmanager_role_arn = aws_iam_role.alertmanager.arn
 
   depends_on = [
     module.eks,
@@ -295,8 +292,7 @@ module "monitoring" {
 
   grafana_admin_user = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
-  grafana_admin_user = var.grafana_admin_user
-  grafana_admin_password = var.grafana_admin_password
+
 }
 
 # ============================================
@@ -318,7 +314,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
-  vpc_id       = var.vpc_cidr
+  # vpc_id       = var.vpc_cidr
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
@@ -337,7 +333,7 @@ module "cicd" {
   # ALB가 EKS Ingress에서 생성된 후 enable_frontend=true로 변경
   enable_frontend        = var.enable_frontend
   frontend_bucket_name   = var.frontend_bucket_name
-  alb_name              = ""  # ALB 생성 후 "passit-dev-alb"로 변경
+  alb_name              = "passit-dev-alb"  # ALB 생성 후 "passit-dev-alb"로 변경
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -385,9 +381,4 @@ module "sns" {
   team         = var.team
   owner        = var.owner
   kms_key_id   = "" # Optional: Add KMS key ID for encryption if needed
-}
-
-import {
-  to = module.eks.module.eks.aws_eks_access_entry.this["cluster_creator"]
-  id = "passit-dev-eks:arn:aws:iam::727646470302:user/t2-daeun"
 }

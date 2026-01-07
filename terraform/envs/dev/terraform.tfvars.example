@@ -109,3 +109,42 @@ app_secrets = {
 elasticache_secrets = {
   auth_token = ""  # ElastiCache 인증 토큰 (필요시 설정)
 }
+
+# =========================
+# S3
+# =========================
+
+# 기존 코드 호환용
+s3_bucket_profile  = "profile-images"
+s3_bucket_ticket   = "ticket-images"
+s3_bucket_frontend = "frontend"
+
+# Terraform 관리 S3 버킷 목록
+# 실제 버킷명: passit-${environment}-${name}
+s3_buckets = [
+  {
+    name               = "uploads"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "backup"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "logs"
+    versioning_enabled = true
+    lifecycle_rules    = []
+  },
+  {
+    name               = "profile-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  },
+  {
+    name               = "ticket-images"
+    versioning_enabled = false
+    lifecycle_rules    = []
+  }
+]

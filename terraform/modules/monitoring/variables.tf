@@ -30,9 +30,6 @@ variable "oidc_provider_url" {
   type = string
 }
 
-variable "oidc_provider_url" {
-  type = string
-}
 
 variable "account_id" {
   type        = string
@@ -97,14 +94,40 @@ variable "alertmanager_namespace" {
   default = "monitoring"
 }
 
-variable "monitoring_namespace" {
-  description = "The namespace where monitoring tools will be installed"
+variable "alarm_sns_topic_arn" {
+  type        = string
+  description = "SNS Topic ARN for Alertmanager notifications"
+}
+
+variable "alertmanager_role_arn" {
+  type        = string
+  description = "IAM Role ARN used by Alertmanager via IRSA"
+}
+
+
+variable "prometheus_workspace_name" {
+  type        = string
+  description = "AMP workspace name"
+}
+
+variable "prometheus_namespace" {
   type        = string
   default     = "monitoring"
 }
 
-variable "alertmanager_namespace" {
-  type    = string
-  default = "monitoring"
+variable "prometheus_service_account_name" {
+  type        = string
+  default     = "prometheus-agent"
 }
 
+variable "log_retention_days" {
+  type        = number
+}
+
+variable "application_error_threshold" {
+  type        = number
+}
+
+variable "alarm_sns_topic_arn" {
+  type        = string
+}
