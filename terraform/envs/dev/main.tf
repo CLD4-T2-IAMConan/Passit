@@ -128,8 +128,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnet_ids
+  vpc_id                 = module.network.vpc_id
+  private_subnet_ids     = module.network.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
 
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type
@@ -292,6 +293,19 @@ module "monitoring" {
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 
+
+  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
+  prometheus_namespace            = "monitoring"
+  prometheus_service_account_name = "prometheus-agent"
+
+
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
+
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 }
 
 # ============================================

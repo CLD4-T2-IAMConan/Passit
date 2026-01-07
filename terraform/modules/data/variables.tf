@@ -316,3 +316,8 @@ variable "enable_rds_dr" {
   type        = bool
   default     = false
 }
+
+variable "create_elasticache" {
+  type        = bool
+  default     = true
+}
