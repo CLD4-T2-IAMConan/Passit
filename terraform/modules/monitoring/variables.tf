@@ -94,12 +94,22 @@ variable "alertmanager_namespace" {
   default = "monitoring"
 }
 
+variable "alarm_sns_topic_arn" {
+  type        = string
+  description = "SNS Topic ARN for Alertmanager notifications"
+  default     = null
+}
 
-
+variable "alertmanager_role_arn" {
+  type        = string
+  description = "IAM Role ARN used by Alertmanager via IRSA"
+  default     = null
+}
 
 variable "prometheus_workspace_name" {
   type        = string
-  description = "AMP workspace name"
+  description = "AMP workspace name (optional)"
+  default     = null
 }
 
 variable "prometheus_namespace" {
@@ -119,4 +129,3 @@ variable "log_retention_days" {
 variable "application_error_threshold" {
   type        = number
 }
-
