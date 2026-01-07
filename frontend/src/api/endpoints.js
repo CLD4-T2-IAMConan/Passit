@@ -76,6 +76,12 @@ export const ENDPOINTS = {
     CANCEL: (dealId) => `/api/deals/${dealId}/cancel`,
     CONFIRM: (dealId) => `/api/deals/${dealId}/confirm`,
     UPDATE_STATUS: (dealId, newStatus) => `/api/deals/${dealId}/status/${newStatus}`,
+    // 아래 엔드포인트들은 백엔드에 아직 구현되지 않음
+    // MY_DEALS: "/api/deals/my",
+    // PURCHASE_HISTORY: "/api/deals/purchase",
+    // SALES_HISTORY: "/api/deals/sales",
+    // BY_TICKET: (ticketId) => `/api/deals/ticket/${ticketId}`,
+    // BY_STATUS: (status) => `/api/deals/status/${status}`,
   },
 
   PAYMENTS: {
@@ -125,16 +131,17 @@ export const ENDPOINTS = {
   // 1:1 문의
   INQUIRIES: {
     // 사용자
-    CREATE: "/cs/inquiries",
-    LIST: "/cs/inquiries",
-    DELETE: (inquiryId) => `/cs/inquiries/${inquiryId}`,
+    CREATE: "/api/cs/inquiries",
+    LIST: "/api/cs/inquiries",
+    DETAIL: (inquiryId) => `/api/cs/inquiries/${inquiryId}`,
+    DELETE: (inquiryId) => `/api/cs/inquiries/${inquiryId}`,
 
     // 관리자
-    ADMIN_LIST: "/admin/cs/inquiries",
-    ADMIN_DETAIL: (inquiryId) => `/admin/cs/inquiries/${inquiryId}`,
-    ADMIN_REPLY: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/reply`,
-    ADMIN_UPDATE_STATUS: (inquiryId) => `/admin/cs/inquiries/${inquiryId}/status`,
-    ADMIN_DELETE: (inquiryId) => `/admin/cs/inquiries/${inquiryId}`,
+    ADMIN_LIST: "/api/cs/admin/inquiries",
+    ADMIN_DETAIL: (inquiryId) => `/api/cs/admin/inquiries/${inquiryId}`,
+    ADMIN_REPLY: (inquiryId) => `/api/cs/admin/inquiries/${inquiryId}/reply`,
+    ADMIN_UPDATE_STATUS: (inquiryId) => `/api/cs/admin/inquiries/${inquiryId}/status`,
+    ADMIN_DELETE: (inquiryId) => `/api/cs/admin/inquiries/${inquiryId}`,
   },
 
   // FAQ
