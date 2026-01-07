@@ -108,8 +108,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnet_ids
+  vpc_id                 = module.network.vpc_id
+  private_subnet_ids     = module.network.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
 
   # Public endpoint access for Terraform/kubectl (임시로 0.0.0.0/0 허용, 추후 특정 IP로 제한 권장)
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
@@ -133,9 +134,9 @@ module "autoscaling" {
   owner        = var.owner
   region       = var.region
 
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   depends_on = [module.eks]
 }
@@ -197,21 +198,25 @@ module "data" {
   # RDS Configuration
   db_secret_name      = ""
   rds_master_username = "admin"
-  rds_master_password = "PassitProdPassword123!"  # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
+  rds_master_password = "PassitProdPassword123!" # 임시 비밀번호 (나중에 Secrets Manager로 관리 권장)
   rds_database_name   = "passit"
 
   rds_instance_class     = var.rds_instance_class
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+  # RDS Deletion Protection
+  rds_deletion_protection = var.rds_deletion_protection
+
   # Existing Resources
-  existing_db_subnet_group_name            = var.existing_db_subnet_group_name
-  existing_rds_parameter_group_name        = var.existing_rds_parameter_group_name
-  existing_elasticache_subnet_group_name   = var.existing_elasticache_subnet_group_name
+  existing_db_subnet_group_name             = var.existing_db_subnet_group_name
+  existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
+  existing_elasticache_subnet_group_name    = var.existing_elasticache_subnet_group_name
   existing_elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name
 }
 
 module "data_tokyo" {
+  count  = var.enable_dr ? 1 : 0
   source = "../../modules/data"
 
   providers = {
@@ -226,17 +231,18 @@ module "data_tokyo" {
 
   is_dr_region       = true
   global_cluster_id  = aws_rds_global_cluster.this.id
+  enable_rds         = false # DR 리전 RDS는 Global Cluster가 완전히 준비된 후 수동으로 생성
   create_passit_user = false
   create_s3          = false
-  create_elasticache = false
+  enable_elasticache = false
 
-  vpc_id                       = data.aws_vpc.tokyo_vpc.id
-  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
-  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg.id
+  vpc_id                       = data.aws_vpc.tokyo_vpc[0].id
+  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets[0].ids
+  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg[0].id
 
   # Security Groups
-  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg.id
-  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg.id
+  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg[0].id
+  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg[0].id
 
   # ElastiCache/RDS 상세 설정 (서울과 동일하게 유지하거나 조정)
   rds_instance_class = var.rds_instance_class # 동일하게 r6g.large 등 사용
@@ -248,11 +254,11 @@ module "data_tokyo" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  project_name  = var.project_name
-  environment   = var.environment
-  cluster_name  = module.eks.cluster_name
-  region            = var.region
-  account_id        = var.account_id
+  project_name = var.project_name
+  environment  = var.environment
+  cluster_name = module.eks.cluster_name
+  region       = var.region
+  account_id   = var.account_id
   tags         = var.tags
 
 
@@ -261,13 +267,13 @@ module "monitoring" {
 
   depends_on = [
     module.eks,
-    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+    module.cicd # AWS Load Balancer Controller webhook이 준비될 때까지 대기
   ]
 
   grafana_namespace = "monitoring"
 
-  grafana_admin_user = var.grafana_admin_user
-  grafana_admin_password = var.grafana_admin_password
+  grafana_admin_user              = var.grafana_admin_user
+  grafana_admin_password          = var.grafana_admin_password
   prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
@@ -276,6 +282,9 @@ module "monitoring" {
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
   fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 600
+  fluentbit_wait                 = true
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
@@ -305,9 +314,9 @@ module "cicd" {
   vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.oidc_provider_url
+  cluster_name      = module.eks.cluster_name
+  oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
 
   # GitHub OIDC (변수로 받기)
   github_oidc_provider_arn = local.github_oidc_provider_arn
@@ -318,9 +327,9 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend        = var.enable_frontend
-  frontend_bucket_name  = var.frontend_bucket_name
-  alb_name              = var.alb_name
+  enable_frontend      = var.enable_frontend
+  frontend_bucket_name = var.frontend_bucket_name
+  alb_name             = var.alb_name
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret
@@ -330,8 +339,8 @@ module "cicd" {
   service_namespaces      = var.service_namespaces
 
   # irsa (서비스들)
-  s3_bucket_profile       = var.s3_bucket_profile
-  s3_bucket_ticket        = var.s3_bucket_ticket
+  s3_bucket_profile = var.s3_bucket_profile
+  s3_bucket_ticket  = var.s3_bucket_ticket
 
   # Secrets Manager ARNs
   secret_db_password_arn = module.security.db_secret_arn
@@ -340,18 +349,18 @@ module "cicd" {
   secret_kakao_arn       = module.security.kakao_secret_arn
 
   # SNS Topic ARNs
-  sns_ticket_events_topic_arn = module.sns.ticket_events_topic_arn
-  sns_deal_events_topic_arn   = module.sns.deal_events_topic_arn
+  sns_ticket_events_topic_arn  = module.sns.ticket_events_topic_arn
+  sns_deal_events_topic_arn    = module.sns.deal_events_topic_arn
   sns_payment_events_topic_arn = module.sns.payment_events_topic_arn
 
   # SQS Queue URLs
-  sns_chat_deal_events_queue_url   = module.sns.chat_deal_events_queue_url
-  sns_ticket_deal_events_queue_url = module.sns.ticket_deal_events_queue_url
+  sns_chat_deal_events_queue_url    = module.sns.chat_deal_events_queue_url
+  sns_ticket_deal_events_queue_url  = module.sns.ticket_deal_events_queue_url
   sns_trade_ticket_events_queue_url = module.sns.trade_ticket_events_queue_url
 
   # SQS Queue ARNs (for IAM policies)
-  sns_chat_deal_events_queue_arn   = module.sns.chat_deal_events_queue_arn
-  sns_ticket_deal_events_queue_arn = module.sns.ticket_deal_events_queue_arn
+  sns_chat_deal_events_queue_arn    = module.sns.chat_deal_events_queue_arn
+  sns_ticket_deal_events_queue_arn  = module.sns.ticket_deal_events_queue_arn
   sns_trade_ticket_events_queue_arn = module.sns.trade_ticket_events_queue_arn
 
   depends_on = [module.eks, module.sns]
