@@ -130,8 +130,8 @@ resource "aws_rds_cluster_instance" "main" {
 
 # 5. passit_user 자동 생성 (서울 리전에서만 실행)
 resource "null_resource" "create_passit_user" {
-  count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
-  # count = 0
+  # count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
+  count = 0  # passit_user 이미 생성됨 - 재생성 방지
 
   depends_on = [
     aws_rds_cluster.main,
