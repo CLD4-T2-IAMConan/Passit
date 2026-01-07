@@ -37,7 +37,7 @@ variable "account_id" {
 }
 
 variable "region" {
-  type        = string
+  type = string
 }
 
 ########################################
@@ -104,16 +104,16 @@ variable "prometheus_workspace_name" {
 }
 
 variable "prometheus_service_account_name" {
-  type        = string
-  default     = "prometheus-agent"
+  type    = string
+  default = "prometheus-agent"
 }
 
 variable "log_retention_days" {
-  type        = number
+  type = number
 }
 
 variable "application_error_threshold" {
-  type        = number
+  type = number
 }
 
 variable "prometheus_namespace" {

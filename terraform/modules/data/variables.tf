@@ -244,9 +244,9 @@ variable "s3_buckets" {
       versioning_enabled = false
       lifecycle_rules = [
         {
-          id            = "temp-files-cleanup"
-          enabled       = true
-          prefix        = "temp/"
+          id              = "temp-files-cleanup"
+          enabled         = true
+          prefix          = "temp/"
           expiration_days = 7
         }
       ]
@@ -318,6 +318,6 @@ variable "enable_rds_dr" {
 }
 
 variable "create_elasticache" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }

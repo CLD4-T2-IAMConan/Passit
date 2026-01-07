@@ -21,7 +21,7 @@ output "valkey_replication_group_id" {
   description = "ElastiCache Replication Group ID"
   # aws_elasticache_replication_group.valkey[0] 로 접근하고,
   # 없으면(count=0) 빈 문자열을 반환합니다.
-  value       = try(aws_elasticache_replication_group.valkey.replication_group_id, "")
+  value = try(aws_elasticache_replication_group.valkey.replication_group_id, "")
 }
 
 output "valkey_primary_endpoint" {

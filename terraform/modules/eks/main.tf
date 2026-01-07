@@ -10,16 +10,15 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnet_ids
 
-  cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access       = true
   cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
 
   enable_irsa = true
 
   # Cluster creator admin permissions
-  # Enabled to allow Terraform to manage Kubernetes resources
-  # Note: In production, consider using access_entries instead for better security
-  enable_cluster_creator_admin_permissions = false
+  # Note: enable_cluster_creator_admin_permissions is no longer supported
+  # Use access_entries instead for better security
 
   # Access entries for additional users
   # principal_arn은 var.access_entries에서 전달받음 (기본값: 빈 객체)

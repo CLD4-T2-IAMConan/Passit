@@ -66,10 +66,10 @@ resource "aws_rds_cluster_parameter_group" "main" {
 
 locals {
   rds_parameter_group_name = var.enable_rds ? (
-      var.existing_rds_parameter_group_name != "" ?
-      data.aws_rds_cluster_parameter_group.existing[0].name :
-      aws_rds_cluster_parameter_group.main[0].name
-    ) : "" # false일 때는 빈 문자열 반환
+    var.existing_rds_parameter_group_name != "" ?
+    data.aws_rds_cluster_parameter_group.existing[0].name :
+    aws_rds_cluster_parameter_group.main[0].name
+  ) : "" # false일 때는 빈 문자열 반환
 }
 
 # 1. Aurora 클러스터 본체
@@ -80,8 +80,8 @@ resource "aws_rds_cluster" "main" {
   # Global Cluster 연결
   global_cluster_identifier = var.global_cluster_id
 
-  engine             = "aurora-mysql"
-  engine_version     = "8.0.mysql_aurora.3.08.2"
+  engine         = "aurora-mysql"
+  engine_version = "8.0.mysql_aurora.3.08.2"
 
   # Secondary 리전(DR)일 경우 자격 증명을 전송하지 않음 (서울에서 상속)
   master_username = var.is_dr_region ? null : local.db_creds["DB_USER"]
@@ -99,7 +99,7 @@ resource "aws_rds_cluster" "main" {
   skip_final_snapshot     = true
 
   tags = {
-      Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
+    Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
   }
 }
 
@@ -131,15 +131,15 @@ resource "null_resource" "create_passit_user" {
 
   triggers = {
     cluster_endpoint = aws_rds_cluster.main[0].endpoint
-    db_name         = local.db_creds["DB_NAME"]
-    user_name       = var.passit_user_name
-    user_password   = var.passit_user_password
-    secret_version  = var.db_secret_name != "" ? data.aws_secretsmanager_secret_version.db_secret_version[0].version_id : "manual"
+    db_name          = local.db_creds["DB_NAME"]
+    user_name        = var.passit_user_name
+    user_password    = var.passit_user_password
+    secret_version   = var.db_secret_name != "" ? data.aws_secretsmanager_secret_version.db_secret_version[0].version_id : "manual"
   }
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = <<-EOT
+    command     = <<-EOT
       set -e
 
       BASTION_ID="${var.bastion_instance_id}"

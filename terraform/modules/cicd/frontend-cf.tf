@@ -102,11 +102,11 @@ resource "aws_cloudfront_distribution" "frontend" {
   dynamic "ordered_cache_behavior" {
     for_each = local.enable_alb_origin ? [
       {
-        path = "/api/auth/*"
+        path   = "/api/auth/*"
         origin = "alb-account-origin"
       },
       {
-        path = "/api/users/*"
+        path   = "/api/users/*"
         origin = "alb-account-origin"
       }
     ] : []
