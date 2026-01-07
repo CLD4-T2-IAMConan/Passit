@@ -63,6 +63,7 @@ const ProfilePage = lazy(() => import("./pages/mypage/ProfilePage"));
 const ActivityPage = lazy(() => import("./pages/mypage/ActivityPage"));
 
 // 관리자
+const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage"));
 const AdminUserManagementPage = lazy(() => import("./pages/admin/AdminUserManagementPage"));
 const AdminCategoryManagementPage = lazy(() => import("./pages/admin/AdminCategoryManagementPage"));
 
@@ -197,7 +198,15 @@ function App() {
                   </Route>
 
                   {/* 관리자 */}
-                  <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+                  <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <PrivateRoute adminOnly={true}>
+                        <AdminDashboardPage />
+                      </PrivateRoute>
+                    }
+                  />
                   <Route
                     path="/admin/users"
                     element={
