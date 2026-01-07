@@ -193,7 +193,11 @@ module "bastion" {
   # Security Group References
   rds_security_group_id         = local.rds_security_group_id
   elasticache_security_group_id = local.elasticache_security_group_id
-  eks_cluster_security_group_id = module.eks.cluster_security_group_id
+  # EKS 클러스터 보안 그룹 ID는 리소스 output이므로, 계획 단계에서 결정할 수 없음
+  # terraform apply 시 -target 옵션을 사용하여 EKS 클러스터를 먼저 생성한 후,
+  # 두 번째 apply에서 이 값을 설정하여 리소스를 생성할 수 있음
+  # 또는 이 값을 null로 설정하여 리소스를 생성하지 않도록 함
+  eks_cluster_security_group_id = null
 
   depends_on = [module.network, module.security, module.eks]
 }
@@ -313,7 +317,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
-  # vpc_id       = var.vpc_cidr
+  vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
