@@ -28,13 +28,13 @@ locals {
 
 # 기존 Subnet Group 조회 (있는 경우)
 data "aws_elasticache_subnet_group" "existing" {
-  count = var.existing_elasticache_subnet_group_name != "" ? 1 : 0
+  count = var.enable_elasticache && var.existing_elasticache_subnet_group_name != "" ? 1 : 0
   name  = var.existing_elasticache_subnet_group_name
 }
 
 # 새 Subnet Group 생성 (없는 경우)
 resource "aws_elasticache_subnet_group" "valkey" {
-  count      = var.existing_elasticache_subnet_group_name != "" ? 0 : 1
+  count      = var.enable_elasticache && var.existing_elasticache_subnet_group_name == "" ? 1 : 0
   name       = "${var.project_name}-${var.environment}-valkey-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
@@ -48,7 +48,7 @@ resource "aws_elasticache_subnet_group" "valkey" {
 
 locals {
   # 기존 리소스가 있으면 기존 것 사용, 없으면 새로 생성한 것 사용
-  elasticache_subnet_group_name = var.existing_elasticache_subnet_group_name != "" ? data.aws_elasticache_subnet_group.existing[0].name : aws_elasticache_subnet_group.valkey[0].name
+  elasticache_subnet_group_name = var.enable_elasticache ? (var.existing_elasticache_subnet_group_name != "" ? data.aws_elasticache_subnet_group.existing[0].name : aws_elasticache_subnet_group.valkey[0].name) : ""
 }
 
 # ============================================
@@ -58,7 +58,7 @@ locals {
 # 기존 리소스가 있으면 변수로 이름만 받아서 사용하고, 없으면 새로 생성
 
 resource "aws_elasticache_parameter_group" "valkey" {
-  count = var.existing_elasticache_parameter_group_name != "" ? 0 : 1
+  count = var.enable_elasticache && var.existing_elasticache_parameter_group_name == "" ? 1 : 0
   name   = "${var.project_name}-${var.environment}-valkey-pg"
   family = "valkey8"
 
@@ -77,7 +77,7 @@ resource "aws_elasticache_parameter_group" "valkey" {
 }
 
 locals {
-  elasticache_parameter_group_name = var.existing_elasticache_parameter_group_name != "" ? var.existing_elasticache_parameter_group_name : aws_elasticache_parameter_group.valkey[0].name
+  elasticache_parameter_group_name = var.enable_elasticache ? (var.existing_elasticache_parameter_group_name != "" ? var.existing_elasticache_parameter_group_name : aws_elasticache_parameter_group.valkey[0].name) : ""
 }
 
 # ============================================
@@ -85,6 +85,7 @@ locals {
 # ============================================
 
 resource "aws_elasticache_replication_group" "valkey" {
+  count                      = var.enable_elasticache ? 1 : 0
   replication_group_id       = local.valkey_cluster_id
   description                = "Valkey node-based cache for ${var.environment} environment"
   
@@ -142,6 +143,7 @@ resource "aws_elasticache_replication_group" "valkey" {
 # ============================================
 
 resource "aws_secretsmanager_secret" "valkey" {
+  count                   = var.enable_elasticache ? 1 : 0
   name                    = "${var.project_name}/${var.environment}/valkey/connection"
   description             = "Valkey connection information for ${var.environment}"
   recovery_window_in_days = 0
@@ -156,12 +158,13 @@ resource "aws_secretsmanager_secret" "valkey" {
 }
 
 resource "aws_secretsmanager_secret_version" "valkey" {
-  secret_id = aws_secretsmanager_secret.valkey.id
+  count     = var.enable_elasticache ? 1 : 0
+  secret_id = aws_secretsmanager_secret.valkey[0].id
   secret_string = jsonencode({
     engine         = "valkey"
-    primary_endpoint = aws_elasticache_replication_group.valkey.primary_endpoint_address
-    port           = aws_elasticache_replication_group.valkey.port
-    reader_endpoint = aws_elasticache_replication_group.valkey.reader_endpoint_address
-    configuration_endpoint = aws_elasticache_replication_group.valkey.configuration_endpoint_address
+    primary_endpoint = aws_elasticache_replication_group.valkey[0].primary_endpoint_address
+    port           = aws_elasticache_replication_group.valkey[0].port
+    reader_endpoint = aws_elasticache_replication_group.valkey[0].reader_endpoint_address
+    configuration_endpoint = aws_elasticache_replication_group.valkey[0].configuration_endpoint_address
   })
 }

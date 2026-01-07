@@ -6,7 +6,7 @@ data "aws_db_subnet_group" "existing" {
 }
 
 resource "aws_db_subnet_group" "main" {
-  count      = var.existing_db_subnet_group_name != "" ? 0 : 1
+  count      = var.enable_rds && var.existing_db_subnet_group_name == "" ? 1 : 0
   name       = "${var.project_name}-${var.environment}-rds-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
@@ -77,8 +77,14 @@ resource "aws_rds_cluster" "main" {
   count              = var.enable_rds ? 1 : 0
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
 
-  # Global Cluster 연결
-  global_cluster_identifier = var.global_cluster_id
+  # Global Cluster 연결 (기존 클러스터는 연결 불가하므로 lifecycle으로 처리)
+  global_cluster_identifier = var.global_cluster_id != "" ? var.global_cluster_id : null
+
+  lifecycle {
+    ignore_changes = [global_cluster_identifier]
+    # prevent_destroy는 제거: terraform destroy도 막기 때문에
+    # 대신 deletion_protection으로 보호 (prod 환경)
+  }
 
   engine             = "aurora-mysql"
   engine_version     = "8.0.mysql_aurora.3.08.2"
@@ -95,8 +101,8 @@ resource "aws_rds_cluster" "main" {
   # Secondary는 백업 권한이 없으므로 최소치 설정
   backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
   preferred_backup_window = "03:00-04:00"
-  deletion_protection     = var.environment == "prod" ? true : false
-  skip_final_snapshot     = true
+  deletion_protection     = var.environment == "prod" ? true : false  # prod는 삭제 방지
+  skip_final_snapshot     = true  # destroy 시 스냅샷 없이 삭제 (자동 백업은 backup_retention_period로 관리)
 
   tags = {
       Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
@@ -115,6 +121,9 @@ resource "aws_rds_cluster_instance" "main" {
   instance_class       = var.rds_instance_class
   db_subnet_group_name = local.db_subnet_group_name
   publicly_accessible  = false
+
+  # lifecycle prevent_destroy는 제거: terraform destroy도 막기 때문에
+  # deletion_protection이 클러스터 레벨에서 보호함
 
   tags = { Name = var.is_dr_region ? "${var.project_name}-dr-db-${count.index}" : "${var.project_name}-${var.environment}-db-${count.index}" }
 }

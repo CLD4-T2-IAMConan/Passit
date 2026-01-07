@@ -316,3 +316,9 @@ variable "enable_rds_dr" {
   type        = bool
   default     = false
 }
+
+variable "enable_elasticache" {
+  description = "ElastiCache(Valkey)를 생성할지 여부"
+  type        = bool
+  default     = true
+}
