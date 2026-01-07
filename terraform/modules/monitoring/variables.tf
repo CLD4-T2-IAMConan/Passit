@@ -37,7 +37,7 @@ variable "account_id" {
 }
 
 variable "region" {
-  type        = string
+  type = string
 }
 
 ########################################
@@ -106,26 +106,45 @@ variable "alertmanager_role_arn" {
   default     = null
 }
 
+############################
+# Prometheus (AMP) & Workspace
+############################
+
 variable "prometheus_workspace_name" {
+  description = "The name of the Amazon Managed Service for Prometheus workspace"
   type        = string
-  description = "AMP workspace name (optional)"
-  default     = null
+}
+
+variable "prometheus_service_account_name" {
+  type    = string
+  default = "prometheus-agent"
+}
+
+variable "log_retention_days" {
+  type = number
+}
+
+variable "application_error_threshold" {
+  type = number
 }
 
 variable "prometheus_namespace" {
+  description = "Namespace for Prometheus"
   type        = string
   default     = "monitoring"
 }
 
-variable "prometheus_service_account_name" {
+############################
+# Fluent Bit Extensions
+############################
+
+variable "fluentbit_service_account_name" {
+  description = "Service account name for Fluent Bit"
   type        = string
-  default     = "prometheus-agent"
+  default     = "fluent-bit"
 }
 
-variable "log_retention_days" {
-  type        = number
-}
-
-variable "application_error_threshold" {
-  type        = number
+variable "fluentbit_chart_version" {
+  description = "The version of the Fluent Bit Helm chart"
+  type        = string
 }

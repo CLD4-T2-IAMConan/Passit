@@ -6,7 +6,7 @@ resource "helm_release" "fluentbit" {
   name       = "fluent-bit"
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
-  namespace = kubernetes_namespace_v1.logging.metadata[0].name
+  namespace  = kubernetes_namespace_v1.logging.metadata[0].name
 
   create_namespace = false
   
@@ -40,8 +40,8 @@ resource "helm_release" "fluentbit" {
     },
 
     {
-        name  = "config.outputs"
-        value = <<-EOT
+      name  = "config.outputs"
+      value = <<-EOT
     [OUTPUT]
         Name cloudwatch_logs
         Match *
@@ -50,12 +50,12 @@ resource "helm_release" "fluentbit" {
         log_stream_prefix fluentbit-
         auto_create_group true
     EOT
-      },
+    },
 
-      {
-        name  = "daemonset.enabled"
-        value = "true"
-      },
+    {
+      name  = "daemonset.enabled"
+      value = "true"
+    },
 
 
     # ---------------------------------------

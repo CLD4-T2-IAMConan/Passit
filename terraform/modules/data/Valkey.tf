@@ -88,24 +88,24 @@ resource "aws_elasticache_replication_group" "valkey" {
   count                      = var.enable_elasticache ? 1 : 0
   replication_group_id       = local.valkey_cluster_id
   description                = "Valkey node-based cache for ${var.environment} environment"
-  
+
   # Engine Configuration
   engine               = "valkey"
   engine_version       = var.valkey_engine_version
   parameter_group_name = local.elasticache_parameter_group_name
 
   # Node Configuration
-  node_type                  = var.valkey_node_type
-  num_cache_clusters         = var.valkey_num_cache_nodes
-  port                       = 6379
+  node_type          = var.valkey_node_type
+  num_cache_clusters = var.valkey_num_cache_nodes
+  port               = 6379
 
   # Network Configuration
   subnet_group_name  = local.elasticache_subnet_group_name
   security_group_ids = [var.elasticache_security_group_id]
 
   # Backup Configuration
-  snapshot_retention_limit = var.valkey_snapshot_retention_limit
-  snapshot_window         = local.is_prod ? var.valkey_snapshot_window : null
+  snapshot_retention_limit   = var.valkey_snapshot_retention_limit
+  snapshot_window            = local.is_prod ? var.valkey_snapshot_window : null
   automatic_failover_enabled = false # Single node for dev, can be enabled for prod with multiple nodes
 
   # Encryption
@@ -131,7 +131,7 @@ resource "aws_elasticache_replication_group" "valkey" {
     # KMS key ID는 ARN과 키 ID 형식이 다르게 인식되어 재생성 방지
     ignore_changes = [
       tags,
-      kms_key_id,  # ARN과 키 ID 형식 차이로 인한 재생성 방지
+      kms_key_id, # ARN과 키 ID 형식 차이로 인한 재생성 방지
     ]
     # 데이터 손실 방지 (필요시 true로 변경)
     prevent_destroy = false
@@ -161,10 +161,10 @@ resource "aws_secretsmanager_secret_version" "valkey" {
   count     = var.enable_elasticache ? 1 : 0
   secret_id = aws_secretsmanager_secret.valkey[0].id
   secret_string = jsonencode({
-    engine         = "valkey"
-    primary_endpoint = aws_elasticache_replication_group.valkey[0].primary_endpoint_address
-    port           = aws_elasticache_replication_group.valkey[0].port
-    reader_endpoint = aws_elasticache_replication_group.valkey[0].reader_endpoint_address
+    engine                 = "valkey"
+    primary_endpoint       = aws_elasticache_replication_group.valkey[0].primary_endpoint_address
+    port                   = aws_elasticache_replication_group.valkey[0].port
+    reader_endpoint        = aws_elasticache_replication_group.valkey[0].reader_endpoint_address
     configuration_endpoint = aws_elasticache_replication_group.valkey[0].configuration_endpoint_address
   })
 }

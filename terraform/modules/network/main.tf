@@ -66,9 +66,9 @@ data "aws_subnets" "existing_private_db" {
 locals {
   # existing_vpc_id가 제공되면 기존 VPC 사용, 아니면 새 VPC 생성
   should_use_existing_vpc = var.use_existing_vpc && var.existing_vpc_id != ""
-  
+
   vpc_id = local.should_use_existing_vpc ? data.aws_vpc.existing[0].id : aws_vpc.main[0].id
-  
+
   # 변수로 제공된 서브넷 ID가 있으면 우선 사용, 없으면 태그 기반 자동 감지
   existing_public_subnet_ids = local.should_use_existing_vpc ? (
     length(var.existing_public_subnet_ids) > 0 ? var.existing_public_subnet_ids : data.aws_subnets.existing_public[0].ids
@@ -275,7 +275,7 @@ resource "aws_route_table_association" "private_db" {
 
 resource "aws_vpc_endpoint" "s3" {
   count = local.should_use_existing_vpc ? 0 : 1
-  
+
   vpc_id            = local.vpc_id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"

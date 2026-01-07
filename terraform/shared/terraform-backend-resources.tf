@@ -65,7 +65,7 @@ resource "aws_s3_bucket_public_access_block" "terraform_state_dev" {
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
-  restrict_public_buckets  = true
+  restrict_public_buckets = true
 }
 
 # DynamoDB Table for State Locking (dev environment)
@@ -162,8 +162,8 @@ resource "aws_dynamodb_table" "terraform_locks_prod" {
 
 # S3 Bucket for Terraform State (DR)
 resource "aws_s3_bucket" "terraform_state_dr" {
-  provider = aws.tokyo # 도쿄 프로바이더 사용
-  bucket   = "passit-terraform-state-dr"
+  provider      = aws.tokyo # 도쿄 프로바이더 사용
+  bucket        = "passit-terraform-state-dr"
   force_destroy = true
 
   tags = {

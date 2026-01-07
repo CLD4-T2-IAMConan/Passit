@@ -59,7 +59,7 @@ output "managed_node_group_names" {
 
 output "managed_node_group_arns" {
   description = "ARNs of EKS managed node groups"
-  value       = {
+  value = {
     for k, v in module.eks.eks_managed_node_groups : k => v.node_group_arn
   }
 }

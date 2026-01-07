@@ -27,7 +27,6 @@ variable "vpc_id" {
   description = "VPC ID for AWS Load Balancer Controller"
   type        = string
 }
-
 # ================================
 # irsa.tf
 # ================================

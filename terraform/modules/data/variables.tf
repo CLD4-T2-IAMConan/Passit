@@ -244,9 +244,9 @@ variable "s3_buckets" {
       versioning_enabled = false
       lifecycle_rules = [
         {
-          id            = "temp-files-cleanup"
-          enabled       = true
-          prefix        = "temp/"
+          id              = "temp-files-cleanup"
+          enabled         = true
+          prefix          = "temp/"
           expiration_days = 7
         }
       ]
