@@ -10,6 +10,13 @@ resource "kubernetes_namespace_v1" "argocd" {
   }
 }
 
+# ArgoCD ALB DNS를 동적으로 가져오기 위한 data source
+# ALB는 Ingress가 생성된 후에 생성되므로, 존재할 때만 조회
+# 첫 번째 apply에서는 ALB가 없을 수 있으므로, ALB가 생성된 후 다시 apply 필요
+data "aws_lb" "argocd" {
+  name = "${var.project_name}-${var.environment}-argocd-alb"
+}
+
 resource "helm_release" "argocd" {
   name       = "argocd"
   namespace  = var.argocd_namespace
@@ -39,7 +46,9 @@ resource "helm_release" "argocd" {
     templatefile("${path.module}/values-argocd.yaml", {
       project_name = var.project_name
       environment  = var.environment
-      alb_dns_name = "passit-dev-argocd-alb-1088954945.ap-northeast-2.elb.amazonaws.com" # ALB DNS is determined after ingress creation
+      # ALB DNS는 Ingress 생성 후 동적으로 가져옴
+      # 첫 번째 apply에서는 ALB가 없을 수 있으므로, ALB가 생성된 후 다시 apply 필요
+      alb_dns_name = data.aws_lb.argocd.dns_name
     })
   ]
 }

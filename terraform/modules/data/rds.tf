@@ -49,8 +49,11 @@ resource "aws_rds_cluster_parameter_group" "main" {
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
 
+  # prevent_destroy는 제거: terraform destroy도 막기 때문에
+  # DR 리전에서 enable_rds가 false로 변경될 때 리소스 삭제가 필요할 수 있음
+  # 대신 RDS 클러스터의 deletion_protection으로 보호 (prod 환경)
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   parameter {

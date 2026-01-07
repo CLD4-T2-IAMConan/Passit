@@ -192,6 +192,17 @@ resource "aws_instance" "bastion" {
     },
     var.tags
   )
+
+  # AMI와 user_data 변경 시 인스턴스 재생성 방지
+  # AMI는 최신 버전으로 자동 업데이트되지 않도록 하고,
+  # user_data 변경도 인스턴스 재생성을 유발하지 않도록 함
+  lifecycle {
+    ignore_changes = [
+      ami,
+      user_data,
+      user_data_replace_on_change
+    ]
+  }
 }
 
 # RDS Security Group에 Bastion 접근 허용
