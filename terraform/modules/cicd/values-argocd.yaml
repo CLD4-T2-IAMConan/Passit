@@ -14,9 +14,9 @@ server:
     enabled: true
     ingressClassName: alb
     hosts:
-      - argocd-${environment}.passit.cloud
-    paths:
-      - /
+      - host: argocd-${environment}.passit.cloud 
+        paths:
+          - /
     pathType: Prefix
 
     annotations:
