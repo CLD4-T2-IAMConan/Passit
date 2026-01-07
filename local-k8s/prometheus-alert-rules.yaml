@@ -1,0 +1,149 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: passit-application-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: passit
+spec:
+  groups:
+    # 애플리케이션 5xx 에러율 알람
+    - name: application-5xx-errors
+      interval: 30s
+      rules:
+        - alert: High5xxErrorRate
+          expr: |
+            100 *
+            sum(rate(http_server_requests_seconds_count{
+              status=~"5.."
+            }[5m])) by (application, instance)
+            /
+            sum(rate(http_server_requests_seconds_count{}[5m])) by (application, instance)
+            > 5
+          for: 2m
+          labels:
+            severity: critical
+            service: "{{ $labels.application }}"
+          annotations:
+            summary: "{{ $labels.application }} 서비스의 5xx 에러율이 높습니다"
+            description: "{{ $labels.application }} 서비스의 5xx 에러율이 {{ $value }}%로 임계값(5%)을 초과했습니다. 인스턴스: {{ $labels.instance }}"
+
+    # HTTP 응답 지연시간 알람
+    - name: application-latency
+      interval: 30s
+      rules:
+        - alert: HighHttpLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(http_server_requests_seconds_bucket{}[5m])) by (le, application, instance)
+            ) > 1
+          for: 5m
+          labels:
+            severity: warning
+            service: "{{ $labels.application }}"
+          annotations:
+            summary: "{{ $labels.application }} 서비스의 HTTP 응답 지연시간이 높습니다"
+            description: "{{ $labels.application }} 서비스의 95 백분위 응답 시간이 {{ $value }}초로 임계값(1초)을 초과했습니다. 인스턴스: {{ $labels.instance }}"
+
+    # Pod 재시작 알람
+    - name: pod-restarts
+      interval: 30s
+      rules:
+        - alert: PodRestarting
+          expr: |
+            rate(kube_pod_container_status_restarts_total[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod가 재시작되고 있습니다"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }}의 컨테이너 {{ $labels.container }}가 재시작되고 있습니다. 재시작 횟수: {{ $value }}"
+
+    # Pod 크래시 알람
+    - name: pod-crashes
+      interval: 30s
+      rules:
+        - alert: PodCrashLooping
+          expr: |
+            kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod가 CrashLoopBackOff 상태입니다"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }}의 컨테이너 {{ $labels.container }}가 CrashLoopBackOff 상태입니다."
+
+    # 메모리 사용률 알람
+    - name: pod-memory
+      interval: 30s
+      rules:
+        - alert: HighMemoryUsage
+          expr: |
+            (container_memory_working_set_bytes{pod!=""} / container_spec_memory_limit_bytes{pod!=""}) * 100 > 90
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod의 메모리 사용률이 높습니다"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }}의 메모리 사용률이 {{ $value }}%로 임계값(90%)을 초과했습니다."
+
+    # CPU 사용률 알람
+    - name: pod-cpu
+      interval: 30s
+      rules:
+        - alert: HighCpuUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{pod!=""}[5m]) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod의 CPU 사용률이 높습니다"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }}의 CPU 사용률이 {{ $value }}%로 임계값(80%)을 초과했습니다."
+
+    # 애플리케이션 로그 에러율 알람 (Loki 기반)
+    - name: application-log-errors
+      interval: 1m
+      rules:
+        - alert: HighErrorLogRate
+          expr: |
+            sum(rate({namespace="passit", level="ERROR"}[5m])) by (app) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: "{{ $labels.app }}"
+          annotations:
+            summary: "{{ $labels.app }} 서비스의 에러 로그가 증가하고 있습니다"
+            description: "{{ $labels.app }} 서비스의 에러 로그 발생률이 {{ $value }} 로그/초로 임계값(10 로그/초)을 초과했습니다."
+
+    # 데이터베이스 연결 풀 알람
+    - name: database-connection-pool
+      interval: 30s
+      rules:
+        - alert: DatabaseConnectionPoolExhausted
+          expr: |
+            (hikari_connections_active / hikari_connections_max) * 100 > 90
+          for: 5m
+          labels:
+            severity: warning
+            service: "{{ $labels.application }}"
+          annotations:
+            summary: "{{ $labels.application }} 서비스의 데이터베이스 연결 풀이 부족합니다"
+            description: "{{ $labels.application }} 서비스의 데이터베이스 연결 풀 사용률이 {{ $value }}%로 임계값(90%)을 초과했습니다."
+
+    # JVM 메모리 알람
+    - name: jvm-memory
+      interval: 30s
+      rules:
+        - alert: HighJvmMemoryUsage
+          expr: |
+            (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+            service: "{{ $labels.application }}"
+          annotations:
+            summary: "{{ $labels.application }} 서비스의 JVM 힙 메모리 사용률이 높습니다"
+            description: "{{ $labels.application }} 서비스의 JVM 힙 메모리 사용률이 {{ $value }}%로 임계값(85%)을 초과했습니다."
+

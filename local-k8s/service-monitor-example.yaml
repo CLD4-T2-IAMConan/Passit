@@ -1,0 +1,109 @@
+# ServiceMonitor 예제
+# 애플리케이션 서비스의 메트릭을 Prometheus가 수집하도록 설정
+# 각 서비스의 Helm chart에 포함하거나 별도로 적용 가능
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ticket-service-monitor
+  namespace: passit  # 애플리케이션 네임스페이스
+  labels:
+    release: kube-prometheus-stack  # Prometheus가 자동으로 발견
+    app: ticket-service
+spec:
+  selector:
+    matchLabels:
+      app: ticket-service
+  namespaceSelector:
+    matchNames:
+      - passit
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: account-service-monitor
+  namespace: passit
+  labels:
+    release: kube-prometheus-stack
+    app: account-service
+spec:
+  selector:
+    matchLabels:
+      app: account-service
+  namespaceSelector:
+    matchNames:
+      - passit
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: trade-service-monitor
+  namespace: passit
+  labels:
+    release: kube-prometheus-stack
+    app: trade-service
+spec:
+  selector:
+    matchLabels:
+      app: trade-service
+  namespaceSelector:
+    matchNames:
+      - passit
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cs-service-monitor
+  namespace: passit
+  labels:
+    release: kube-prometheus-stack
+    app: cs-service
+spec:
+  selector:
+    matchLabels:
+      app: cs-service
+  namespaceSelector:
+    matchNames:
+      - passit
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: chat-service-monitor
+  namespace: passit
+  labels:
+    release: kube-prometheus-stack
+    app: chat-service
+spec:
+  selector:
+    matchLabels:
+      app: chat-service
+  namespaceSelector:
+    matchNames:
+      - passit
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      scrapeTimeout: 10s
+
