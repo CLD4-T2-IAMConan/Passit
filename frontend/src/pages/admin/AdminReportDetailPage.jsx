@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Container, Box, Typography, Button, Stack, CircularProgress, Alert, Paper, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import AdminLayout from "../../layouts/AdminLayout";
 import reportService from "../../services/reportService";
 
 const STATUS_OPTIONS = ["RECEIVED", "IN_PROGRESS", "RESOLVED", "REJECTED"];
@@ -59,68 +61,79 @@ export default function AdminReportDetailPage() {
     }
   };
 
-  if (loading) return <div style={{ padding: 16 }}>로딩 중...</div>;
-  if (errorMsg) return <div style={{ padding: 16, color: "crimson" }}>{errorMsg}</div>;
-  if (!detail) return <div style={{ padding: 16 }}>데이터 없음</div>;
-
   return (
-    <div style={{ padding: 16 }}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <button onClick={() => navigate(-1)}>뒤로</button>
-        <button onClick={() => navigate("/admin/reports")}>목록</button>
-      </div>
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box>
+          <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+            <Button variant="outlined" onClick={() => navigate(-1)}>
+              뒤로
+            </Button>
+            <Button variant="outlined" onClick={() => navigate("/admin/reports")}>
+              목록
+            </Button>
+          </Stack>
 
-      <h2>신고 상세 (관리자)</h2>
+          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
+            신고 상세 (관리자)
+          </Typography>
 
-      <div style={{ marginTop: 12, lineHeight: 1.8 }}>
-        <div>
-          <b>ID</b>: {detail.reportId ?? detail.id}
-        </div>
-        <div>
-          <b>상태</b>: {detail.status}
-        </div>
-        <div>
-          <b>신고자</b>: {detail.reporterId ?? detail.userId}
-        </div>
-        <div>
-          <b>대상 타입</b>: {detail.targetType}
-        </div>
-        <div>
-          <b>대상 ID</b>: {detail.targetId}
-        </div>
-        <div>
-          <b>사유</b>: {detail.reason}
-        </div>
-        {detail.createdAt && (
-          <div>
-            <b>생성일</b>: {detail.createdAt}
-          </div>
-        )}
-      </div>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+              <CircularProgress />
+            </Box>
+          ) : errorMsg ? (
+            <Alert severity="error">{errorMsg}</Alert>
+          ) : !detail ? (
+            <Alert severity="info">데이터가 없습니다.</Alert>
+          ) : (
+            <>
+              <Paper sx={{ p: 3, mb: 3 }}>
+                <Stack spacing={2}>
+                  <Typography><strong>ID</strong>: {detail.reportId ?? detail.id}</Typography>
+                  <Typography><strong>상태</strong>: {detail.status}</Typography>
+                  <Typography><strong>신고자</strong>: {detail.reporterId ?? detail.userId}</Typography>
+                  <Typography><strong>대상 타입</strong>: {detail.targetType}</Typography>
+                  <Typography><strong>대상 ID</strong>: {detail.targetId}</Typography>
+                  <Typography><strong>사유</strong>: {detail.reason}</Typography>
+                  {detail.createdAt && (
+                    <Typography>
+                      <strong>생성일</strong>: {new Date(detail.createdAt).toLocaleDateString("ko-KR")}
+                    </Typography>
+                  )}
+                </Stack>
+              </Paper>
 
-      <hr style={{ margin: "16px 0" }} />
-
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <label htmlFor="status">
-          <b>상태 변경</b>
-        </label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          disabled={saving}
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-
-        <button onClick={handleUpdateStatus} disabled={saving}>
-          {saving ? "저장 중..." : "변경"}
-        </button>
-      </div>
-    </div>
+              <Paper sx={{ p: 3 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <FormControl sx={{ minWidth: 200 }}>
+                    <InputLabel>상태 변경</InputLabel>
+                    <Select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      disabled={saving}
+                      label="상태 변경"
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <MenuItem key={s} value={s}>
+                          {s}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    variant="contained"
+                    onClick={handleUpdateStatus}
+                    disabled={saving}
+                  >
+                    {saving ? <CircularProgress size={20} /> : "변경"}
+                  </Button>
+                </Stack>
+              </Paper>
+            </>
+          )}
+        </Box>
+      </Container>
+    </AdminLayout>
   );
 }

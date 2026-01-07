@@ -33,6 +33,11 @@ export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const csOpen = Boolean(csAnchorEl);
 
+  // 관리자 페이지에서는 NavBar를 표시하지 않음
+  if (location.pathname.startsWith("/admin")) {
+    return null;
+  }
+
   const go = (path) => {
     navigate(path);
     setCsAnchorEl(null);

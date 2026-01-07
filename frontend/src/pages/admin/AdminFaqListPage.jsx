@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Container, Box, Typography, Button, Stack, Alert, List, ListItem, ListItemText, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AdminLayout from "../../layouts/AdminLayout";
 import { getAdminFaqs, deleteFaq } from "../../api/services/faqService";
 
 export default function AdminFaqListPage() {
@@ -32,36 +36,59 @@ export default function AdminFaqListPage() {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>관리자 FAQ</h2>
-      {error && <p>{error}</p>}
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+            <Typography variant="h5" fontWeight="bold">
+              FAQ 관리
+            </Typography>
+            <Button variant="contained" onClick={() => navigate("/admin/faqs/new")}>
+              FAQ 등록
+            </Button>
+          </Stack>
 
-      <button
-        onClick={() => navigate("/admin/faqs/new")}
-        style={{ cursor: "pointer", marginBottom: 12 }}
-      >
-        + FAQ 등록
-      </button>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <ul style={{ lineHeight: "2" }}>
-        {items.map((faq) => {
-          const id = faq.id ?? faq.faqId;
-          return (
-            <li key={id}>
-              <span style={{ marginRight: 8 }}>{faq.question ?? faq.title ?? `FAQ #${id}`}</span>
-              <button
-                onClick={() => navigate(`/admin/faqs/${id}/edit`)}
-                style={{ cursor: "pointer", marginRight: 6 }}
-              >
-                수정
-              </button>
-              <button onClick={() => onDelete(id)} style={{ cursor: "pointer" }}>
-                삭제
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+          {items.length === 0 ? (
+            <Typography>FAQ가 없습니다.</Typography>
+          ) : (
+            <List>
+              {items.map((faq) => {
+                const id = faq.id ?? faq.faqId;
+                return (
+                  <ListItem
+                    key={id}
+                    secondaryAction={
+                      <Stack direction="row" spacing={1}>
+                        <IconButton
+                          edge="end"
+                          onClick={() => navigate(`/admin/faqs/${id}/edit`)}
+                          color="primary"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          onClick={() => onDelete(id)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Stack>
+                    }
+                  >
+                    <ListItemText
+                      primary={faq.question ?? faq.title ?? `FAQ #${id}`}
+                      secondary={faq.answer ?? faq.content}
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          )}
+        </Box>
+      </Container>
+    </AdminLayout>
   );
 }
