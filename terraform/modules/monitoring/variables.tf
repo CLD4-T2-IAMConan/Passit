@@ -148,3 +148,21 @@ variable "fluentbit_chart_version" {
   description = "The version of the Fluent Bit Helm chart"
   type        = string
 }
+
+variable "fluentbit_timeout" {
+  description = "Timeout in seconds for Fluent Bit Helm installation (default: 600 for dev, 1800 for prod)"
+  type        = number
+  default     = 600
+}
+
+variable "fluentbit_wait" {
+  description = "Wait for Fluent Bit Helm installation to complete (default: false for dev, true for prod)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_fluentbit" {
+  description = "Enable Fluent Bit installation (Fargate에서는 DaemonSet을 지원하지 않으므로 false로 설정 권장)"
+  type        = bool
+  default     = false
+}
