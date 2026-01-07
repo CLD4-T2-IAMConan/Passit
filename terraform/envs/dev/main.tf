@@ -128,8 +128,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  vpc_id             = module.network.vpc_id
-  private_subnet_ids = module.network.private_subnet_ids
+  vpc_id                 = module.network.vpc_id
+  private_subnet_ids     = module.network.private_subnet_ids
+  node_security_group_id = module.eks.node_security_group_id
 
   node_instance_types = var.node_instance_types
   capacity_type       = var.capacity_type
@@ -145,8 +146,7 @@ module "eks" {
   #    policy_associations = v.policy_associations
   #  }
   #} : {}
-  access_entries                           = {}
-  enable_cluster_creator_admin_permissions = false
+  access_entries = {}
 }
 
 # ============================================
@@ -280,12 +280,6 @@ module "monitoring" {
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-
-
-
   depends_on = [
     module.eks,
     module.cicd # AWS Load Balancer Controller webhook이 준비될 때까지 대기
@@ -296,6 +290,16 @@ module "monitoring" {
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 
+  fluentbit_namespace            = "kube-system"
+  fluentbit_service_account_name = "fluent-bit"
+  fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 300
+  fluentbit_wait                 = false
+
+  log_retention_days          = var.log_retention_days
+  application_error_threshold = var.application_error_threshold
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 }
 
 # ============================================
