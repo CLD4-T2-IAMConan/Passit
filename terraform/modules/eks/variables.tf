@@ -86,10 +86,12 @@ variable "node_max_size" {
   type        = number
 }
 
+
 #variable "enable_cluster_creator_admin_permissions" {
 #  type    = bool
 #  default = true
 #}
+
 
 variable "access_entries" {
   description = "Map of access entries to add to the EKS cluster. Key is the entry name, value is the access entry configuration."
