@@ -361,11 +361,6 @@ variable "enable_rds" {
   type        = bool
 }
 
-variable "enable_cluster_creator_admin_permissions" {
-  type    = bool
-  default = true
-}
-
 variable "access_entries" {
   type    = any
   default = {}
