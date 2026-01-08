@@ -9,7 +9,7 @@
 #
 # 사용 순서:
 # 1. 리소스가 이미 존재하는 경우:
-#    terraform import aws_s3_bucket.terraform_state_dev passit-terraform-state-dev
+#    terraform import aws_s3_bucket.terraform_state_dev passit-terraform-state-dev-kr
 #    terraform import aws_dynamodb_table.terraform_locks_dev passit-terraform-locks-dev
 #    (prod도 동일하게 import)
 #
@@ -24,7 +24,7 @@
 
 # S3 Bucket for Terraform State (Dev)
 resource "aws_s3_bucket" "terraform_state_dev" {
-  bucket = "passit-terraform-state-dev"
+  bucket = "passit-terraform-state-dev-kr"
 
   # Destroy 시 버킷이 비어있지 않아도 삭제 가능
   # 주의: Terraform state가 있는 경우 백업 후 삭제하세요
@@ -93,7 +93,7 @@ resource "aws_dynamodb_table" "terraform_locks_dev" {
 
 # S3 Bucket for Terraform State (Prod)
 resource "aws_s3_bucket" "terraform_state_prod" {
-  bucket = "passit-terraform-state-prod"
+  bucket = "passit-terraform-state-prod-kr"
 
   # Destroy 시 버킷이 비어있지 않아도 삭제 가능
   # 주의: Terraform state가 있는 경우 백업 후 삭제하세요
@@ -163,7 +163,7 @@ resource "aws_dynamodb_table" "terraform_locks_prod" {
 # S3 Bucket for Terraform State (DR)
 resource "aws_s3_bucket" "terraform_state_dr" {
   provider      = aws.tokyo # 도쿄 프로바이더 사용
-  bucket        = "passit-terraform-state-dr"
+  bucket        = "passit-terraform-state-dr-jp"
   force_destroy = true
 
   tags = {

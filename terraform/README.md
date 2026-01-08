@@ -49,6 +49,8 @@
 
 ### 운영 가이드
 
+- **[수동 운영 가이드](./docs/MANUAL_OPERATIONS.md)** - Pod 상태 확인, 헬스체크, 로그 확인 등 수동 운영 방법
+
 - **[Bastion 빠른 시작](./docs/BASTION_QUICK_START.md)** - Session Manager를 통한 데이터베이스 접속
 - **[스크립트 가이드](./scripts/README.md)** - 배포 자동화 스크립트 사용법
 
@@ -206,7 +208,7 @@ kubectl create secret docker-registry ghcr-pull-secret \
 # Lock 정보 확인
 aws dynamodb get-item \
   --table-name passit-terraform-locks-dev \
-  --key '{"LockID":{"S":"passit-terraform-state-dev/terraform.tfstate-md5"}}'
+  --key '{"LockID":{"S":"passit-terraform-state-dev-kr/terraform.tfstate-md5"}}'
 
 # 강제 해제 (주의: 다른 사람이 작업 중이 아닌지 확인!)
 terraform force-unlock <LOCK_ID>

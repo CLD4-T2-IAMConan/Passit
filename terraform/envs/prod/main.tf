@@ -100,6 +100,7 @@ module "eks" {
   source = "../../modules/eks"
 
   region       = var.region
+  account_id   = var.account_id
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -108,9 +109,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  vpc_id                 = module.network.vpc_id
-  private_subnet_ids     = module.network.private_subnet_ids
-  node_security_group_id = module.eks.node_security_group_id
+  vpc_id             = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+  # node_security_group_id는 EKS 모듈이 자동 생성하므로 전달하지 않음 (순환 참조 방지)
 
   # Public endpoint access for Terraform/kubectl (임시로 0.0.0.0/0 허용, 추후 특정 IP로 제한 권장)
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
@@ -154,12 +155,47 @@ module "autoscaling" {
 # ============================================
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
+# RDS Global Cluster - 자동 감지
+# Global Cluster가 이미 존재하는지 자동으로 확인하고, 있으면 기존 것을 사용, 없으면 새로 생성
+data "external" "check_global_cluster" {
+  program = ["bash", "-c", <<-EOT
+    CLUSTER_ID="${var.project_name}-global-db"
+    REGION="${var.region}"
+    
+    # AWS CLI로 Global Cluster 존재 여부 확인
+    if aws rds describe-global-clusters \
+      --global-cluster-identifier "$CLUSTER_ID" \
+      --region "$REGION" \
+      --query 'GlobalClusters[0].GlobalClusterIdentifier' \
+      --output text 2>/dev/null | grep -q "$CLUSTER_ID"; then
+      echo "{\"exists\":\"true\",\"id\":\"$CLUSTER_ID\"}"
+    else
+      echo "{\"exists\":\"false\",\"id\":\"\"}"
+    fi
+  EOT
+  ]
+}
+
+locals {
+  global_cluster_exists = data.external.check_global_cluster.result.exists == "true"
+  existing_global_cluster_id = local.global_cluster_exists ? data.external.check_global_cluster.result.id : ""
+}
+
 resource "aws_rds_global_cluster" "this" {
+  count = local.global_cluster_exists ? 0 : 1
+  
   global_cluster_identifier = "${var.project_name}-global-db"
   engine                    = "aurora-mysql"
   engine_version            = "8.0.mysql_aurora.3.08.2"
   database_name             = "passit" # 초기 생성 시에만 필요
   storage_encrypted         = true
+}
+
+locals {
+  # 기존 Global Cluster가 있으면 자동 감지한 ID 사용, 없으면 새로 생성한 것 사용
+  global_cluster_id = local.global_cluster_exists ? local.existing_global_cluster_id : (
+    length(aws_rds_global_cluster.this) > 0 ? aws_rds_global_cluster.this[0].id : ""
+  )
 }
 
 
@@ -172,7 +208,7 @@ module "data" {
   region            = var.region
   team              = var.team
   owner             = var.owner
-  global_cluster_id = aws_rds_global_cluster.this.id
+  global_cluster_id = local.global_cluster_id
 
   # Network Configuration
   vpc_id                = local.vpc_id
@@ -230,7 +266,7 @@ module "data_tokyo" {
   owner        = var.owner
 
   is_dr_region       = true
-  global_cluster_id  = aws_rds_global_cluster.this.id
+  global_cluster_id  = local.global_cluster_id
   enable_rds         = false # DR 리전 RDS는 Global Cluster가 완전히 준비된 후 수동으로 생성
   create_passit_user = false
   create_s3          = false

@@ -185,3 +185,74 @@ output "prometheus_service_url" {
   value       = module.monitoring.prometheus_service_url
 }
 
+#######################################
+# Autoscaling - Cluster Autoscaler
+#######################################
+
+output "cluster_autoscaler_role_arn" {
+  description = "IAM Role ARN for Cluster Autoscaler"
+  value       = module.autoscaling.cluster_autoscaler_role_arn
+}
+
+#######################################
+# SNS/SQS - Event-Driven Architecture
+#######################################
+
+# SNS Topic ARNs
+output "user_events_topic_arn" {
+  description = "ARN of the user events SNS topic"
+  value       = module.sns.user_events_topic_arn
+}
+
+output "ticket_events_topic_arn" {
+  description = "ARN of the ticket events SNS topic"
+  value       = module.sns.ticket_events_topic_arn
+}
+
+output "deal_events_topic_arn" {
+  description = "ARN of the deal events SNS topic"
+  value       = module.sns.deal_events_topic_arn
+}
+
+output "payment_events_topic_arn" {
+  description = "ARN of the payment events SNS topic"
+  value       = module.sns.payment_events_topic_arn
+}
+
+output "chat_events_topic_arn" {
+  description = "ARN of the chat events SNS topic"
+  value       = module.sns.chat_events_topic_arn
+}
+
+# SQS Queue URLs
+output "chat_deal_events_queue_url" {
+  description = "URL of the chat service deal events queue"
+  value       = module.sns.chat_deal_events_queue_url
+}
+
+output "ticket_deal_events_queue_url" {
+  description = "URL of the ticket service deal events queue"
+  value       = module.sns.ticket_deal_events_queue_url
+}
+
+output "trade_ticket_events_queue_url" {
+  description = "URL of the trade service ticket events queue"
+  value       = module.sns.trade_ticket_events_queue_url
+}
+
+# SQS Queue ARNs
+output "chat_deal_events_queue_arn" {
+  description = "ARN of the chat service deal events queue"
+  value       = module.sns.chat_deal_events_queue_arn
+}
+
+output "ticket_deal_events_queue_arn" {
+  description = "ARN of the ticket service deal events queue"
+  value       = module.sns.ticket_deal_events_queue_arn
+}
+
+output "trade_ticket_events_queue_arn" {
+  description = "ARN of the trade service ticket events queue"
+  value       = module.sns.trade_ticket_events_queue_arn
+}
+

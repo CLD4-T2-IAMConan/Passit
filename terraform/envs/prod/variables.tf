@@ -204,6 +204,9 @@ variable "existing_elasticache_parameter_group_name" {
 # ============================================
 # Data Module (RDS / Valkey) Variables
 # ============================================
+# Global Cluster는 자동으로 감지되므로 변수 불필요
+# 기존 Global Cluster가 있으면 자동으로 사용하고, 없으면 새로 생성합니다
+
 variable "rds_master_username" {
   description = "Master username for RDS"
   type        = string
