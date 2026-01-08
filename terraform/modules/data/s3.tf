@@ -125,10 +125,10 @@ resource "aws_s3_bucket_policy" "uploads" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DenyInsecureTransport"
-        Effect = "Deny"
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
         Principal = "*"
-        Action = "s3:*"
+        Action    = "s3:*"
         Resource = [
           "${aws_s3_bucket.this["uploads"].arn}",
           "${aws_s3_bucket.this["uploads"].arn}/*"
@@ -150,10 +150,10 @@ resource "aws_s3_bucket_policy" "logs" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DenyInsecureTransport"
-        Effect = "Deny"
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
         Principal = "*"
-        Action = "s3:*"
+        Action    = "s3:*"
         Resource = [
           "${aws_s3_bucket.this["logs"].arn}",
           "${aws_s3_bucket.this["logs"].arn}/*"
@@ -175,10 +175,10 @@ resource "aws_s3_bucket_policy" "backup" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "DenyInsecureTransport"
-        Effect = "Deny"
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
         Principal = "*"
-        Action = "s3:*"
+        Action    = "s3:*"
         Resource = [
           "${aws_s3_bucket.this["backup"].arn}",
           "${aws_s3_bucket.this["backup"].arn}/*"

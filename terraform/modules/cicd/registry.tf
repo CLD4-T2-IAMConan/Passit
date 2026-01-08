@@ -19,7 +19,7 @@ resource "kubernetes_secret" "ghcr" {
     name      = var.ghcr_secret_name
     namespace = var.service_namespaces[count.index]
   }
-  
+
   depends_on = [kubernetes_namespace_v1.services]
 
   type = "kubernetes.io/dockerconfigjson"

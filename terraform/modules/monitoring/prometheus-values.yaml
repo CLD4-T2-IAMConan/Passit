@@ -42,8 +42,11 @@ kubeStateMetrics:
 ########################################
 # node-exporter
 ########################################
+# Fargate 환경에서는 node-exporter를 사용할 수 없음
+# Fargate는 DaemonSet, HostNetwork, HostPID, 특정 볼륨 타입을 지원하지 않음
+# 노드 메트릭은 수집할 수 없지만, pod 메트릭과 애플리케이션 메트릭은 정상 수집 가능
 nodeExporter:
-  enabled: true
+  enabled: false
 
 ########################################
 # Default Rules

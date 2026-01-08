@@ -9,6 +9,10 @@ resource "kubernetes_service_account_v1" "backend_service" {
       "eks.amazonaws.com/role-arn" = aws_iam_role.backend_service[each.key].arn
     }
   }
+
+  depends_on = [
+    kubernetes_namespace_v1.services
+  ]
 }
 
 # 서비스별 ClusterRole (최소 권한)

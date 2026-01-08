@@ -65,7 +65,7 @@ resource "aws_s3_bucket_public_access_block" "terraform_state_dev" {
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
-  restrict_public_buckets  = true
+  restrict_public_buckets = true
 }
 
 # DynamoDB Table for State Locking (dev environment)
@@ -162,8 +162,8 @@ resource "aws_dynamodb_table" "terraform_locks_prod" {
 
 # S3 Bucket for Terraform State (DR)
 resource "aws_s3_bucket" "terraform_state_dr" {
-  provider = aws.tokyo # 도쿄 프로바이더 사용
-  bucket   = "passit-terraform-state-dr"
+  provider      = aws.tokyo # 도쿄 프로바이더 사용
+  bucket        = "passit-terraform-state-dr"
   force_destroy = true
 
   tags = {
@@ -181,6 +181,29 @@ resource "aws_s3_bucket_versioning" "terraform_state_dr" {
   versioning_configuration { status = "Enabled" }
 }
 
+# Enable encryption (DR)
+resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state_dr" {
+  provider = aws.tokyo
+  bucket   = aws_s3_bucket.terraform_state_dr.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# Block public access (DR)
+resource "aws_s3_bucket_public_access_block" "terraform_state_dr" {
+  provider = aws.tokyo
+  bucket   = aws_s3_bucket.terraform_state_dr.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 # DynamoDB Table for State Locking (DR)
 resource "aws_dynamodb_table" "terraform_locks_dr" {
   provider     = aws.tokyo
@@ -191,5 +214,12 @@ resource "aws_dynamodb_table" "terraform_locks_dr" {
   attribute {
     name = "LockID"
     type = "S"
+  }
+
+  tags = {
+    Name        = "Terraform State Lock Table - DR"
+    Environment = "dr"
+    ManagedBy   = "Terraform"
+    Purpose     = "TerraformStateLock"
   }
 }

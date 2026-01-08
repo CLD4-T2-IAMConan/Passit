@@ -244,9 +244,9 @@ variable "s3_buckets" {
       versioning_enabled = false
       lifecycle_rules = [
         {
-          id            = "temp-files-cleanup"
-          enabled       = true
-          prefix        = "temp/"
+          id              = "temp-files-cleanup"
+          enabled         = true
+          prefix          = "temp/"
           expiration_days = 7
         }
       ]
@@ -317,7 +317,14 @@ variable "enable_rds_dr" {
   default     = false
 }
 
-variable "create_elasticache" {
+variable "enable_elasticache" {
+  description = "ElastiCache(Valkey)를 생성할지 여부"
   type        = bool
   default     = true
+}
+
+variable "rds_deletion_protection" {
+  description = "RDS Cluster deletion protection (false로 설정하면 terraform destroy 가능)"
+  type        = bool
+  default     = null # null이면 environment에 따라 자동 설정 (prod: true, 기타: false)
 }

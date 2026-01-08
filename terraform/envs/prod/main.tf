@@ -205,6 +205,9 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+  # RDS Deletion Protection
+  rds_deletion_protection = var.rds_deletion_protection
+
   # Existing Resources
   existing_db_subnet_group_name             = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
@@ -213,6 +216,7 @@ module "data" {
 }
 
 module "data_tokyo" {
+  count  = var.enable_dr ? 1 : 0
   source = "../../modules/data"
 
   providers = {
@@ -227,17 +231,18 @@ module "data_tokyo" {
 
   is_dr_region       = true
   global_cluster_id  = aws_rds_global_cluster.this.id
+  enable_rds         = false # DR 리전 RDS는 Global Cluster가 완전히 준비된 후 수동으로 생성
   create_passit_user = false
   create_s3          = false
-  create_elasticache = false
+  enable_elasticache = false
 
-  vpc_id                       = data.aws_vpc.tokyo_vpc.id
-  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
-  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg.id
+  vpc_id                       = data.aws_vpc.tokyo_vpc[0].id
+  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets[0].ids
+  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg[0].id
 
   # Security Groups
-  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg.id
-  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg.id
+  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg[0].id
+  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg[0].id
 
   # ElastiCache/RDS 상세 설정 (서울과 동일하게 유지하거나 조정)
   rds_instance_class = var.rds_instance_class # 동일하게 r6g.large 등 사용
@@ -277,6 +282,9 @@ module "monitoring" {
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
   fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 600
+  fluentbit_wait                 = true
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
