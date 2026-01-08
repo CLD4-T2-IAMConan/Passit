@@ -144,6 +144,8 @@ jobs:
       - name: Sync ArgoCD Application (Core Mode)
         run: |
           kubectl config set-context --current --namespace=argocd
+          kubectl patch cm argocd-cm -n argocd --type merge -p '{"data":{"accounts.admin":"apiKey, login", "admin.enabled":"true"}}'
+          kubectl patch cm argocd-rbac-cm -n argocd --type merge -p '{"data":{"policy.default":"role:admin"}}'
           export ARGOCD_CORE_NAMESPACE=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
