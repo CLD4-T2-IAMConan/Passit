@@ -136,6 +136,8 @@ jobs:
       - name: Login to ArgoCD (Direct via ALB)
         run: |
           ARGOCD_SERVER="argocd-dev.passit.cloud"
+          echo "Testing connection to $ARGOCD_SERVER..."
+          curl -I -m 5 http://$ARGOCD_SERVER || echo "Connection failed"
           # 초기 비밀번호 가져오기
           ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
           
