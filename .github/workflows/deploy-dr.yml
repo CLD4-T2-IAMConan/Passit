@@ -149,7 +149,7 @@ jobs:
             argocd app sync passit-services --core --server-side --auth-mode kubernetes
           else
             SERVICE_NAME="${{ github.event.inputs.service }}-dr"
-            argocd app sync $SERVICE_NAME --core --server-side
+            argocd app sync $SERVICE_NAME --core --server-side --auth-mode kubernetes
           fi
 
       - name: Wait for Sync
