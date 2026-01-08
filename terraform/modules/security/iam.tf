@@ -160,19 +160,17 @@ data "aws_iam_policy_document" "github_actions" {
     ]
   }
 
-  dynamic "statement" {
-    for_each = var.frontend_cloudfront_distribution_id != null && var.frontend_cloudfront_distribution_id != "" ? [1] : []
-    content {
-      sid    = "AllowCloudFrontInvalidation"
-      effect = "Allow"
-      actions = [
-        "cloudfront:CreateInvalidation"
-      ]
-      # CloudFront는 리소스 레벨 권한을 지원하지 않으므로 * 사용
-      resources = [
-        "*"
-      ]
-    }
+  # CloudFront invalidation 권한 (frontend가 활성화되어 있으면 항상 필요)
+  statement {
+    sid    = "AllowCloudFrontInvalidation"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateInvalidation"
+    ]
+    # CloudFront는 리소스 레벨 권한을 지원하지 않으므로 * 사용
+    resources = [
+      "*"
+    ]
   }
 
   statement {

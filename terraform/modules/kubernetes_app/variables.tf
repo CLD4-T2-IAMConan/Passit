@@ -79,7 +79,7 @@ variable "ghcr_secret_name" {
 variable "health_check_path" {
   type        = string
   description = "Health check path for readiness probe (빈 문자열이면 probe 비활성화)"
-  default     = ""  # 기본값 비활성화 (애플리케이션에 맞게 설정)
+  default     = "" # 기본값 비활성화 (애플리케이션에 맞게 설정)
 }
 
 # --- Namespace ---
@@ -93,5 +93,5 @@ variable "namespace" {
 variable "wait_for_rollout" {
   type        = bool
   description = "Wait for deployment rollout to finish"
-  default     = false  # Pod 상태는 수동으로 확인
+  default     = false # Pod 상태는 수동으로 확인
 }

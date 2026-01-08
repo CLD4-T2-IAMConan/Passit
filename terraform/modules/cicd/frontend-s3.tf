@@ -22,6 +22,13 @@ resource "aws_s3_bucket" "frontend" {
   force_destroy = true
 
   tags = local.tags
+
+  # 기존 버킷이 이미 존재하는 경우 import 후 사용
+  lifecycle {
+    ignore_changes = [
+      # 버킷이 이미 존재하는 경우 생성 오류 방지
+    ]
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend" {

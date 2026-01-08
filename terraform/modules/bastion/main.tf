@@ -192,6 +192,17 @@ resource "aws_instance" "bastion" {
     },
     var.tags
   )
+
+  # AMI와 user_data 변경 시 인스턴스 재생성 방지
+  # AMI는 최신 버전으로 자동 업데이트되지 않도록 하고,
+  # user_data 변경도 인스턴스 재생성을 유발하지 않도록 함
+  lifecycle {
+    ignore_changes = [
+      ami,
+      user_data,
+      user_data_replace_on_change
+    ]
+  }
 }
 
 # RDS Security Group에 Bastion 접근 허용
@@ -217,8 +228,15 @@ resource "aws_security_group_rule" "elasticache_from_bastion" {
 }
 
 # EKS Cluster Security Group에 Bastion 접근 허용 (선택적)
+# ⚠️ 주의: var.eks_cluster_security_group_id가 리소스 output인 경우,
+# terraform plan 시 "count value depends on resource attributes" 에러가 발생할 수 있습니다.
+# 이 경우 terraform apply 시 -target 옵션을 사용하여 EKS 클러스터를 먼저 생성하거나,
+# 변수를 직접 문자열로 전달하여 계획 단계에서 결정 가능하도록 해야 합니다.
 resource "aws_security_group_rule" "eks_from_bastion" {
-  count = var.eks_cluster_security_group_id != "" ? 1 : 0
+  # for_each를 사용하여 빈 set을 허용
+  # 변수가 리소스 output인 경우, 계획 단계에서 값을 알 수 없을 수 있음
+  # 이 경우 terraform apply 시 -target 옵션을 사용하여 EKS 클러스터를 먼저 생성해야 함
+  for_each = var.eks_cluster_security_group_id != null && var.eks_cluster_security_group_id != "" ? { create = true } : {}
 
   type                     = "ingress"
   from_port                = 443

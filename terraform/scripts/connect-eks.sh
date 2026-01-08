@@ -106,7 +106,15 @@ fi
 # AWS 리전 가져오기
 REGION=$(terraform output -raw region 2>/dev/null || echo "")
 if [ -z "$REGION" ]; then
-    REGION=${AWS_REGION:-ap-northeast-2}
+    # 환경별 기본 리전 설정
+    case "$ENVIRONMENT" in
+        dr)
+            REGION=${AWS_REGION:-ap-northeast-1}  # Tokyo
+            ;;
+        *)
+            REGION=${AWS_REGION:-ap-northeast-2}  # Seoul
+            ;;
+    esac
     echo "Warning: Terraform output에서 region을 가져올 수 없어 기본값 사용: $REGION"
 fi
 

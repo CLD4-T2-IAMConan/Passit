@@ -26,3 +26,13 @@ output "terraform_backend_dynamodb_table_prod" {
   value       = aws_dynamodb_table.terraform_locks_prod.name
   description = "DynamoDB table name for Terraform state locking (prod environment)"
 }
+
+output "terraform_backend_s3_bucket_dr" {
+  value       = aws_s3_bucket.terraform_state_dr.id
+  description = "S3 bucket name for Terraform state (dr environment)"
+}
+
+output "terraform_backend_dynamodb_table_dr" {
+  value       = aws_dynamodb_table.terraform_locks_dr.name
+  description = "DynamoDB table name for Terraform state locking (dr environment)"
+}
