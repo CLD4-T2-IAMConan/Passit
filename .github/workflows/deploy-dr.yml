@@ -128,37 +128,39 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           rm argocd-linux-amd64
 
-      - name: Port forward ArgoCD Server
-        run: |
-          kubectl port-forward svc/argocd-server -n argocd 8080:443 &
-          sleep 15
-        continue-on-error: true
+      #- name: Port forward ArgoCD Server
+      #  run: |
+      #    kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+      #    sleep 15
+      #  continue-on-error: true
 
-      - name: Login to ArgoCD
-        run: |
-          ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-          ARGOCD_SERVER=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.clusterIP}')
-          argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
-        continue-on-error: true
+      #- name: Login to ArgoCD
+      #  run: |
+      #    ARGOCD_SERVER="argocd-dr.passit.cloud"
+      #    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+      #    argocd login $ARGOCD_SERVER:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+      #  continue-on-error: true
 
-      - name: Sync ArgoCD Application
+      - name: Sync ArgoCD Application (Core Mode)
         run: |
+          kubectl config set-context --current --namespace=argocd
+          kubectl patch cm argocd-cm -n argocd --type merge -p '{"data":{"accounts.admin":"apiKey, login", "admin.enabled":"true"}}'
+          kubectl patch cm argocd-rbac-cm -n argocd --type merge -p '{"data":{"policy.default":"role:admin"}}'
+          export ARGOCD_CORE_NAMESPACE=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --server-side || true
+            argocd app sync passit-services --core --server-side
           else
-            # Sync specific service
-            SERVICE_NAME="${{ github.event.inputs.service }}-prod"
-            argocd app sync $SERVICE_NAME --server-side || true
+            SERVICE_NAME="${{ github.event.inputs.service }}-dr"
+            argocd app sync $SERVICE_NAME --core --server-side
           fi
-        continue-on-error: true
 
       - name: Wait for Sync
         run: |
+          export ARGOCD_CORE_NAMESPACE=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
-            argocd app wait passit-services --timeout 300 || true
+            argocd app wait passit-services --core --timeout 300
           else
-            SERVICE_NAME="${{ github.event.inputs.service }}-prod"
-            argocd app wait $SERVICE_NAME --timeout 300 || true
+            SERVICE_NAME="${{ github.event.inputs.service }}-dr"
+            argocd app wait $SERVICE_NAME --core --timeout 300
           fi
-        continue-on-error: true
