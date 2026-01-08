@@ -134,33 +134,32 @@ jobs:
       #    sleep 15
       #  continue-on-error: true
 
-      - name: Login to ArgoCD
-        run: |
-          ARGOCD_SERVER="argocd-dr.passit.cloud"
-          ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-          argocd login $ARGOCD_SERVER:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
-        continue-on-error: true
+      #- name: Login to ArgoCD
+      #  run: |
+      #    ARGOCD_SERVER="argocd-dr.passit.cloud"
+      #    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+      #    argocd login $ARGOCD_SERVER:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+      #  continue-on-error: true
 
-      - name: Sync ArgoCD Application
+      - name: Sync ArgoCD Application (Core Mode)
+        env:
+          ARGOCD_CORE_NAMESPACE: argocd
         run: |
-          ARGOCD_SERVER="argocd-dr.passit.cloud"
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --server $ARGOCD_SERVER --server-side || true
+            argocd app sync passit-services --core --server-side
           else
-            # Sync specific service
-            SERVICE_NAME="${{ github.event.inputs.service }}-prod"
-            argocd app sync $SERVICE_NAME --server $ARGOCD_SERVER --server-side || true
+            SERVICE_NAME="${{ github.event.inputs.service }}-dr"
+            argocd app sync $SERVICE_NAME --core --server-side
           fi
-        continue-on-error: true
 
       - name: Wait for Sync
+        env:
+          ARGOCD_CORE_NAMESPACE: argocd
         run: |
-          ARGOCD_SERVER="argocd-dr.passit.cloud"
           if [ -z "${{ github.event.inputs.service }}" ]; then
-            argocd app wait passit-services --server $ARGOCD_SERVER --timeout 300 || true
+            argocd app wait passit-services --core --timeout 300
           else
-            SERVICE_NAME="${{ github.event.inputs.service }}-prod"
-            argocd app wait $SERVICE_NAME --server $ARGOCD_SERVER --timeout 300 || true
+            SERVICE_NAME="${{ github.event.inputs.service }}-dr"
+            argocd app wait $SERVICE_NAME --core --timeout 300
           fi
-        continue-on-error: true
