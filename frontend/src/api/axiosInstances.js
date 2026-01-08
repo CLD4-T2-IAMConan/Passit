@@ -2,14 +2,20 @@
  * 백엔드 5개 마이크로서비스별 Axios 인스턴스
  */
 import axios from "axios";
+import { CLOUDFRONT_URL, API_SERVICES } from "../config/apiConfig";
 
-// 환경변수 또는 ALB URL 설정
+// 중앙화된 API 설정 사용
 const BASE_URLS = {
-  ACCOUNT: process.env.REACT_APP_ACCOUNT_API_URL || "http://account-service.passit.com",
-  TICKET: process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com",
-  TRADE: process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com",
-  CHAT: process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com",
-  CS: process.env.REACT_APP_CS_API_URL || "http://cs-service.passit.com",
+  // Account Service: /api/auth/*, /api/users/* → alb-account-origin
+  ACCOUNT: API_SERVICES.ACCOUNT,
+  // Ticket Service: /api/tickets/* → alb-ticket-origin
+  TICKET: API_SERVICES.TICKET,
+  // Trade Service: /api/trades/*, /api/deals/* → alb-trade-origin
+  TRADE: API_SERVICES.TRADE,
+  // Chat Service: /api/chat/*, /ws/* → alb-chat-origin
+  CHAT: API_SERVICES.CHAT,
+  // CS Service: /api/cs/*, /api/notices/*, /api/faqs/*, /api/inquiries/* → alb-cs-origin
+  CS: API_SERVICES.CS,
 };
 
 /**

@@ -38,6 +38,11 @@ module "network" {
   use_existing_vpc = var.use_existing_vpc
   existing_vpc_id  = var.existing_vpc_id
 
+  # Existing Subnet IDs (기존 VPC 사용 시)
+  existing_public_subnet_ids     = var.existing_public_subnet_ids
+  existing_private_subnet_ids    = var.existing_private_subnet_ids
+  existing_private_db_subnet_ids = var.existing_private_db_subnet_ids
+
   # New VPC Configuration
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
@@ -50,6 +55,14 @@ module "network" {
   # NAT Gateway Configuration
   enable_nat_gateway = var.enable_nat_gateway
   single_nat_gateway = var.single_nat_gateway
+
+  public_subnet_tags = {
+    "kubernetes.io/cluster/passit-dr-eks" = "shared"
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/passit-dr-eks" = "shared"
+  }
 }
 
 # ============================================
@@ -70,11 +83,26 @@ module "security" {
   # Note: Set to empty string initially, update after EKS cluster creation
   eks_cluster_name = var.eks_cluster_name
 
+  # EKS OIDC Provider URL (EKS 모듈에서 받음, 없으면 빈 문자열)
+  # 순환 의존성 방지를 위해 try() 사용
+  eks_oidc_provider_url = try(module.eks.oidc_provider_url, "")
+
   allowed_cidr_blocks = var.allowed_cidr_blocks
 
   # Optional: Use existing security groups if provided
   rds_security_group_id         = var.rds_security_group_id
   elasticache_security_group_id = var.elasticache_security_group_id
+
+  # Secrets Manager
+  db_secrets          = var.db_secrets
+  smtp_secrets        = var.smtp_secrets
+  kakao_secrets       = var.kakao_secrets
+  elasticache_secrets = var.elasticache_secrets
+}
+
+locals {
+  # 도쿄(DR)에서는 노드 그룹을 비워둡니다.
+  eks_managed_node_groups = {}
 }
 
 # ============================================
@@ -84,6 +112,7 @@ module "security" {
 module "eks" {
   source = "../../modules/eks"
 
+  region       = var.region
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -95,34 +124,35 @@ module "eks" {
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
-  # Public endpoint access for Terraform/kubectl (임시로 0.0.0.0/0 허용, 추후 특정 IP로 제한 권장)
+  node_security_group_id = module.security.eks_worker_security_group_id
+
+  # Public endpoint access
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
   node_instance_types = var.node_instance_types
-  capacity_type       = var.capacity_type
   node_min_size       = var.node_min_size
   node_desired_size   = var.node_desired_size
   node_max_size       = var.node_max_size
+
+  enable_cluster_creator_admin_permissions = true
+
+  access_entries = {
+    yejin = {
+      principal_arn = "arn:aws:iam::727646470302:user/t2-yejin"
+      type          = "STANDARD"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 }
 
-# ============================================
-# Autoscaling Module (Cluster Autoscaler)
-# ============================================
-module "autoscaling" {
-  source = "../../modules/autoscaling"
-
-  project_name = var.project_name
-  environment  = var.environment
-  team         = var.team
-  owner        = var.owner
-  region       = var.region
-
-  cluster_name      = module.eks.cluster_name
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url = module.eks.oidc_provider_url
-
-  depends_on = [module.eks]
-}
 
 # ============================================
 # Bastion Host Module
@@ -197,6 +227,12 @@ module "monitoring" {
   account_id    = var.account_id
 
   oidc_provider_arn = module.eks.oidc_provider_arn
+  oidc_provider_url = module.eks.oidc_provider_url
+
+  depends_on = [
+    module.eks,
+    module.cicd  # AWS Load Balancer Controller webhook이 준비될 때까지 대기
+  ]
 
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
@@ -221,6 +257,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
+  vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
@@ -236,7 +273,7 @@ module "cicd" {
   github_ref  = var.github_ref
 
   # Frontend CD (S3 / CloudFront)
-  enable_frontend      = true
+  enable_frontend      = var.enable_frontend
   frontend_bucket_name = var.frontend_bucket_name
 
   # registry (GHCR)
@@ -255,4 +292,6 @@ module "cicd" {
   secret_elasticache_arn = module.security.elasticache_secret_arn
   secret_smtp_arn        = module.security.smtp_secret_arn
   secret_kakao_arn       = module.security.kakao_secret_arn
+
+  depends_on = [module.eks]
 }

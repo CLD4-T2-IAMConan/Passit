@@ -17,3 +17,8 @@ terraform {
 provider "aws" {
   region = "ap-northeast-2"
 }
+
+provider "aws" {
+  alias  = "tokyo"
+  region = "ap-northeast-1" # 도쿄 추가
+}

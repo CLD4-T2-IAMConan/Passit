@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from "react";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { API_SERVICES } from "../../config/apiConfig";
 
 const useChatWebSocket = ({ chatroomId, onMessage }) => {
   const stompClientRef = useRef(null); // STOMP 클라이언트 객체를 보관하는 참조
@@ -21,8 +22,8 @@ const useChatWebSocket = ({ chatroomId, onMessage }) => {
       }
 
       console.log("🔵 WebSocket 연결 시작...", { chatroomId });
-      const chatBaseURL = process.env.REACT_APP_CHAT_API_URL || "http://chat-service.passit.com";
-      const socket = new SockJS(`${chatBaseURL}/ws`);
+      // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
+      const socket = new SockJS(`${API_SERVICES.CHAT}/ws`);
       const client = Stomp.over(socket);
 
       // 디버그 모드 비활성화 (로그 줄이기)

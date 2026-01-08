@@ -1,4 +1,9 @@
 # EKS Module Variables
+variable "region" {
+  description = "AWS Region"
+  type        = string
+}
+
 variable "project_name" {
   description = "Project name tag for all EKS resources"
   type        = string
@@ -79,4 +84,30 @@ variable "node_desired_size" {
 variable "node_max_size" {
   description = "Maximum number of worker nodes"
   type        = number
+}
+
+variable "enable_cluster_creator_admin_permissions" {
+  type    = bool
+  default = true
+}
+
+variable "access_entries" {
+  description = "Map of access entries to add to the EKS cluster. Key is the entry name, value is the access entry configuration."
+  type = map(object({
+    principal_arn      = string
+    policy_associations = optional(map(object({
+      policy_arn   = string
+      access_scope = optional(object({
+        type = string
+        namespaces = optional(list(string))
+      }))
+    })))
+  }))
+  default = {}
+}
+
+variable "enable_cluster_creator_admin_permissions" {
+  description = "EKS 클러스터 생성자에게 관리자 권한 자동 부여 여부"
+  type        = bool
+  default     = false # 기본값을 false로 두어 충돌을 방지합니다.
 }

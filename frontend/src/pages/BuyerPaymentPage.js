@@ -22,8 +22,9 @@ import { ConfirmationNumber } from "@mui/icons-material";
 // 🚨 [추가] userService import
 import userService from "../services/userService";
 
-// Trade Service ALB URL
-const API_BASE_URL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
+// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
+import { API_SERVICES } from "../config/apiConfig";
+const API_BASE_URL = API_SERVICES.TRADE;
 
 // 🌟 MUI 커스텀 모달 스타일
 const modalStyle = {

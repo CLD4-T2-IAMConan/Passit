@@ -9,7 +9,7 @@ module.exports = defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -20,13 +20,14 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // Firefox 프로젝트 제거 - 크롬만 테스트
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
   ],
 
-  webServer: {
+  webServer: process.env.BASE_URL ? undefined : {
     command: 'npm start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,

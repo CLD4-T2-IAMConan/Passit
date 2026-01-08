@@ -1,11 +1,13 @@
 import axios from "axios";
 import { ENDPOINTS } from "../endpoints";
+import { API_SERVICES } from "../../config/apiConfig";
 
 /**
  *  ticket 서비스 전용 API Client
+ *  CloudFront를 통한 Ticket Service 접근 (/api/tickets/*)
  */
 const ticketApiClient = axios.create({
-  baseURL: process.env.REACT_APP_TICKET_API_URL || "http://ticket-service.passit.com", // /api는 endpoints.js에 포함되어 있음
+  baseURL: API_SERVICES.TICKET, // /api는 endpoints.js에 포함되어 있음
 });
 
 /**

@@ -1,8 +1,10 @@
 // frontend/src/services/api.js
 import axios from "axios";
+import { API_SERVICES } from "../config/apiConfig";
 
+// CloudFront를 통한 CS Service 접근
 const api = axios.create({
-  baseURL: process.env.REACT_APP_CS_API_URL || "http://cs-service.passit.com",
+  baseURL: API_SERVICES.CS,
   headers: { "Content-Type": "application/json" },
 });
 

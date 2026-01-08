@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: account-service-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # ⭐ Passit 메인 저장소 참조 (Ingress 설정 포함)
+    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
+    targetRevision: main
+    path: service-account/helm
+    helm:
+      valueFiles:
+        - values-prod.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: account
+
+  syncPolicy:
+    automated:
+      prune: true # 삭제된 리소스 자동 정리
+      selfHeal: true # Git과 클러스터 상태 자동 동기화
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true # namespace가 없으면 자동 생성
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health check 설정
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas # HPA 사용 시 replica 차이 무시
+
+
+  # 알림 설정 (선택적)
+  # revisionHistoryLimit: 10
+

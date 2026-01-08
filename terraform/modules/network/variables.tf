@@ -92,3 +92,16 @@ variable "existing_private_db_subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+
+variable "public_subnet_tags" {
+  description = "Additional tags for public subnets"
+  type        = map(string)
+  default     = {}
+}
+
+variable "private_subnet_tags" {
+  description = "Additional tags for private subnets"
+  type        = map(string)
+  default     = {}
+}

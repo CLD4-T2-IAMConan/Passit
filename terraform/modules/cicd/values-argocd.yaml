@@ -11,7 +11,7 @@ server:
   ingress:
     enabled: true
     ingressClassName: alb
-    hosts: []
+    # hosts: []
     paths:
       - /
     pathType: Prefix
@@ -24,13 +24,13 @@ server:
       alb.ingress.kubernetes.io/group.name: ${project_name}-${environment}-argocd-alb
       alb.ingress.kubernetes.io/success-codes: "200-399"
       alb.ingress.kubernetes.io/healthcheck-path: /healthz
-      alb.ingress.kubernetes.io/ssl-redirect: "404"
+      # alb.ingress.kubernetes.io/ssl-redirect: "404"
 
 configs:
   cm:
     # Enable in-cluster deployment
     cluster.inClusterEnabled: "true"
-    url: http://${alb_dns_name}
+    # url: http://${alb_dns_name}
 
 repoServer:
   dnsPolicy: ClusterFirst

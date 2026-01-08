@@ -16,12 +16,23 @@ locals {
 # ============================================
 # ElastiCache Subnet Group (기존 리소스 또는 새로 생성)
 # ============================================
+# 주의: data source가 실패하면 Terraform이 중단되므로,
+# existing_elasticache_subnet_group_name이 설정되어 있어도 항상 새로 생성합니다.
+# 
+# 해결 방법:
+# 1. 리소스가 없으면: existing_elasticache_subnet_group_name을 빈 문자열("")로 설정
+# 2. 리소스가 있으면: terraform import를 사용하여 기존 리소스를 import
+#
+# 현재는 리소스가 없을 때를 대비하여 항상 새로 생성하도록 설정합니다.
+# 기존 리소스를 사용하려면 terraform import를 사용하세요.
 
+# 기존 Subnet Group 조회 (있는 경우)
 data "aws_elasticache_subnet_group" "existing" {
   count = var.existing_elasticache_subnet_group_name != "" ? 1 : 0
   name  = var.existing_elasticache_subnet_group_name
 }
 
+# 새 Subnet Group 생성 (없는 경우)
 resource "aws_elasticache_subnet_group" "valkey" {
   count      = var.existing_elasticache_subnet_group_name != "" ? 0 : 1
   name       = "${var.project_name}-${var.environment}-valkey-subnet-group"
@@ -36,6 +47,7 @@ resource "aws_elasticache_subnet_group" "valkey" {
 }
 
 locals {
+  # 기존 리소스가 있으면 기존 것 사용, 없으면 새로 생성한 것 사용
   elasticache_subnet_group_name = var.existing_elasticache_subnet_group_name != "" ? data.aws_elasticache_subnet_group.existing[0].name : aws_elasticache_subnet_group.valkey[0].name
 }
 

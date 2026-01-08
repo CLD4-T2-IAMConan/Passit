@@ -21,11 +21,17 @@ variable "cluster_name" {
   type        = string
 }
 
-
-
 variable "oidc_provider_arn" {
   type        = string
   description = "OIDC Provider ARN from EKS"
+}
+
+variable "oidc_provider_url" {
+  type = string
+}
+
+variable "oidc_provider_url" {
+  type = string
 }
 
 variable "account_id" {
@@ -59,6 +65,11 @@ variable "grafana_authentication_providers" {
   default     = ["AWS_SSO"]
 }
 
+variable "grafana_namespace" {
+  type    = string
+  default = "monitoring"
+}
+
 ############################
 # Fluent Bit
 ############################
@@ -74,3 +85,26 @@ variable "monitoring_namespace" {
   description = "Namespace for monitoring stack"
   default     = "monitoring"
 }
+
+variable "tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
+}
+
+variable "monitoring_namespace" {
+  description = "The namespace where monitoring tools will be installed"
+  type        = string
+  default     = "monitoring"
+}
+
+variable "alertmanager_namespace" {
+  type    = string
+  default = "monitoring"
+}
+
