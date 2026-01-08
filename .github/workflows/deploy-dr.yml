@@ -146,7 +146,7 @@ jobs:
           kubectl config set-context --current --namespace=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --core --server-side
+            argocd app sync passit-services --core --server-side --auth-mode kubernetes
           else
             SERVICE_NAME="${{ github.event.inputs.service }}-dr"
             argocd app sync $SERVICE_NAME --core --server-side
