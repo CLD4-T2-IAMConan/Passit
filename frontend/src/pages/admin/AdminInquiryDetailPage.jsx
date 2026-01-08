@@ -119,7 +119,13 @@ const AdminInquiryDetailPage = () => {
                   </Typography>
                   {inquiry.status && (
                     <Chip
-                      label={inquiry.status === "ANSWERED" ? "답변완료" : inquiry.status === "PENDING" ? "대기중" : inquiry.status}
+                      label={
+                        inquiry.status === "ANSWERED"
+                          ? "답변완료"
+                          : inquiry.status === "PENDING"
+                            ? "대기중"
+                            : inquiry.status
+                      }
                       color={getStatusColor(inquiry.status)}
                       size="small"
                     />
@@ -230,7 +236,11 @@ const AdminInquiryDetailPage = () => {
                         {inquiry.answerContent}
                       </Typography>
                       {inquiry.answeredAt && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mt: 1, display: "block" }}
+                        >
                           답변일: {new Date(inquiry.answeredAt).toLocaleDateString("ko-KR")}
                         </Typography>
                       )}
@@ -247,4 +257,3 @@ const AdminInquiryDetailPage = () => {
 };
 
 export default AdminInquiryDetailPage;
-

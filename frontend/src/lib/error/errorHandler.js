@@ -1,6 +1,6 @@
 /**
  * 통합 에러 핸들러
- * 
+ *
  * 모든 API 에러를 일관되게 처리
  */
 
@@ -8,26 +8,26 @@
  * 에러 타입 정의
  */
 export const ErrorTypes = {
-  NETWORK_ERROR: 'NETWORK_ERROR',
-  AUTH_ERROR: 'AUTH_ERROR',
-  PERMISSION_ERROR: 'PERMISSION_ERROR',
-  NOT_FOUND: 'NOT_FOUND',
-  SERVER_ERROR: 'SERVER_ERROR',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+  NETWORK_ERROR: "NETWORK_ERROR",
+  AUTH_ERROR: "AUTH_ERROR",
+  PERMISSION_ERROR: "PERMISSION_ERROR",
+  NOT_FOUND: "NOT_FOUND",
+  SERVER_ERROR: "SERVER_ERROR",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+  UNKNOWN_ERROR: "UNKNOWN_ERROR",
 };
 
 /**
  * 에러 메시지 매핑
  */
 const ERROR_MESSAGES = {
-  [ErrorTypes.NETWORK_ERROR]: '네트워크 연결을 확인해주세요.',
-  [ErrorTypes.AUTH_ERROR]: '인증이 만료되었습니다. 다시 로그인해주세요.',
-  [ErrorTypes.PERMISSION_ERROR]: '접근 권한이 없습니다.',
-  [ErrorTypes.NOT_FOUND]: '요청한 리소스를 찾을 수 없습니다.',
-  [ErrorTypes.SERVER_ERROR]: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-  [ErrorTypes.VALIDATION_ERROR]: '입력한 정보를 확인해주세요.',
-  [ErrorTypes.UNKNOWN_ERROR]: '오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+  [ErrorTypes.NETWORK_ERROR]: "네트워크 연결을 확인해주세요.",
+  [ErrorTypes.AUTH_ERROR]: "인증이 만료되었습니다. 다시 로그인해주세요.",
+  [ErrorTypes.PERMISSION_ERROR]: "접근 권한이 없습니다.",
+  [ErrorTypes.NOT_FOUND]: "요청한 리소스를 찾을 수 없습니다.",
+  [ErrorTypes.SERVER_ERROR]: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+  [ErrorTypes.VALIDATION_ERROR]: "입력한 정보를 확인해주세요.",
+  [ErrorTypes.UNKNOWN_ERROR]: "오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
 };
 
 /**
@@ -107,4 +107,3 @@ export const isErrorType = (error, type) => {
 };
 
 export default handleError;
-

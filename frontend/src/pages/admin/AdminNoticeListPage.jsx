@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Card, CardContent, Chip, Divider, Stack, Typography, Container, CircularProgress, Alert } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  Stack,
+  Typography,
+  Container,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import AdminLayout from "../../layouts/AdminLayout";
 import { getAdminNotices, deleteAdminNotice } from "../../api/services/noticeService";
 
@@ -91,7 +103,8 @@ export default function AdminNoticeListPage() {
                               )}
                             </Stack>
                             <Typography sx={{ mt: 0.5, color: "text.secondary" }}>
-                              ID: {id} · 등록일: {createdAt ? new Date(createdAt).toLocaleDateString("ko-KR") : "-"}
+                              ID: {id} · 등록일:{" "}
+                              {createdAt ? new Date(createdAt).toLocaleDateString("ko-KR") : "-"}
                             </Typography>
                           </Box>
                           <Stack direction="row" spacing={1}>

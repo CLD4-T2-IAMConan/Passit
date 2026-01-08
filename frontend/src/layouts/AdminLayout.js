@@ -152,7 +152,8 @@ const AdminLayout = ({ children }) => {
       <List sx={{ flex: 1, pt: 2 }}>
         {menuItems.map((item) => {
           // 정확히 일치하거나 하위 경로인 경우 활성화
-          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
+          const isActive =
+            location.pathname === item.path || location.pathname.startsWith(item.path + "/");
           return (
             <ListItem key={item.text} disablePadding sx={{ px: 2, mb: 0.5 }}>
               <ListItemButton

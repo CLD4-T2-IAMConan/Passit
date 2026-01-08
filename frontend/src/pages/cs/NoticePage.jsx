@@ -117,7 +117,7 @@ export default function NoticePage() {
 
         // 백엔드 응답: { success: true, data: {...} }
         const data = res?.data?.data ?? null;
-        
+
         // 데이터가 없으면 테스트 데이터 사용
         if (!data && MOCK_NOTICES[noticeId]) {
           setNotice(MOCK_NOTICES[noticeId]);
@@ -171,9 +171,7 @@ export default function NoticePage() {
                   <Typography variant="h4" sx={{ fontWeight: 700 }}>
                     {notice?.title ?? "(제목 없음)"}
                   </Typography>
-                  {notice?.isImportant && (
-                    <Chip label="중요" color="error" size="small" />
-                  )}
+                  {notice?.isImportant && <Chip label="중요" color="error" size="small" />}
                 </Stack>
                 {notice?.createdAt && (
                   <Typography variant="body2" color="text.secondary">

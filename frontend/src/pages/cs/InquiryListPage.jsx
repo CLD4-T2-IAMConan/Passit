@@ -82,8 +82,8 @@ const InquiryListPage = () => {
         : Array.isArray(res?.data?.data)
           ? res.data.data
           : Array.isArray(res)
-          ? res
-          : [];
+            ? res
+            : [];
 
       // 데이터가 없거나 빈 배열이면 빈 배열로 표시
       setItems(data);
@@ -108,88 +108,92 @@ const InquiryListPage = () => {
             문의 목록
           </Typography>
 
-        <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={fetchList}>
-            새로고침
-          </Button>
-          <Button variant="contained" onClick={() => navigate("/cs/inquiries/new")}>
-            문의하기
-          </Button>
-        </Stack>
-      </Stack>
-
-      <Paper sx={{ p: 2 }}>
-        {loading ? (
-          <Stack alignItems="center" sx={{ py: 6 }}>
-            <CircularProgress />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              문의 목록을 불러오는 중...
-            </Typography>
-          </Stack>
-        ) : errorMsg ? (
-          <Alert severity="error" sx={{ my: 2 }}>
-            {errorMsg}
-            <Button size="small" onClick={fetchList} sx={{ mt: 1 }}>
-              다시 시도
+          <Stack direction="row" spacing={1}>
+            <Button variant="outlined" onClick={fetchList}>
+              새로고침
             </Button>
-          </Alert>
-        ) : items.length === 0 ? (
-          <Stack alignItems="center" sx={{ py: 6 }}>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              등록된 문의가 없습니다.
-            </Typography>
             <Button variant="contained" onClick={() => navigate("/cs/inquiries/new")}>
               문의하기
             </Button>
           </Stack>
-        ) : (
-          <List>
-            {items.map((it, idx) => {
-              // id 키가 inquiryId / id 등으로 올 수 있어서 안전 처리
-              const id = it?.inquiryId ?? it?.id;
+        </Stack>
 
-              // 제목/상태도 프로젝트마다 필드명이 다를 수 있어서 fallback
-              const title = it?.title ?? it?.subject ?? `문의 #${id ?? idx + 1}`;
-              const status = it?.status ?? it?.answerStatus ?? "";
+        <Paper sx={{ p: 2 }}>
+          {loading ? (
+            <Stack alignItems="center" sx={{ py: 6 }}>
+              <CircularProgress />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                문의 목록을 불러오는 중...
+              </Typography>
+            </Stack>
+          ) : errorMsg ? (
+            <Alert severity="error" sx={{ my: 2 }}>
+              {errorMsg}
+              <Button size="small" onClick={fetchList} sx={{ mt: 1 }}>
+                다시 시도
+              </Button>
+            </Alert>
+          ) : items.length === 0 ? (
+            <Stack alignItems="center" sx={{ py: 6 }}>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                등록된 문의가 없습니다.
+              </Typography>
+              <Button variant="contained" onClick={() => navigate("/cs/inquiries/new")}>
+                문의하기
+              </Button>
+            </Stack>
+          ) : (
+            <List>
+              {items.map((it, idx) => {
+                // id 키가 inquiryId / id 등으로 올 수 있어서 안전 처리
+                const id = it?.inquiryId ?? it?.id;
 
-              return (
-                <React.Fragment key={id ?? idx}>
-                  <ListItem
-                    button
-                    onClick={() => {
-                      if (!id) return;
-                      navigate(`/cs/inquiries/${id}`);
-                    }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography fontWeight={700}>{title}</Typography>
-                          {status && (
-                            <Chip
-                              label={status === "ANSWERED" || status === "완료" ? "답변완료" : "대기중"}
-                              color={status === "ANSWERED" || status === "완료" ? "success" : "warning"}
-                              size="small"
-                            />
-                          )}
-                        </Stack>
-                      }
-                      secondary={
-                        it?.createdAt
-                          ? `작성일: ${new Date(it.createdAt).toLocaleDateString("ko-KR")}`
-                          : it?.createdDate
-                            ? `작성일: ${new Date(it.createdDate).toLocaleDateString("ko-KR")}`
-                            : ""
-                      }
-                    />
-                  </ListItem>
-                  {idx !== items.length - 1 && <Divider />}
-                </React.Fragment>
-              );
-            })}
-          </List>
-        )}
-      </Paper>
+                // 제목/상태도 프로젝트마다 필드명이 다를 수 있어서 fallback
+                const title = it?.title ?? it?.subject ?? `문의 #${id ?? idx + 1}`;
+                const status = it?.status ?? it?.answerStatus ?? "";
+
+                return (
+                  <React.Fragment key={id ?? idx}>
+                    <ListItem
+                      button
+                      onClick={() => {
+                        if (!id) return;
+                        navigate(`/cs/inquiries/${id}`);
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography fontWeight={700}>{title}</Typography>
+                            {status && (
+                              <Chip
+                                label={
+                                  status === "ANSWERED" || status === "완료" ? "답변완료" : "대기중"
+                                }
+                                color={
+                                  status === "ANSWERED" || status === "완료" ? "success" : "warning"
+                                }
+                                size="small"
+                              />
+                            )}
+                          </Stack>
+                        }
+                        secondary={
+                          it?.createdAt
+                            ? `작성일: ${new Date(it.createdAt).toLocaleDateString("ko-KR")}`
+                            : it?.createdDate
+                              ? `작성일: ${new Date(it.createdDate).toLocaleDateString("ko-KR")}`
+                              : ""
+                        }
+                      />
+                    </ListItem>
+                    {idx !== items.length - 1 && <Divider />}
+                  </React.Fragment>
+                );
+              })}
+            </List>
+          )}
+        </Paper>
       </Container>
     </Box>
   );

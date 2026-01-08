@@ -356,7 +356,9 @@ const TicketDetailPage = () => {
         setIsDealRequestModalOpen(false);
         setIsSuccessModalOpen(true);
       } else {
-        throw new Error(response?.error || response?.message || "요청 처리 중 오류가 발생했습니다.");
+        throw new Error(
+          response?.error || response?.message || "요청 처리 중 오류가 발생했습니다."
+        );
       }
     } catch (error) {
       console.error("❌ 양도 요청 실패:", error);

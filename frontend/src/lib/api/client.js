@@ -1,13 +1,13 @@
 /**
  * 통합 API 클라이언트
- * 
+ *
  * 모든 마이크로서비스를 위한 통합 axios 인스턴스
  * 토큰 관리, 에러 처리, 자동 재시도 등을 포함
  */
-import axios from 'axios';
-import { API_SERVICES } from '../../config/apiConfig';
-import tokenManager from '../auth/tokenManager';
-import { handleError, ErrorTypes } from '../error/errorHandler';
+import axios from "axios";
+import { API_SERVICES } from "../../config/apiConfig";
+import tokenManager from "../auth/tokenManager";
+import { handleError, ErrorTypes } from "../error/errorHandler";
 
 /**
  * Axios 인스턴스 생성 함수
@@ -16,17 +16,17 @@ const createApiClient = (baseURL, serviceName) => {
   // 로컬 개발 환경에서는 항상 프록시를 사용하기 위해 상대 경로 사용
   // setupProxy.js가 /api/* 경로를 백엔드로 프록시함
   // 프로덕션 환경에서만 전체 URL 사용
-  const isLocalDev = process.env.NODE_ENV === 'development';
-  
+  const isLocalDev = process.env.NODE_ENV === "development";
+
   // 로컬 개발 환경이면 상대 경로 사용 (프록시 활용)
   // 프로덕션 환경이면 전체 URL 사용
-  const finalBaseURL = isLocalDev ? '' : baseURL;
-  
+  const finalBaseURL = isLocalDev ? "" : baseURL;
+
   const instance = axios.create({
     baseURL: finalBaseURL,
     timeout: 30000, // 30초 타임아웃
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     withCredentials: false,
     // 프록시를 통한 요청이므로 CORS 문제를 피하기 위해
@@ -41,18 +41,16 @@ const createApiClient = (baseURL, serviceName) => {
     (config) => {
       // 공개 엔드포인트 목록 (토큰 없이 접근 가능)
       const publicEndpoints = [
-        '/api/auth/login',
-        '/api/auth/signup',
-        '/api/auth/send-verification-code',
-        '/api/auth/verify-email',
-        '/api/auth/kakao',
-        '/api/auth/kakao/callback',
+        "/api/auth/login",
+        "/api/auth/signup",
+        "/api/auth/send-verification-code",
+        "/api/auth/verify-email",
+        "/api/auth/kakao",
+        "/api/auth/kakao/callback",
       ];
 
       // 공개 엔드포인트가 아니면 토큰 첨부
-      const isPublicEndpoint = publicEndpoints.some(endpoint => 
-        config.url?.includes(endpoint)
-      );
+      const isPublicEndpoint = publicEndpoints.some((endpoint) => config.url?.includes(endpoint));
 
       if (!isPublicEndpoint) {
         const token = tokenManager.getAccessToken();
@@ -65,8 +63,13 @@ const createApiClient = (baseURL, serviceName) => {
       }
 
       // 개발 환경에서만 로그 출력
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📤 [${serviceName}]`, config.method?.toUpperCase(), config.url, isPublicEndpoint ? '(public)' : '(authenticated)');
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `📤 [${serviceName}]`,
+          config.method?.toUpperCase(),
+          config.url,
+          isPublicEndpoint ? "(public)" : "(authenticated)"
+        );
       }
 
       return config;
@@ -81,7 +84,7 @@ const createApiClient = (baseURL, serviceName) => {
   instance.interceptors.response.use(
     (response) => {
       // 개발 환경에서만 로그 출력
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.log(`✅ [${serviceName}]`, response.status, response.config.url);
       }
       return response;
@@ -98,13 +101,12 @@ const createApiClient = (baseURL, serviceName) => {
           const refreshToken = tokenManager.getRefreshToken();
           if (refreshToken) {
             // 로컬 개발 환경에서는 프록시를 사용하기 위해 상대 경로 사용
-            const isLocalDev = process.env.NODE_ENV === 'development';
-            const refreshURL = isLocalDev ? '/api/auth/refresh' : `${API_SERVICES.ACCOUNT}/api/auth/refresh`;
-            
-            const response = await axios.post(
-              refreshURL,
-              { refreshToken }
-            );
+            const isLocalDev = process.env.NODE_ENV === "development";
+            const refreshURL = isLocalDev
+              ? "/api/auth/refresh"
+              : `${API_SERVICES.ACCOUNT}/api/auth/refresh`;
+
+            const response = await axios.post(refreshURL, { refreshToken });
 
             const { accessToken } = response.data.data || response.data;
             if (accessToken) {
@@ -117,23 +119,23 @@ const createApiClient = (baseURL, serviceName) => {
           }
         } catch (refreshError) {
           // Refresh Token도 만료됨 - 로그아웃 처리
-          console.error('토큰 갱신 실패, 로그아웃 필요', refreshError);
+          console.error("토큰 갱신 실패, 로그아웃 필요", refreshError);
           tokenManager.clearAll();
-          
+
           // 현재 페이지가 인증 페이지가 아닌 경우에만 리다이렉트
-          if (!window.location.pathname.includes('/auth')) {
-            window.location.href = '/auth';
+          if (!window.location.pathname.includes("/auth")) {
+            window.location.href = "/auth";
           }
-          
+
           return Promise.reject(refreshError);
         }
       }
 
       // 에러 처리
       const handledError = handleError(error);
-      
+
       // 개발 환경에서만 상세 로그 출력
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.error(`❌ [${serviceName} Response Error]`, handledError);
         // 403 에러의 경우 상세 정보 출력
         if (error.response?.status === 403) {
@@ -161,14 +163,13 @@ const createApiClient = (baseURL, serviceName) => {
 /**
  * 서비스별 API 클라이언트 생성
  */
-export const accountAPI = createApiClient(API_SERVICES.ACCOUNT, 'Account');
-export const ticketAPI = createApiClient(API_SERVICES.TICKET, 'Ticket');
-export const tradeAPI = createApiClient(API_SERVICES.TRADE, 'Trade');
-export const chatAPI = createApiClient(API_SERVICES.CHAT, 'Chat');
-export const csAPI = createApiClient(API_SERVICES.CS, 'CS');
+export const accountAPI = createApiClient(API_SERVICES.ACCOUNT, "Account");
+export const ticketAPI = createApiClient(API_SERVICES.TICKET, "Ticket");
+export const tradeAPI = createApiClient(API_SERVICES.TRADE, "Trade");
+export const chatAPI = createApiClient(API_SERVICES.CHAT, "Chat");
+export const csAPI = createApiClient(API_SERVICES.CS, "CS");
 
 /**
  * 기본 export (Account API)
  */
 export default accountAPI;
-

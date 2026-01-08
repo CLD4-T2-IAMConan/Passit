@@ -24,14 +24,16 @@ const MOCK_INQUIRIES = {
     content: "티켓 거래를 취소하고 싶은데 어떻게 해야 하나요? 결제는 이미 완료된 상태입니다.",
     status: "ANSWERED",
     answerStatus: "ANSWERED",
-    answer: "티켓 거래 취소는 판매자와 구매자 간 협의가 필요합니다. 채팅방에서 판매자에게 취소 요청을 하시거나, 고객센터로 문의해주시면 도와드리겠습니다. 결제가 완료된 경우 환불 절차가 진행됩니다.",
+    answer:
+      "티켓 거래 취소는 판매자와 구매자 간 협의가 필요합니다. 채팅방에서 판매자에게 취소 요청을 하시거나, 고객센터로 문의해주시면 도와드리겠습니다. 결제가 완료된 경우 환불 절차가 진행됩니다.",
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   2: {
     id: 2,
     inquiryId: 2,
     title: "결제 오류 관련 문의",
-    content: "결제 중 오류가 발생했습니다. 카드 결제를 시도했는데 '결제 실패' 메시지가 나왔습니다. 환불이 가능한가요?",
+    content:
+      "결제 중 오류가 발생했습니다. 카드 결제를 시도했는데 '결제 실패' 메시지가 나왔습니다. 환불이 가능한가요?",
     status: "PENDING",
     answerStatus: "PENDING",
     answer: null,
@@ -44,7 +46,8 @@ const MOCK_INQUIRIES = {
     content: "회원 정보를 수정하고 싶은데 어디서 할 수 있나요?",
     status: "ANSWERED",
     answerStatus: "ANSWERED",
-    answer: "회원 정보 수정은 마이페이지 > 프로필에서 가능합니다. 로그인 후 상단 메뉴의 '마이페이지'를 클릭하시면 프로필 수정 페이지로 이동할 수 있습니다.",
+    answer:
+      "회원 정보 수정은 마이페이지 > 프로필에서 가능합니다. 로그인 후 상단 메뉴의 '마이페이지'를 클릭하시면 프로필 수정 페이지로 이동할 수 있습니다.",
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
   4: {
@@ -75,7 +78,7 @@ const InquiryDetailPage = () => {
       try {
         const res = await getInquiryDetail(inquiryId);
         const data = res?.data ?? res ?? null;
-        
+
         if (data) {
           setInquiry(data);
         } else {
@@ -145,7 +148,13 @@ const InquiryDetailPage = () => {
                   </Typography>
                   {inquiry.status && (
                     <Chip
-                      label={inquiry.status === "ANSWERED" ? "답변완료" : inquiry.status === "PENDING" ? "대기중" : inquiry.status}
+                      label={
+                        inquiry.status === "ANSWERED"
+                          ? "답변완료"
+                          : inquiry.status === "PENDING"
+                            ? "대기중"
+                            : inquiry.status
+                      }
                       color={getStatusColor(inquiry.status)}
                       size="small"
                     />
@@ -229,7 +238,11 @@ const InquiryDetailPage = () => {
                         {inquiry.answerContent || inquiry.answer}
                       </Typography>
                       {inquiry.answeredAt && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ mt: 1, display: "block" }}
+                        >
                           답변일: {new Date(inquiry.answeredAt).toLocaleDateString("ko-KR")}
                         </Typography>
                       )}

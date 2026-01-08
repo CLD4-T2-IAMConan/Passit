@@ -83,39 +83,35 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // 병렬로 모든 데이터 가져오기
-      const [
-        usersResponse,
-        inquiriesResponse,
-        reportsResponse,
-        noticesResponse,
-        faqsResponse,
-      ] = await Promise.allSettled([
-        adminService.searchUsers({ page: 0, size: 1000 }),
-        getAdminInquiries(),
-        reportService.getAdminReports(),
-        getAdminNotices(),
-        getAdminFaqs(),
-      ]);
+      const [usersResponse, inquiriesResponse, reportsResponse, noticesResponse, faqsResponse] =
+        await Promise.allSettled([
+          adminService.searchUsers({ page: 0, size: 1000 }),
+          getAdminInquiries(),
+          reportService.getAdminReports(),
+          getAdminNotices(),
+          getAdminFaqs(),
+        ]);
 
       // 회원 통계
       let totalUsers = 0;
       let activeUsers = 0;
       let suspendedUsers = 0;
       let todaySignups = 0;
-      
+
       if (usersResponse.status === "fulfilled") {
-        const users = usersResponse.value?.content || 
-                     usersResponse.value?.data?.content || 
-                     (Array.isArray(usersResponse.value) ? usersResponse.value : []);
+        const users =
+          usersResponse.value?.content ||
+          usersResponse.value?.data?.content ||
+          (Array.isArray(usersResponse.value) ? usersResponse.value : []);
         totalUsers = users.length;
-        activeUsers = users.filter(u => u.status === "ACTIVE" || !u.status).length;
-        suspendedUsers = users.filter(u => u.status === "SUSPENDED").length;
-        
+        activeUsers = users.filter((u) => u.status === "ACTIVE" || !u.status).length;
+        suspendedUsers = users.filter((u) => u.status === "SUSPENDED").length;
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        todaySignups = users.filter(u => {
+        todaySignups = users.filter((u) => {
           const createdAt = new Date(u.createdAt || u.created_at);
           return createdAt >= today;
         }).length;
@@ -128,12 +124,12 @@ const AdminDashboardPage = () => {
           date.setHours(0, 0, 0, 0);
           const nextDate = new Date(date);
           nextDate.setDate(nextDate.getDate() + 1);
-          
-          const count = users.filter(u => {
+
+          const count = users.filter((u) => {
             const createdAt = new Date(u.createdAt || u.created_at);
             return createdAt >= date && createdAt < nextDate;
           }).length;
-          
+
           growthData.push({
             date: date.toLocaleDateString("ko-KR", { month: "short", day: "numeric" }),
             count,
@@ -146,23 +142,26 @@ const AdminDashboardPage = () => {
       let totalInquiries = 0;
       let pendingInquiries = 0;
       if (inquiriesResponse.status === "fulfilled") {
-        const inquiries = inquiriesResponse.value?.data?.data || 
-                         inquiriesResponse.value?.data || 
-                         (Array.isArray(inquiriesResponse.value) ? inquiriesResponse.value : []);
+        const inquiries =
+          inquiriesResponse.value?.data?.data ||
+          inquiriesResponse.value?.data ||
+          (Array.isArray(inquiriesResponse.value) ? inquiriesResponse.value : []);
         totalInquiries = inquiries.length;
-        pendingInquiries = inquiries.filter(i => 
-          (i.status || i.answerStatus) === "PENDING"
+        pendingInquiries = inquiries.filter(
+          (i) => (i.status || i.answerStatus) === "PENDING"
         ).length;
-        
+
         // 최근 문의 5개
         const recent = inquiries
-          .sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at))
+          .sort(
+            (a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
+          )
           .slice(0, 5);
         setRecentInquiries(recent);
 
         // 문의 상태별 통계
-        const answered = inquiries.filter(i => 
-          (i.status || i.answerStatus) === "ANSWERED"
+        const answered = inquiries.filter(
+          (i) => (i.status || i.answerStatus) === "ANSWERED"
         ).length;
         setInquiryStatusData([
           { name: "답변완료", value: answered },
@@ -174,46 +173,49 @@ const AdminDashboardPage = () => {
       let totalReports = 0;
       let pendingReports = 0;
       if (reportsResponse.status === "fulfilled") {
-        const reports = reportsResponse.value?.data?.data || 
-                       reportsResponse.value?.data || 
-                       (Array.isArray(reportsResponse.value) ? reportsResponse.value : []);
+        const reports =
+          reportsResponse.value?.data?.data ||
+          reportsResponse.value?.data ||
+          (Array.isArray(reportsResponse.value) ? reportsResponse.value : []);
         totalReports = reports.length;
-        pendingReports = reports.filter(r => 
-          r.status === "RECEIVED" || r.status === "IN_PROGRESS"
+        pendingReports = reports.filter(
+          (r) => r.status === "RECEIVED" || r.status === "IN_PROGRESS"
         ).length;
-        
+
         // 최근 신고 5개
         const recent = reports
-          .sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at))
+          .sort(
+            (a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
+          )
           .slice(0, 5);
         setRecentReports(recent);
 
         // 신고 상태별 통계
         const statusCounts = {};
-        reports.forEach(r => {
+        reports.forEach((r) => {
           const status = r.status || "RECEIVED";
           statusCounts[status] = (statusCounts[status] || 0) + 1;
         });
-        setReportStatusData(
-          Object.entries(statusCounts).map(([name, value]) => ({ name, value }))
-        );
+        setReportStatusData(Object.entries(statusCounts).map(([name, value]) => ({ name, value })));
       }
 
       // 공지사항 통계
       let totalNotices = 0;
       if (noticesResponse.status === "fulfilled") {
-        const notices = noticesResponse.value?.data?.data || 
-                       noticesResponse.value?.data || 
-                       (Array.isArray(noticesResponse.value) ? noticesResponse.value : []);
+        const notices =
+          noticesResponse.value?.data?.data ||
+          noticesResponse.value?.data ||
+          (Array.isArray(noticesResponse.value) ? noticesResponse.value : []);
         totalNotices = notices.length;
       }
 
       // FAQ 통계
       let totalFaqs = 0;
       if (faqsResponse.status === "fulfilled") {
-        const faqs = faqsResponse.value?.data?.data || 
-                    faqsResponse.value?.data || 
-                    (Array.isArray(faqsResponse.value) ? faqsResponse.value : []);
+        const faqs =
+          faqsResponse.value?.data?.data ||
+          faqsResponse.value?.data ||
+          (Array.isArray(faqsResponse.value) ? faqsResponse.value : []);
         totalFaqs = faqs.length;
       }
 
@@ -565,7 +567,10 @@ const AdminDashboardPage = () => {
                     </Stack>
                     <LinearProgress
                       variant="determinate"
-                      value={Math.min((stats.totalNotices / Math.max(stats.totalUsers, 1)) * 100, 100)}
+                      value={Math.min(
+                        (stats.totalNotices / Math.max(stats.totalUsers, 1)) * 100,
+                        100
+                      )}
                       sx={{ height: 8, borderRadius: 4 }}
                     />
                   </Box>
@@ -591,7 +596,10 @@ const AdminDashboardPage = () => {
                     </Stack>
                     <LinearProgress
                       variant="determinate"
-                      value={Math.min((stats.totalInquiries / Math.max(stats.totalUsers, 1)) * 100, 100)}
+                      value={Math.min(
+                        (stats.totalInquiries / Math.max(stats.totalUsers, 1)) * 100,
+                        100
+                      )}
                       sx={{ height: 8, borderRadius: 4 }}
                     />
                   </Box>
@@ -604,7 +612,10 @@ const AdminDashboardPage = () => {
                     </Stack>
                     <LinearProgress
                       variant="determinate"
-                      value={Math.min((stats.totalReports / Math.max(stats.totalUsers, 1)) * 100, 100)}
+                      value={Math.min(
+                        (stats.totalReports / Math.max(stats.totalUsers, 1)) * 100,
+                        100
+                      )}
                       sx={{ height: 8, borderRadius: 4 }}
                     />
                   </Box>
@@ -630,7 +641,13 @@ const AdminDashboardPage = () => {
                 </Stack>
                 <Box sx={{ flex: 1, overflow: "auto" }}>
                   {recentInquiries.length === 0 ? (
-                    <Box display="flex" alignItems="center" justifyContent="center" height="100%" minHeight={200}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      minHeight={200}
+                    >
                       <Typography variant="body2" color="text.secondary">
                         최근 문의가 없습니다.
                       </Typography>
@@ -688,7 +705,15 @@ const AdminDashboardPage = () => {
 
             {/* 최근 신고 */}
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3, height: "100%", minHeight: 400, display: "flex", flexDirection: "column" }}>
+              <Paper
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  minHeight: 400,
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h6" fontWeight="bold">
                     최근 신고
@@ -699,7 +724,13 @@ const AdminDashboardPage = () => {
                 </Stack>
                 <Box sx={{ flex: 1, overflow: "auto" }}>
                   {recentReports.length === 0 ? (
-                    <Box display="flex" alignItems="center" justifyContent="center" height="100%" minHeight={200}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                      minHeight={200}
+                    >
                       <Typography variant="body2" color="text.secondary">
                         최근 신고가 없습니다.
                       </Typography>

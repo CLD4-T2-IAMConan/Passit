@@ -16,7 +16,11 @@ import {
   Alert,
 } from "@mui/material";
 import AdminLayout from "../../layouts/AdminLayout";
-import { getAdminNoticeDetail, updateAdminNotice, deleteAdminNotice } from "../../api/services/noticeService";
+import {
+  getAdminNoticeDetail,
+  updateAdminNotice,
+  deleteAdminNotice,
+} from "../../api/services/noticeService";
 
 export default function AdminNoticeEditPage() {
   const navigate = useNavigate();
@@ -134,7 +138,11 @@ export default function AdminNoticeEditPage() {
 
           <Divider sx={{ my: 2 }} />
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <Card>
             <CardContent>
@@ -162,22 +170,45 @@ export default function AdminNoticeEditPage() {
 
                   <Stack direction="row" spacing={2}>
                     <FormControlLabel
-                      control={<Switch checked={form.isVisible} onChange={onToggle("isVisible")} disabled={submitting} />}
+                      control={
+                        <Switch
+                          checked={form.isVisible}
+                          onChange={onToggle("isVisible")}
+                          disabled={submitting}
+                        />
+                      }
                       label={form.isVisible ? "공개" : "비공개"}
                     />
 
                     <FormControlLabel
-                      control={<Switch checked={form.isPinned} onChange={onToggle("isPinned")} disabled={submitting} />}
+                      control={
+                        <Switch
+                          checked={form.isPinned}
+                          onChange={onToggle("isPinned")}
+                          disabled={submitting}
+                        />
+                      }
                       label={form.isPinned ? "상단고정" : "상단고정 해제"}
                     />
                   </Stack>
 
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button variant="outlined" type="button" onClick={() => navigate("/admin/notices")} disabled={submitting}>
+                    <Button
+                      variant="outlined"
+                      type="button"
+                      onClick={() => navigate("/admin/notices")}
+                      disabled={submitting}
+                    >
                       취소
                     </Button>
 
-                    <Button color="error" variant="outlined" type="button" onClick={onDelete} disabled={submitting}>
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      type="button"
+                      onClick={onDelete}
+                      disabled={submitting}
+                    >
                       {submitting ? <CircularProgress size={20} /> : "삭제"}
                     </Button>
 

@@ -1,14 +1,14 @@
 /**
  * 토큰 관리자
- * 
+ *
  * 모든 토큰 접근을 이 모듈을 통해 통일하여 관리
  * localStorage 키: accessToken, refreshToken
  */
 
 const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'accessToken',
-  REFRESH_TOKEN: 'refreshToken',
-  USER: 'user',
+  ACCESS_TOKEN: "accessToken",
+  REFRESH_TOKEN: "refreshToken",
+  USER: "user",
 };
 
 /**
@@ -71,7 +71,7 @@ export const tokenManager = {
       try {
         return JSON.parse(userStr);
       } catch (e) {
-        console.error('Failed to parse user data:', e);
+        console.error("Failed to parse user data:", e);
         return null;
       }
     }
@@ -96,4 +96,3 @@ export const tokenManager = {
 };
 
 export default tokenManager;
-

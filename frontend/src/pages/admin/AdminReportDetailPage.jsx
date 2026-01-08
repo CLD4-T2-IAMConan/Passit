@@ -1,6 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, Box, Typography, Button, Stack, CircularProgress, Alert, Paper, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  Stack,
+  CircularProgress,
+  Alert,
+  Paper,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import AdminLayout from "../../layouts/AdminLayout";
 import reportService from "../../services/reportService";
 
@@ -90,15 +103,28 @@ export default function AdminReportDetailPage() {
             <>
               <Paper sx={{ p: 3, mb: 3 }}>
                 <Stack spacing={2}>
-                  <Typography><strong>ID</strong>: {detail.reportId ?? detail.id}</Typography>
-                  <Typography><strong>상태</strong>: {detail.status}</Typography>
-                  <Typography><strong>신고자</strong>: {detail.reporterId ?? detail.userId}</Typography>
-                  <Typography><strong>대상 타입</strong>: {detail.targetType}</Typography>
-                  <Typography><strong>대상 ID</strong>: {detail.targetId}</Typography>
-                  <Typography><strong>사유</strong>: {detail.reason}</Typography>
+                  <Typography>
+                    <strong>ID</strong>: {detail.reportId ?? detail.id}
+                  </Typography>
+                  <Typography>
+                    <strong>상태</strong>: {detail.status}
+                  </Typography>
+                  <Typography>
+                    <strong>신고자</strong>: {detail.reporterId ?? detail.userId}
+                  </Typography>
+                  <Typography>
+                    <strong>대상 타입</strong>: {detail.targetType}
+                  </Typography>
+                  <Typography>
+                    <strong>대상 ID</strong>: {detail.targetId}
+                  </Typography>
+                  <Typography>
+                    <strong>사유</strong>: {detail.reason}
+                  </Typography>
                   {detail.createdAt && (
                     <Typography>
-                      <strong>생성일</strong>: {new Date(detail.createdAt).toLocaleDateString("ko-KR")}
+                      <strong>생성일</strong>:{" "}
+                      {new Date(detail.createdAt).toLocaleDateString("ko-KR")}
                     </Typography>
                   )}
                 </Stack>
@@ -121,11 +147,7 @@ export default function AdminReportDetailPage() {
                       ))}
                     </Select>
                   </FormControl>
-                  <Button
-                    variant="contained"
-                    onClick={handleUpdateStatus}
-                    disabled={saving}
-                  >
+                  <Button variant="contained" onClick={handleUpdateStatus} disabled={saving}>
                     {saving ? <CircularProgress size={20} /> : "변경"}
                   </Button>
                 </Stack>

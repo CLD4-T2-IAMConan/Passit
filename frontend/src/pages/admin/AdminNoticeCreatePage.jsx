@@ -84,7 +84,11 @@ export default function AdminNoticeCreatePage() {
 
           <Divider sx={{ my: 2 }} />
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <Card>
             <CardContent>
@@ -114,18 +118,35 @@ export default function AdminNoticeCreatePage() {
 
                   <Stack direction="row" spacing={2}>
                     <FormControlLabel
-                      control={<Switch checked={form.isVisible} onChange={onToggle("isVisible")} disabled={submitting} />}
+                      control={
+                        <Switch
+                          checked={form.isVisible}
+                          onChange={onToggle("isVisible")}
+                          disabled={submitting}
+                        />
+                      }
                       label={form.isVisible ? "공개" : "비공개"}
                     />
 
                     <FormControlLabel
-                      control={<Switch checked={form.isPinned} onChange={onToggle("isPinned")} disabled={submitting} />}
+                      control={
+                        <Switch
+                          checked={form.isPinned}
+                          onChange={onToggle("isPinned")}
+                          disabled={submitting}
+                        />
+                      }
                       label={form.isPinned ? "상단고정" : "상단고정 해제"}
                     />
                   </Stack>
 
                   <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button variant="outlined" type="button" onClick={() => setForm(initial)} disabled={submitting}>
+                    <Button
+                      variant="outlined"
+                      type="button"
+                      onClick={() => setForm(initial)}
+                      disabled={submitting}
+                    >
                       초기화
                     </Button>
                     <Button variant="contained" type="submit" disabled={submitting}>

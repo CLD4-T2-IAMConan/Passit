@@ -39,7 +39,8 @@ const MOCK_NOTICES = [
     id: 3,
     noticeId: 3,
     title: "결제 시스템 점검 안내",
-    content: "2024년 1월 10일 02:00 ~ 04:00 결제 시스템 점검으로 인해 일시적으로 결제 서비스가 중단됩니다.",
+    content:
+      "2024년 1월 10일 02:00 ~ 04:00 결제 시스템 점검으로 인해 일시적으로 결제 서비스가 중단됩니다.",
     isImportant: false,
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -78,7 +79,7 @@ export default function NoticeListPage() {
         // 백엔드 응답: { success: true, data: [...] }
         const list = res?.data?.data ?? [];
         const fetchedNotices = Array.isArray(list) ? list : [];
-        
+
         // 데이터가 없거나 빈 배열이면 테스트 데이터 사용
         if (fetchedNotices.length === 0) {
           setNotices(MOCK_NOTICES);
@@ -148,7 +149,11 @@ export default function NoticeListPage() {
                               )}
                             </Stack>
                           }
-                          secondary={createdAt ? `작성일: ${new Date(createdAt).toLocaleDateString("ko-KR")}` : ""}
+                          secondary={
+                            createdAt
+                              ? `작성일: ${new Date(createdAt).toLocaleDateString("ko-KR")}`
+                              : ""
+                          }
                         />
                       </ListItemButton>
                     </ListItem>

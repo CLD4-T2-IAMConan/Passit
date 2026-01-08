@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Box, Typography, CircularProgress, Alert, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  CircularProgress,
+  Alert,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import AdminLayout from "../../layouts/AdminLayout";
 import reportService from "../../services/reportService";
 

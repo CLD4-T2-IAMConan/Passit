@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Box, Typography, Button, Stack, Alert, List, ListItem, ListItemText, IconButton } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AdminLayout from "../../layouts/AdminLayout";
@@ -48,7 +59,11 @@ export default function AdminFaqListPage() {
             </Button>
           </Stack>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           {items.length === 0 ? (
             <Typography>FAQ가 없습니다.</Typography>
@@ -68,11 +83,7 @@ export default function AdminFaqListPage() {
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton
-                          edge="end"
-                          onClick={() => onDelete(id)}
-                          color="error"
-                        >
+                        <IconButton edge="end" onClick={() => onDelete(id)} color="error">
                           <DeleteIcon />
                         </IconButton>
                       </Stack>

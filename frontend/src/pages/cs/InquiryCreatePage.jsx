@@ -20,13 +20,7 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import {
-  ArrowBack,
-  Image as ImageIcon,
-  Close,
-  HelpOutline,
-  AttachFile,
-} from "@mui/icons-material";
+import { ArrowBack, Image as ImageIcon, Close, HelpOutline, AttachFile } from "@mui/icons-material";
 import { createInquiry } from "../../api/services/inquiryService";
 import { handleError } from "../../utils/errorHandler";
 
@@ -69,7 +63,7 @@ const InquiryCreatePage = () => {
   // 이미지 선택 핸들러
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // 최대 개수 체크
     if (images.length + files.length > MAX_IMAGES) {
       setError(`이미지는 최대 ${MAX_IMAGES}개까지 첨부할 수 있습니다.`);
@@ -173,9 +167,9 @@ const InquiryCreatePage = () => {
       };
 
       const response = await createInquiry(payload);
-      
+
       setSuccess(true);
-      
+
       // 성공 후 목록 페이지로 이동
       setTimeout(() => {
         navigate("/cs/inquiries");
@@ -279,7 +273,11 @@ const InquiryCreatePage = () => {
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                   이미지 첨부 (선택)
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: "block" }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mb: 2, display: "block" }}
+                >
                   문제 상황을 설명하는 이미지를 첨부해주세요. (최대 {MAX_IMAGES}개, 각 5MB 이하)
                 </Typography>
 
@@ -382,8 +380,7 @@ const InquiryCreatePage = () => {
                   • 문의하신 내용은 평일 기준 1-2일 내에 답변드립니다.
                   <br />
                   • 계정 관련 문의는 이메일 인증이 필요할 수 있습니다.
-                  <br />
-                  • 개인정보가 포함된 내용은 등록하지 마세요.
+                  <br />• 개인정보가 포함된 내용은 등록하지 마세요.
                 </Typography>
               </Box>
 
@@ -401,7 +398,12 @@ const InquiryCreatePage = () => {
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={submitting || !formData.type || !formData.title.trim() || !formData.content.trim()}
+                  disabled={
+                    submitting ||
+                    !formData.type ||
+                    !formData.title.trim() ||
+                    !formData.content.trim()
+                  }
                   startIcon={submitting ? <CircularProgress size={16} /> : null}
                 >
                   {submitting ? "등록 중..." : "문의 등록"}

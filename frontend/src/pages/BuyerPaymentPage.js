@@ -148,14 +148,11 @@ const BuyerPaymentPage = () => {
     try {
       // 1. 백엔드에서 결제 준비 데이터 가져오기 (GET /api/payments/{id}/prepare)
       console.log("📤 API 호출: /api/payments/{id}/prepare");
-      const prepareResponse = await tradeAPI.get(
-        `/api/payments/${payment_id}/prepare`,
-        {
-          params: {
-            currentUserId: currentUserId,
-          },
-        }
-      );
+      const prepareResponse = await tradeAPI.get(`/api/payments/${payment_id}/prepare`, {
+        params: {
+          currentUserId: currentUserId,
+        },
+      });
       // 백엔드가 직접 데이터를 반환하거나 ApiResponse로 감싸서 반환할 수 있음
       const data = prepareResponse.data?.data || prepareResponse.data;
       console.log("✅ 결제 준비 데이터 수신:", data);

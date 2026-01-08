@@ -80,9 +80,7 @@ export default function FaqListPage() {
                     <ListItem disablePadding>
                       <ListItemButton onClick={() => navigate(`/cs/faqs/${id}`)}>
                         <ListItemText
-                          primary={
-                            <Typography fontWeight={600}>{question}</Typography>
-                          }
+                          primary={<Typography fontWeight={600}>{question}</Typography>}
                         />
                       </ListItemButton>
                     </ListItem>

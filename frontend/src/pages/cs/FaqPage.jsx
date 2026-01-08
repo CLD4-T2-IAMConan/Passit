@@ -39,11 +39,7 @@ export default function FaqPage() {
   return (
     <Box sx={{ bgcolor: "grey.50", minHeight: "100vh", pt: "64px" }}>
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
-          sx={{ mb: 2 }}
-        >
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 2 }}>
           뒤로
         </Button>
 
