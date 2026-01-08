@@ -142,9 +142,8 @@ jobs:
       #  continue-on-error: true
 
       - name: Sync ArgoCD Application (Core Mode)
-        env:
-          ARGOCD_CORE_NAMESPACE: argocd
         run: |
+          kubectl config set-context --current --namespace=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
             argocd app sync passit-services --core --server-side
