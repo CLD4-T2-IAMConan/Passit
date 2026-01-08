@@ -147,11 +147,11 @@ jobs:
         run: |
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --core --server-side || true
+            argocd app sync passit-services --core --server-side -n argocd || true
           else
             # Sync specific service
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
-            argocd app sync $SERVICE_NAME --core --server-side || true
+            argocd app sync $SERVICE_NAME --core --server-side -n argocd || true
           fi
         # continue-on-error: true
 
