@@ -92,6 +92,9 @@ resource "aws_rds_cluster" "main" {
   vpc_security_group_ids          = [var.rds_security_group_id]
   db_cluster_parameter_group_name = local.rds_parameter_group_name
 
+  storage_encrypted = true
+  kms_key_id = var.is_dr_region ? data.aws_kms_alias.rds_default[0].target_key_arn : null
+
   # Secondary는 백업 권한이 없으므로 최소치 설정
   backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
   preferred_backup_window = "03:00-04:00"
@@ -248,7 +251,6 @@ SQL
 }
 
 data "aws_kms_alias" "rds_default" {
-  count = var.enable_rds_dr ? 1 : 0
-  # 도쿄 리전용 프로바이더가 적용된 모듈에서 호출되므로 해당 리전의 기본 키를 찾습니다.
-  name = "alias/passit-rds-dr"
+  count    = var.is_dr_region ? 1 : 0  # DR 리전일 때만 조회
+  name     = "alias/passit-rds-dr"
 }

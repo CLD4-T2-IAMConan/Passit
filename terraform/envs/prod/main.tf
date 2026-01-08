@@ -226,10 +226,15 @@ module "data_tokyo" {
   owner        = var.owner
 
   is_dr_region       = true
-  global_cluster_id  = aws_rds_global_cluster.this.id
+  global_cluster_id  = aws_rds_global_cluster.this.global_cluster_identifier
   create_passit_user = false
   create_s3          = false
   create_elasticache = false
+
+  depends_on = [
+      aws_rds_global_cluster.this, # 1. 글로벌 클러스터 껍데기가 먼저 있어야 함
+      module.data                  # 2. 서울 리전의 DB(Primary)가 먼저 생성 완료되어야 함
+  ]
 
   vpc_id                       = data.aws_vpc.tokyo_vpc.id
   private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
@@ -280,7 +285,7 @@ module "monitoring" {
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
-  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+#   alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
 }
 
