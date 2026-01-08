@@ -147,20 +147,20 @@ jobs:
         run: |
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --core --server-side --core-namespace argocd || true
+            argocd app sync passit-services --core -n argocd --server-side || true
           else
             # Sync specific service
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
-            argocd app sync $SERVICE_NAME --core --server-side --core-namespace argocd || true
+            argocd app sync $SERVICE_NAME --core -n argocd --server-side || true
           fi
         # continue-on-error: true
 
       - name: Wait for Sync
         run: |
           if [ -z "${{ github.event.inputs.service }}" ]; then
-            argocd app wait passit-services --core --timeout 300 --core-namespace argocd || true
+            argocd app wait passit-services --core -n argocd --timeout 300  || true
           else
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
-            argocd app wait $SERVICE_NAME --core --timeout 300 --core-namespace argocd || true
+            argocd app wait $SERVICE_NAME --core -n argocd --timeout 300 || true
           fi
         continue-on-error: true
