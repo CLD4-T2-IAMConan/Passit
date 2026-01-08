@@ -133,27 +133,27 @@ jobs:
       #    argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
       #  continue-on-error: true
 
-      - name: Login to ArgoCD (Direct via ALB)
-        run: |
-          ARGOCD_SERVER="argocd-dev.passit.cloud"
+      #- name: Login to ArgoCD (Direct via ALB)
+      #  run: |
+      #    ARGOCD_SERVER="argocd-dev.passit.cloud"
           # 초기 비밀번호 가져오기
-          ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+      #    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
           
           # 외부 도메인으로 직접 로그인 (--grpc-web 옵션 필수)
-          argocd login ${ARGOCD_SERVER}:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+      #    argocd login ${ARGOCD_SERVER}:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
         #continue-on-error: true
 
       - name: Sync ArgoCD Application
         run: |
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --server-side || true
+            argocd app sync passit-services --core --server-side || true
           else
             # Sync specific service
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
-            argocd app sync $SERVICE_NAME --server-side || true
+            argocd app sync $SERVICE_NAME --core --server-side || true
           fi
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Wait for Sync
         run: |
