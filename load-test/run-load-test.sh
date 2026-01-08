@@ -17,6 +17,7 @@ fi
 
 # 설정 파일에서 값 추출 (jq 필요)
 BASE_URL=$(cat "$CONFIG_FILE" | grep -o '"baseUrl": "[^"]*' | cut -d'"' -f4)
+TEST_EMAIL=$(cat "$CONFIG_FILE" | grep -o '"testEmail": "[^"]*' | cut -d'"' -f4)
 TEST_EMAIL_PREFIX=$(cat "$CONFIG_FILE" | grep -o '"testEmailPrefix": "[^"]*' | cut -d'"' -f4)
 TEST_PASSWORD=$(cat "$CONFIG_FILE" | grep -o '"testPassword": "[^"]*' | cut -d'"' -f4)
 
@@ -38,6 +39,7 @@ echo ""
 # k6 실행
 k6 run \
   --env BASE_URL="$BASE_URL" \
+  --env TEST_EMAIL="$TEST_EMAIL" \
   --env TEST_EMAIL_PREFIX="$TEST_EMAIL_PREFIX" \
   --env TEST_PASSWORD="$TEST_PASSWORD" \
   --out json="$RESULT_FILE" \

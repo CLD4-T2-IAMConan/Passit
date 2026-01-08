@@ -21,52 +21,45 @@ export const options = {
 
 // 환경 변수
 const BASE_URL = __ENV.BASE_URL || "http://localhost:8081";
-const TEST_EMAIL = __ENV.TEST_EMAIL || "admin@passit.com";
-const TEST_PASSWORD = __ENV.TEST_PASSWORD || "admin123!";
 
 export default function () {
-  // 로그인 API 테스트
-  const loginPayload = JSON.stringify({
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
+  const timestamp = Date.now();
+  const userId = __VU; // Virtual User ID
+  const iteration = __ITER; // Iteration number
+  const email = `loadtest-${timestamp}-${userId}-${iteration}@example.com`;
+
+  // 회원가입 API 테스트
+  const signupPayload = JSON.stringify({
+    email: email,
+    password: "Password123!",
+    name: `LoadTest User ${userId}-${iteration}`,
   });
 
-  const loginParams = {
+  const signupParams = {
     headers: {
       "Content-Type": "application/json",
     },
   };
 
-  const loginResponse = http.post(
-    `${BASE_URL}/api/auth/login`,
-    loginPayload,
-    loginParams
+  const signupResponse = http.post(
+    `${BASE_URL}/api/auth/signup`,
+    signupPayload,
+    signupParams
   );
 
-  const loginSuccess = check(loginResponse, {
-    "login status is 200": (r) => r.status === 200,
-    "login has accessToken": (r) => {
+  const signupSuccess = check(signupResponse, {
+    "signup status is 201": (r) => r.status === 201,
+    "signup has userId": (r) => {
       try {
         const body = JSON.parse(r.body);
-        return body.success === true && body.data && body.data.accessToken;
+        return body.success === true && body.data && body.data.userId;
       } catch (e) {
         return false;
       }
     },
   });
 
-  errorRate.add(!loginSuccess);
-
-  // 토큰 추출 (다음 요청에 사용 가능)
-  let accessToken = null;
-  if (loginSuccess) {
-    try {
-      const body = JSON.parse(loginResponse.body);
-      accessToken = body.data?.accessToken;
-    } catch (e) {
-      // 파싱 실패
-    }
-  }
+  errorRate.add(!signupSuccess);
 
   sleep(1); // 요청 간 1초 대기
 }
@@ -88,3 +81,4 @@ P95 응답 시간: ${data.metrics.http_req_duration.values["p(95)"].toFixed(2)}m
 에러율: ${(data.metrics.http_req_failed.values.rate * 100).toFixed(2)}%
 `;
 }
+
