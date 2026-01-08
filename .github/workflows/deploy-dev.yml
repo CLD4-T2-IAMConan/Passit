@@ -121,17 +121,29 @@ jobs:
           sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
           rm argocd-linux-amd64
 
-      - name: Port forward ArgoCD Server
-        run: |
-          kubectl port-forward svc/argocd-server -n argocd 8080:443 &
-          sleep 5
-        continue-on-error: true
+      # - name: Port forward ArgoCD Server
+      #  run: |
+      #    kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+      #    sleep 5
+      #  continue-on-error: true
 
-      - name: Login to ArgoCD
+      #- name: Login to ArgoCD
+      #  run: |
+      #    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+      #    argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+      #  continue-on-error: true
+
+      - name: Login to ArgoCD (Direct via ALB)
         run: |
+          ARGOCD_SERVER="argocd-dev.passit.cloud"
+          echo "Testing connection to $ARGOCD_SERVER..."
+          curl -I -m 5 http://$ARGOCD_SERVER || echo "Connection failed"
+          # 초기 비밀번호 가져오기
           ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-          argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
-        continue-on-error: true
+          
+          # 외부 도메인으로 직접 로그인 (--grpc-web 옵션 필수)
+          argocd login ${ARGOCD_SERVER}:80 --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+        #continue-on-error: true
 
       - name: Sync ArgoCD Application
         run: |
@@ -143,14 +155,14 @@ jobs:
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
             argocd app sync $SERVICE_NAME --server-side || true
           fi
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Wait for Sync
         run: |
           if [ -z "${{ github.event.inputs.service }}" ]; then
-            argocd app wait passit-services --timeout 300 || true
+            argocd app wait passit-services --core -n argocd --timeout 300  || true
           else
             SERVICE_NAME="${{ github.event.inputs.service }}-dev"
-            argocd app wait $SERVICE_NAME --timeout 300 || true
+            argocd app wait $SERVICE_NAME --core -n argocd --timeout 300 || true
           fi
         continue-on-error: true
