@@ -144,18 +144,18 @@ jobs:
       - name: Sync ArgoCD Application (Core Mode)
         run: |
           kubectl config set-context --current --namespace=argocd
+          export ARGOCD_CORE_NAMESPACE=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             # Sync all services
-            argocd app sync passit-services --core --server-side --auth-mode kubernetes
+            argocd app sync passit-services --core --server-side
           else
             SERVICE_NAME="${{ github.event.inputs.service }}-dr"
-            argocd app sync $SERVICE_NAME --core --server-side --auth-mode kubernetes
+            argocd app sync $SERVICE_NAME --core --server-side
           fi
 
       - name: Wait for Sync
-        env:
-          ARGOCD_CORE_NAMESPACE: argocd
         run: |
+          export ARGOCD_CORE_NAMESPACE=argocd
           if [ -z "${{ github.event.inputs.service }}" ]; then
             argocd app wait passit-services --core --timeout 300
           else
