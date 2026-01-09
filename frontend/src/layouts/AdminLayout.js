@@ -27,6 +27,10 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   Category as CategoryIcon,
+  Announcement as AnnouncementIcon,
+  HelpOutline as HelpOutlineIcon,
+  Report as ReportIcon,
+  QuestionAnswer as QuestionAnswerIcon,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -62,6 +66,11 @@ const AdminLayout = ({ children }) => {
 
   const menuItems = [
     {
+      text: "대시보드",
+      icon: <DashboardIcon />,
+      path: "/admin/dashboard",
+    },
+    {
       text: "회원 관리",
       icon: <PeopleIcon />,
       path: "/admin/users",
@@ -70,6 +79,26 @@ const AdminLayout = ({ children }) => {
       text: "카테고리 관리",
       icon: <CategoryIcon />,
       path: "/admin/categories",
+    },
+    {
+      text: "공지사항 관리",
+      icon: <AnnouncementIcon />,
+      path: "/admin/notices",
+    },
+    {
+      text: "문의사항 관리",
+      icon: <QuestionAnswerIcon />,
+      path: "/admin/inquiries",
+    },
+    {
+      text: "신고 관리",
+      icon: <ReportIcon />,
+      path: "/admin/reports",
+    },
+    {
+      text: "FAQ 관리",
+      icon: <HelpOutlineIcon />,
+      path: "/admin/faqs",
     },
   ];
 
@@ -122,7 +151,9 @@ const AdminLayout = ({ children }) => {
       {/* 메뉴 리스트 */}
       <List sx={{ flex: 1, pt: 2 }}>
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          // 정확히 일치하거나 하위 경로인 경우 활성화
+          const isActive =
+            location.pathname === item.path || location.pathname.startsWith(item.path + "/");
           return (
             <ListItem key={item.text} disablePadding sx={{ px: 2, mb: 0.5 }}>
               <ListItemButton

@@ -6,8 +6,8 @@ resource "helm_release" "cluster_autoscaler" {
   repository = "https://kubernetes.github.io/autoscaler"
   chart      = "cluster-autoscaler"
   version    = "9.29.3"
-  
-  timeout = 600  # 10분 timeout
+
+  timeout = 600 # 10분 timeout
 
   values = [
     yamlencode({

@@ -2,17 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Button, Stack, Typography, Box, Alert } from "@mui/material"; // Modal 제거
 import userService from "../services/userService";
+import { tradeAPI } from "../lib/api/client";
 import DealRejectModal from "../components/Ticket/DealRejectModal";
 import DealAcceptModal from "../components/Ticket/DealAcceptModal";
 import DealCancelModal from "../components/Ticket/DealCancelModal";
 import DealConfirmModal from "../components/Ticket/DealConfirmModal";
-
-// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
-import { API_SERVICES } from "../config/apiConfig";
-const API_BASE_URL = API_SERVICES.TRADE;
 
 const DealAcceptPage = () => {
   // URL에서 deal_id를 가져옵니다.
@@ -62,7 +58,7 @@ const DealAcceptPage = () => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get(`${API_BASE_URL}/api/deals/${deal_id}/detail`);
+        const response = await tradeAPI.get(`/api/deals/${deal_id}/detail`);
         const apiResponse = response.data;
 
         if (!apiResponse.success || !apiResponse.data) {
@@ -116,7 +112,7 @@ const DealAcceptPage = () => {
     setActionMessage(null);
 
     try {
-      await axios.put(`${API_BASE_URL}/api/deals/${dealId}/accept`, {
+      await tradeAPI.put(`/api/deals/${dealId}/accept`, {
         currentUserId: currentUserId,
       });
 
@@ -145,7 +141,7 @@ const DealAcceptPage = () => {
       setActionMessage(null);
 
       try {
-        await axios.put(`${API_BASE_URL}/api/deals/${dealId}/reject`, {
+        await tradeAPI.put(`/api/deals/${dealId}/reject`, {
           cancelReason: reason,
           currentUserId: currentUserId,
         });
@@ -179,18 +175,18 @@ const DealAcceptPage = () => {
     setIsProcessing(true);
     setActionMessage(null);
 
-    const endpoint = `${API_BASE_URL}/api/deals/${dealId}/cancel`;
-
     try {
-      // PUT /api/deals/{id}/cancel 호출 (BuyerId 전달)
-      await axios.put(endpoint, { currentUserId: currentUserId });
+      // PUT /api/deals/{id}/cancel 호출 (buyerId를 query param으로 전달)
+      await tradeAPI.put(`/api/deals/${dealId}/cancel`, null, {
+        params: { buyerId: currentUserId },
+      });
 
       setActionMessage(
         "✅ 거래 요청이 성공적으로 취소되었습니다. 티켓은 AVAILABLE 상태로 돌아갔습니다."
       );
 
       setTimeout(() => {
-        navigate("/mypage/buyer/deals"); // 구매자 거래 목록 페이지로 이동
+        navigate("/deals"); // 거래 목록 페이지로 이동
       }, 3000);
     } catch (err) {
       console.error("❌ 거래 취소 실패:", err);
@@ -214,7 +210,7 @@ const DealAcceptPage = () => {
 
     try {
       // PUT /api/deals/{id}/complete 호출
-      await axios.put(`${API_BASE_URL}/api/deals/${dealId}/confirm`, {
+      await tradeAPI.put(`/api/deals/${dealId}/confirm`, {
         currentUserId: currentUserId,
       });
 

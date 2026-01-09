@@ -1,4 +1,4 @@
-import apiClient from "../client";
+import { accountAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../endpoints";
 
 /**
@@ -11,7 +11,7 @@ export const emailService = {
    * @returns {Promise<void>}
    */
   sendVerificationCode: async (email) => {
-    const response = await apiClient.post(ENDPOINTS.EMAIL.SEND_VERIFICATION, {
+    const response = await accountAPI.post(ENDPOINTS.EMAIL.SEND_VERIFICATION, {
       email,
     });
     return response.data;
@@ -24,7 +24,7 @@ export const emailService = {
    * @returns {Promise<Object>} 검증 결과
    */
   verifyCode: async (email, code) => {
-    const response = await apiClient.post(ENDPOINTS.EMAIL.VERIFY_CODE, {
+    const response = await accountAPI.post(ENDPOINTS.EMAIL.VERIFY_CODE, {
       email,
       code,
     });
@@ -37,7 +37,7 @@ export const emailService = {
    * @returns {Promise<void>}
    */
   sendPasswordResetCode: async (email) => {
-    const response = await apiClient.post(ENDPOINTS.EMAIL.SEND_PASSWORD_RESET, {
+    const response = await accountAPI.post(ENDPOINTS.EMAIL.SEND_PASSWORD_RESET, {
       email,
     });
     return response.data;
@@ -50,7 +50,7 @@ export const emailService = {
    * @returns {Promise<Object>} 검증 결과
    */
   verifyPasswordResetCode: async (email, code) => {
-    const response = await apiClient.post(ENDPOINTS.EMAIL.VERIFY_PASSWORD_RESET, {
+    const response = await accountAPI.post(ENDPOINTS.EMAIL.VERIFY_PASSWORD_RESET, {
       email,
       code,
     });
@@ -64,7 +64,7 @@ export const emailService = {
    * @returns {Promise<void>}
    */
   resetPassword: async (email, newPassword) => {
-    const response = await apiClient.post(ENDPOINTS.EMAIL.RESET_PASSWORD, {
+    const response = await accountAPI.post(ENDPOINTS.EMAIL.RESET_PASSWORD, {
       email,
       password: newPassword,
     });

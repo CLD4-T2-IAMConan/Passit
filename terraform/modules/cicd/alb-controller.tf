@@ -30,10 +30,21 @@ resource "helm_release" "alb_controller" {
     {
       name  = "region"
       value = var.region
+    },
+    {
+      name  = "vpcId"
+      value = var.vpc_id
     }
   ]
 
   depends_on = [
     aws_iam_role_policy_attachment.alb_controller
   ]
+
+  # Helm provider의 inconsistent result 오류 방지
+  lifecycle {
+    ignore_changes = [
+      set,
+    ]
+  }
 }

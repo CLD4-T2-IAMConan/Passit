@@ -1,11 +1,14 @@
 ############################################
 # Fluent Bit IRSA Role
+# 
+# 주의: Fargate 환경에서는 DaemonSet을 지원하지 않으므로
+# fluentbit을 사용할 수 없습니다. enable_fluentbit=false로 설정하세요.
 ############################################
 
 # Service Account 이름 / Namespace
 locals {
-  fluentbit_namespace      = "logging"
-  fluentbit_serviceaccount = "fluent-bit"
+  fluentbit_namespace      = var.fluentbit_namespace
+  fluentbit_serviceaccount = var.fluentbit_service_account_name
 }
 
 ############################################
@@ -13,6 +16,8 @@ locals {
 ############################################
 
 resource "aws_iam_role" "fluentbit" {
+  count = var.enable_fluentbit ? 1 : 0  # Fargate에서는 비활성화
+
   name = "${var.project_name}-${var.environment}-fluentbit-irsa"
 
   assume_role_policy = jsonencode({
@@ -49,7 +54,9 @@ resource "aws_iam_role" "fluentbit" {
 ############################################
 
 resource "aws_iam_role_policy" "fluentbit_cloudwatch" {
-  role = aws_iam_role.fluentbit.id
+  count = var.enable_fluentbit ? 1 : 0  # Fargate에서는 비활성화
+
+  role = aws_iam_role.fluentbit[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -66,12 +73,14 @@ resource "aws_iam_role_policy" "fluentbit_cloudwatch" {
 }
 
 resource "kubernetes_service_account_v1" "fluentbit" {
+  count = var.enable_fluentbit ? 1 : 0  # Fargate에서는 비활성화
+
   metadata {
     name      = "fluent-bit"
     namespace = var.fluentbit_namespace
 
     annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.fluentbit.arn
+      "eks.amazonaws.com/role-arn" = aws_iam_role.fluentbit[0].arn
     }
   }
 }

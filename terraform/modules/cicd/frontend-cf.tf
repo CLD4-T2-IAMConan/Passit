@@ -11,7 +11,7 @@ locals {
 }
 
 locals {
-  enable_alb_origin = true
+  enable_alb_origin = local.alb_dns_name != ""
 }
 
 # Lambda@Edge: Host 헤더를 동적으로 설정 (origin-request 이벤트)
@@ -27,12 +27,11 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 
-  # 기존 OAC가 있어도 에러 없이 진행 (import 후 사용)
+  # CloudFront Distribution이 먼저 삭제되어야 OAC를 삭제할 수 있음
   lifecycle {
-    ignore_changes = all
-    # CloudFront Distribution이 먼저 삭제되어야 OAC를 삭제할 수 있음
-    # destroy 시에는 prevent_destroy를 false로 설정
     prevent_destroy = false
+    # 기존 OAC가 이미 존재하는 경우 import 후 사용
+    # terraform import module.cicd.aws_cloudfront_origin_access_control.frontend[0] <OAC_ID>
   }
 }
 
@@ -102,11 +101,11 @@ resource "aws_cloudfront_distribution" "frontend" {
   dynamic "ordered_cache_behavior" {
     for_each = local.enable_alb_origin ? [
       {
-        path = "/api/auth/*"
+        path   = "/api/auth/*"
         origin = "alb-account-origin"
       },
       {
-        path = "/api/users/*"
+        path   = "/api/users/*"
         origin = "alb-account-origin"
       }
     ] : []
@@ -382,4 +381,12 @@ resource "aws_s3_bucket_policy" "frontend" {
   count  = var.enable_frontend ? 1 : 0
   bucket = aws_s3_bucket.frontend[0].id
   policy = data.aws_iam_policy_document.frontend_bucket_policy[0].json
+
+  # CloudFront Distribution이 먼저 생성되어 ARN이 확정된 후 정책 적용
+  depends_on = [aws_cloudfront_distribution.frontend]
+
+  # 정책이 항상 최신 CloudFront Distribution ARN을 참조하도록 보장
+  lifecycle {
+    create_before_destroy = true
+  }
 }

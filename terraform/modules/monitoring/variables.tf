@@ -37,7 +37,7 @@ variable "account_id" {
 }
 
 variable "region" {
-  type        = string
+  type = string
 }
 
 ########################################
@@ -94,6 +94,18 @@ variable "alertmanager_namespace" {
   default = "monitoring"
 }
 
+variable "alarm_sns_topic_arn" {
+  type        = string
+  description = "SNS Topic ARN for Alertmanager notifications"
+  default     = null
+}
+
+variable "alertmanager_role_arn" {
+  type        = string
+  description = "IAM Role ARN used by Alertmanager via IRSA"
+  default     = null
+}
+
 ############################
 # Prometheus (AMP) & Workspace
 ############################
@@ -104,16 +116,16 @@ variable "prometheus_workspace_name" {
 }
 
 variable "prometheus_service_account_name" {
-  type        = string
-  default     = "prometheus-agent"
+  type    = string
+  default = "prometheus-agent"
 }
 
 variable "log_retention_days" {
-  type        = number
+  type = number
 }
 
 variable "application_error_threshold" {
-  type        = number
+  type = number
 }
 
 variable "prometheus_namespace" {
@@ -135,4 +147,22 @@ variable "fluentbit_service_account_name" {
 variable "fluentbit_chart_version" {
   description = "The version of the Fluent Bit Helm chart"
   type        = string
+}
+
+variable "fluentbit_timeout" {
+  description = "Timeout in seconds for Fluent Bit Helm installation (default: 600 for dev, 1800 for prod)"
+  type        = number
+  default     = 600
+}
+
+variable "fluentbit_wait" {
+  description = "Wait for Fluent Bit Helm installation to complete (default: false for dev, true for prod)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_fluentbit" {
+  description = "Enable Fluent Bit installation (Fargate에서는 DaemonSet을 지원하지 않으므로 false로 설정 권장)"
+  type        = bool
+  default     = false
 }

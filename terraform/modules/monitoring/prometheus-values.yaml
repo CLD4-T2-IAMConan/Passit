@@ -25,6 +25,35 @@ prometheus:
     storageSpec:
       emptyDir: {}
 
+    # Fargate 환경을 위한 probe 설정 (시작 시간이 오래 걸림)
+    # WAL 세그먼트 로드 시간을 고려하여 타임아웃 증가
+    livenessProbe:
+      httpGet:
+        path: /-/healthy
+        port: 9090
+      initialDelaySeconds: 120 # 2분 대기 (기본 30초)
+      timeoutSeconds: 10 # 10초 타임아웃 (기본 3초)
+      periodSeconds: 30 # 30초마다 체크 (기본 10초)
+      failureThreshold: 6 # 6번 실패 후 재시작 (기본 3번)
+
+    readinessProbe:
+      httpGet:
+        path: /-/ready
+        port: 9090
+      initialDelaySeconds: 60 # 1분 대기 (기본 5초)
+      timeoutSeconds: 10 # 10초 타임아웃 (기본 3초)
+      periodSeconds: 30 # 30초마다 체크 (기본 5초)
+      failureThreshold: 6 # 6번 실패 후 not ready (기본 3번)
+
+    startupProbe:
+      httpGet:
+        path: /-/ready
+        port: 9090
+      initialDelaySeconds: 0
+      timeoutSeconds: 10
+      periodSeconds: 30
+      failureThreshold: 20 # 최대 10분 대기 (30초 * 20 = 600초)
+
 ########################################
 # Alertmanager
 ########################################
@@ -42,8 +71,11 @@ kubeStateMetrics:
 ########################################
 # node-exporter
 ########################################
+# Fargate 환경에서는 node-exporter를 사용할 수 없음
+# Fargate는 DaemonSet, HostNetwork, HostPID, 특정 볼륨 타입을 지원하지 않음
+# 노드 메트릭은 수집할 수 없지만, pod 메트릭과 애플리케이션 메트릭은 정상 수집 가능
 nodeExporter:
-  enabled: true
+  enabled: false
 
 ########################################
 # Default Rules

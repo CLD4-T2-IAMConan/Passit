@@ -7,12 +7,11 @@ set -e
 
 ENVIRONMENT=${1:-dev}
 IAM_USER=${2:-""}
-REGION=${3:-ap-northeast-2}
 
 if [ -z "$IAM_USER" ]; then
     echo "사용법: $0 <env> <iam-user> [region]"
     echo "예시: $0 dev t2-krystal"
-    echo "예시: $0 dev t2-krystal ap-northeast-2"
+    echo "예시: $0 dr t2-krystal"
     exit 1
 fi
 
@@ -22,6 +21,22 @@ TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
 if [ ! -d "$TERRAFORM_DIR" ]; then
     echo "❌ Error: $TERRAFORM_DIR 디렉토리가 존재하지 않습니다."
     exit 1
+fi
+
+# Terraform output에서 리전 가져오기
+cd "$TERRAFORM_DIR"
+REGION=$(terraform output -raw region 2>/dev/null || echo "")
+
+# 리전이 없으면 환경별 기본값 사용
+if [ -z "$REGION" ]; then
+    case "$ENVIRONMENT" in
+        dr)
+            REGION=${3:-ap-northeast-1}  # Tokyo
+            ;;
+        *)
+            REGION=${3:-ap-northeast-2}  # Seoul
+            ;;
+    esac
 fi
 
 echo "=========================================="
@@ -42,8 +57,7 @@ echo "  Account ID: ${AWS_ACCOUNT_ID}"
 echo "  Principal ARN: ${PRINCIPAL_ARN}"
 echo ""
 
-# Terraform output에서 클러스터 이름 가져오기
-cd "$TERRAFORM_DIR"
+# Terraform output에서 클러스터 이름 가져오기 (이미 cd 했으므로 다시 cd 불필요)
 CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null || echo "passit-${ENVIRONMENT}-eks")
 
 if [ -z "$CLUSTER_NAME" ]; then

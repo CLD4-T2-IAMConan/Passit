@@ -2,7 +2,7 @@
  * 거래 및 결제 관리 API 서비스
  * Trade Service (8083)와 통신
  */
-import { tradeAPI } from "../api/axiosInstances";
+import { tradeAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
 
 class TradeService {
@@ -23,42 +23,54 @@ class TradeService {
   /**
    * 거래 수락 (판매자)
    * @param {number} dealId
+   * @param {number} currentUserId - 판매자 ID
    * @returns {Promise}
    */
-  async acceptDeal(dealId) {
-    const response = await tradeAPI.post(ENDPOINTS.DEALS.ACCEPT(dealId));
+  async acceptDeal(dealId, currentUserId) {
+    const response = await tradeAPI.put(ENDPOINTS.DEALS.ACCEPT(dealId), {
+      currentUserId,
+    });
     return response.data;
   }
 
   /**
    * 거래 거절 (판매자)
    * @param {number} dealId
-   * @param {string} reason - 거절 사유
+   * @param {number} currentUserId - 판매자 ID
+   * @param {string} cancelReason - 거절 사유
    * @returns {Promise}
    */
-  async rejectDeal(dealId, reason) {
-    const response = await tradeAPI.post(ENDPOINTS.DEALS.REJECT(dealId), { reason });
+  async rejectDeal(dealId, currentUserId, cancelReason) {
+    const response = await tradeAPI.put(ENDPOINTS.DEALS.REJECT(dealId), {
+      currentUserId,
+      cancelReason,
+    });
     return response.data;
   }
 
   /**
    * 거래 취소 (구매자)
    * @param {number} dealId
-   * @param {string} reason - 취소 사유
+   * @param {number} buyerId - 구매자 ID
    * @returns {Promise}
    */
-  async cancelDeal(dealId, reason) {
-    const response = await tradeAPI.post(ENDPOINTS.DEALS.CANCEL(dealId), { reason });
+  async cancelDeal(dealId, buyerId) {
+    const response = await tradeAPI.put(ENDPOINTS.DEALS.CANCEL(dealId), null, {
+      params: { buyerId },
+    });
     return response.data;
   }
 
   /**
    * 거래 확정 (구매자)
    * @param {number} dealId
+   * @param {number} currentUserId - 구매자 ID
    * @returns {Promise}
    */
-  async confirmDeal(dealId) {
-    const response = await tradeAPI.post(ENDPOINTS.DEALS.CONFIRM(dealId));
+  async confirmDeal(dealId, currentUserId) {
+    const response = await tradeAPI.put(ENDPOINTS.DEALS.CONFIRM(dealId), {
+      currentUserId,
+    });
     return response.data;
   }
 
@@ -74,54 +86,69 @@ class TradeService {
 
   /**
    * 내 거래 목록 조회 (구매자 + 판매자)
+   * ⚠️ 백엔드 미구현 - 임시로 빈 배열 반환
    * @param {Object} params - { status, role, page, size }
    * @returns {Promise}
    */
   async getMyDeals(params = {}) {
-    const response = await tradeAPI.get(ENDPOINTS.DEALS.MY_DEALS, { params });
-    return response.data;
+    // TODO: 백엔드 API 구현 후 활성화
+    // const response = await tradeAPI.get(ENDPOINTS.DEALS.MY_DEALS, { params });
+    // return response.data;
+    return Promise.reject(new Error("백엔드 API가 아직 구현되지 않았습니다."));
   }
 
   /**
    * 구매 내역 조회
+   * ⚠️ 백엔드 미구현 - 임시로 빈 배열 반환
    * @param {Object} params - { status, page, size }
    * @returns {Promise}
    */
   async getPurchaseHistory(params = {}) {
-    const response = await tradeAPI.get(ENDPOINTS.DEALS.PURCHASE_HISTORY, { params });
-    return response.data;
+    // TODO: 백엔드 API 구현 후 활성화
+    // const response = await tradeAPI.get(ENDPOINTS.DEALS.PURCHASE_HISTORY, { params });
+    // return response.data;
+    return Promise.reject(new Error("백엔드 API가 아직 구현되지 않았습니다."));
   }
 
   /**
    * 판매 내역 조회
+   * ⚠️ 백엔드 미구현 - 임시로 빈 배열 반환
    * @param {Object} params - { status, page, size }
    * @returns {Promise}
    */
   async getSalesHistory(params = {}) {
-    const response = await tradeAPI.get(ENDPOINTS.DEALS.SALES_HISTORY, { params });
-    return response.data;
+    // TODO: 백엔드 API 구현 후 활성화
+    // const response = await tradeAPI.get(ENDPOINTS.DEALS.SALES_HISTORY, { params });
+    // return response.data;
+    return Promise.reject(new Error("백엔드 API가 아직 구현되지 않았습니다."));
   }
 
   /**
    * 티켓별 거래 목록 조회
+   * ⚠️ 백엔드 미구현
    * @param {number} ticketId
    * @param {Object} params - { status, page, size }
    * @returns {Promise}
    */
   async getDealsByTicket(ticketId, params = {}) {
-    const response = await tradeAPI.get(ENDPOINTS.DEALS.BY_TICKET(ticketId), { params });
-    return response.data;
+    // TODO: 백엔드 API 구현 후 활성화
+    // const response = await tradeAPI.get(ENDPOINTS.DEALS.BY_TICKET(ticketId), { params });
+    // return response.data;
+    return Promise.reject(new Error("백엔드 API가 아직 구현되지 않았습니다."));
   }
 
   /**
    * 상태별 거래 조회
+   * ⚠️ 백엔드 미구현
    * @param {string} status - REQUESTED, ACCEPTED, REJECTED, PAID, CANCELLED, CONFIRMED, COMPLETED
    * @param {Object} params - { page, size }
    * @returns {Promise}
    */
   async getDealsByStatus(status, params = {}) {
-    const response = await tradeAPI.get(ENDPOINTS.DEALS.BY_STATUS(status), { params });
-    return response.data;
+    // TODO: 백엔드 API 구현 후 활성화
+    // const response = await tradeAPI.get(ENDPOINTS.DEALS.BY_STATUS(status), { params });
+    // return response.data;
+    return Promise.reject(new Error("백엔드 API가 아직 구현되지 않았습니다."));
   }
 
   // ============================================
@@ -130,21 +157,32 @@ class TradeService {
 
   /**
    * 결제 준비 (NICEPAY)
-   * @param {Object} paymentData - { dealId, amount, paymentMethod }
+   * @param {number} paymentId - 결제 ID
+   * @param {number} currentUserId - 구매자 ID
    * @returns {Promise} 결제 준비 정보 (redirectUrl 등)
    */
-  async preparePayment(paymentData) {
-    const response = await tradeAPI.post(ENDPOINTS.PAYMENTS.PREPARE, paymentData);
+  async preparePayment(paymentId, currentUserId) {
+    const response = await tradeAPI.get(ENDPOINTS.PAYMENTS.PREPARE(paymentId), {
+      params: { currentUserId },
+    });
     return response.data;
   }
 
   /**
    * 결제 완료 처리
-   * @param {Object} paymentResult - { dealId, paymentId, tid, resultCode, resultMsg }
+   * @param {number} paymentId - 결제 ID
+   * @param {string} tid - NICEPAY 거래 ID
+   * @param {string} authToken - NICEPAY 인증 토큰
    * @returns {Promise}
    */
-  async completePayment(paymentResult) {
-    const response = await tradeAPI.post(ENDPOINTS.PAYMENTS.COMPLETE, paymentResult);
+  async completePayment(paymentId, tid, authToken) {
+    const response = await tradeAPI.post(
+      ENDPOINTS.PAYMENTS.COMPLETE(paymentId),
+      {},
+      {
+        params: { tid, authToken },
+      }
+    );
     return response.data;
   }
 
@@ -172,10 +210,13 @@ class TradeService {
   /**
    * 결제 상세 조회
    * @param {number} paymentId
+   * @param {number} currentUserId - 구매자 ID
    * @returns {Promise}
    */
-  async getPaymentDetail(paymentId) {
-    const response = await tradeAPI.get(ENDPOINTS.PAYMENTS.DETAIL(paymentId));
+  async getPaymentDetail(paymentId, currentUserId) {
+    const response = await tradeAPI.get(ENDPOINTS.PAYMENTS.DETAIL(paymentId), {
+      params: { currentUserId },
+    });
     return response.data;
   }
 

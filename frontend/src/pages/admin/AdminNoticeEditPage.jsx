@@ -5,35 +5,62 @@ import {
   Button,
   Card,
   CardContent,
+  Container,
   Divider,
   FormControlLabel,
   Stack,
   Switch,
   TextField,
   Typography,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
+import AdminLayout from "../../layouts/AdminLayout";
+import {
+  getAdminNoticeDetail,
+  updateAdminNotice,
+  deleteAdminNotice,
+} from "../../api/services/noticeService";
 
 export default function AdminNoticeEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     title: "",
     content: "",
-    is_visible: true,
-    is_pinned: false,
+    isVisible: true,
+    isPinned: false,
   });
 
   useEffect(() => {
-    // ✅ 더미 데이터로 기존값 세팅
-    const dummy = {
-      title: `공지사항 제목 ${id}`,
-      content: `공지사항 내용입니다. (더미)\nID = ${id}`,
-      is_visible: true,
-      is_pinned: id === "1",
-    };
-    setForm(dummy);
+    fetchNotice();
   }, [id]);
+
+  const fetchNotice = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await getAdminNoticeDetail(id);
+      const data = res?.data ?? res;
+      if (data) {
+        setForm({
+          title: data.title || "",
+          content: data.content || "",
+          isVisible: data.isVisible ?? data.is_visible ?? true,
+          isPinned: data.isPinned ?? data.is_pinned ?? false,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setError("공지사항을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onChange = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -43,84 +70,158 @@ export default function AdminNoticeEditPage() {
     setForm((prev) => ({ ...prev, [key]: e.target.checked }));
   };
 
-  const onSave = (e) => {
+  const onSave = async (e) => {
     e.preventDefault();
-    console.log("[ADMIN NOTICE UPDATE] id =", id, "payload =", form);
-    alert("수정 버튼 동작 확인 OK (현재는 console.log만)");
-    navigate("/admin/notices");
+    if (!form.title.trim() || !form.content.trim()) {
+      setError("제목과 내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError("");
+      await updateAdminNotice(id, {
+        title: form.title,
+        content: form.content,
+        isVisible: form.isVisible,
+        isPinned: form.isPinned,
+      });
+      alert("수정되었습니다.");
+      navigate("/admin/notices");
+    } catch (err) {
+      console.error(err);
+      setError("공지사항 수정에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const onDelete = () => {
-    console.log("[ADMIN NOTICE DELETE] id =", id);
-    alert("삭제 버튼 동작 확인 OK (현재는 console.log만)");
-    navigate("/admin/notices");
+  const onDelete = async () => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      setSubmitting(true);
+      await deleteAdminNotice(id);
+      alert("삭제되었습니다.");
+      navigate("/admin/notices");
+    } catch (err) {
+      console.error(err);
+      alert("삭제 실패");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress />
+          </Box>
+        </Container>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <Box sx={{ p: 3, maxWidth: 960, mx: "auto" }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="h5" fontWeight={800}>
-          관리자 · 공지 수정 (ID: {id})
-        </Typography>
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+            <Typography variant="h5" fontWeight="bold">
+              공지사항 수정 (ID: {id})
+            </Typography>
+            <Button variant="outlined" onClick={() => navigate("/admin/notices")}>
+              목록으로
+            </Button>
+          </Stack>
 
-        <Button variant="outlined" onClick={() => navigate("/admin/notices")}>
-          목록으로
-        </Button>
-      </Stack>
+          <Divider sx={{ my: 2 }} />
 
-      <Divider sx={{ my: 2 }} />
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-      <Card>
-        <CardContent>
-          <Box component="form" onSubmit={onSave}>
-            <Stack spacing={2}>
-              <TextField
-                label="제목"
-                value={form.title}
-                onChange={onChange("title")}
-                fullWidth
-                required
-              />
+          <Card>
+            <CardContent>
+              <Box component="form" onSubmit={onSave}>
+                <Stack spacing={2}>
+                  <TextField
+                    label="제목"
+                    value={form.title}
+                    onChange={onChange("title")}
+                    fullWidth
+                    required
+                    disabled={submitting}
+                  />
 
-              <TextField
-                label="내용"
-                value={form.content}
-                onChange={onChange("content")}
-                fullWidth
-                multiline
-                minRows={6}
-                required
-              />
+                  <TextField
+                    label="내용"
+                    value={form.content}
+                    onChange={onChange("content")}
+                    fullWidth
+                    multiline
+                    minRows={6}
+                    required
+                    disabled={submitting}
+                  />
 
-              <Stack direction="row" spacing={2}>
-                <FormControlLabel
-                  control={<Switch checked={form.is_visible} onChange={onToggle("is_visible")} />}
-                  label={form.is_visible ? "공개" : "비공개"}
-                />
+                  <Stack direction="row" spacing={2}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={form.isVisible}
+                          onChange={onToggle("isVisible")}
+                          disabled={submitting}
+                        />
+                      }
+                      label={form.isVisible ? "공개" : "비공개"}
+                    />
 
-                <FormControlLabel
-                  control={<Switch checked={form.is_pinned} onChange={onToggle("is_pinned")} />}
-                  label={form.is_pinned ? "상단고정" : "상단고정 해제"}
-                />
-              </Stack>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={form.isPinned}
+                          onChange={onToggle("isPinned")}
+                          disabled={submitting}
+                        />
+                      }
+                      label={form.isPinned ? "상단고정" : "상단고정 해제"}
+                    />
+                  </Stack>
 
-              <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button variant="outlined" type="button" onClick={() => navigate("/admin/notices")}>
-                  취소
-                </Button>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      type="button"
+                      onClick={() => navigate("/admin/notices")}
+                      disabled={submitting}
+                    >
+                      취소
+                    </Button>
 
-                <Button color="error" variant="outlined" type="button" onClick={onDelete}>
-                  삭제
-                </Button>
+                    <Button
+                      color="error"
+                      variant="outlined"
+                      type="button"
+                      onClick={onDelete}
+                      disabled={submitting}
+                    >
+                      {submitting ? <CircularProgress size={20} /> : "삭제"}
+                    </Button>
 
-                <Button variant="contained" type="submit">
-                  저장
-                </Button>
-              </Stack>
-            </Stack>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+                    <Button variant="contained" type="submit" disabled={submitting}>
+                      {submitting ? <CircularProgress size={20} /> : "저장"}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      </Container>
+    </AdminLayout>
   );
 }

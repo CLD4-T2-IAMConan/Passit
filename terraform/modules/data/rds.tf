@@ -6,11 +6,17 @@ data "aws_db_subnet_group" "existing" {
 }
 
 resource "aws_db_subnet_group" "main" {
-  count      = var.existing_db_subnet_group_name != "" ? 0 : 1
+  count      = var.enable_rds && var.existing_db_subnet_group_name == "" ? 1 : 0
   name       = "${var.project_name}-${var.environment}-rds-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
   tags = { Name = "${var.project_name}-${var.environment}-rds-subnet-group" }
+
+  lifecycle {
+    # RDS 클러스터가 삭제된 후에만 서브넷 그룹 삭제 가능
+    # 클러스터가 존재하는 동안은 삭제 방지
+    create_before_destroy = false
+  }
 }
 
 locals {
@@ -49,8 +55,11 @@ resource "aws_rds_cluster_parameter_group" "main" {
   family      = "aurora-mysql8.0"
   description = "Aurora cluster parameter group"
 
+  # prevent_destroy는 제거: terraform destroy도 막기 때문에
+  # DR 리전에서 enable_rds가 false로 변경될 때 리소스 삭제가 필요할 수 있음
+  # 대신 RDS 클러스터의 deletion_protection으로 보호 (prod 환경)
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   parameter {
@@ -66,10 +75,10 @@ resource "aws_rds_cluster_parameter_group" "main" {
 
 locals {
   rds_parameter_group_name = var.enable_rds ? (
-      var.existing_rds_parameter_group_name != "" ?
-      data.aws_rds_cluster_parameter_group.existing[0].name :
-      aws_rds_cluster_parameter_group.main[0].name
-    ) : "" # false일 때는 빈 문자열 반환
+    var.existing_rds_parameter_group_name != "" ?
+    data.aws_rds_cluster_parameter_group.existing[0].name :
+    aws_rds_cluster_parameter_group.main[0].name
+  ) : "" # false일 때는 빈 문자열 반환
 }
 
 # 1. Aurora 클러스터 본체
@@ -78,10 +87,24 @@ resource "aws_rds_cluster" "main" {
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
 
   # Global Cluster 연결
-  global_cluster_identifier = var.global_cluster_id
+  # 처음 배포 시: global_cluster_id = "" (또는 null)로 설정하여 일반 클러스터로 생성
+  # 이후 Global Cluster 연결 시: 
+  #   1. AWS 콘솔에서 수동으로 Global Cluster에 연결
+  #   2. terraform import로 기존 클러스터를 state에 추가
+  #   3. global_cluster_id 변수를 설정하고 ignore_changes로 이후 변경 무시
+  global_cluster_identifier = var.global_cluster_id != "" && var.global_cluster_id != null ? var.global_cluster_id : null
 
-  engine             = "aurora-mysql"
-  engine_version     = "8.0.mysql_aurora.3.08.2"
+  lifecycle {
+    # Global Cluster 연결은 AWS 콘솔에서 수동으로 수행 후 ignore_changes로 유지
+    # 처음 배포 시: global_cluster_id = null (일반 클러스터)
+    # 이후 Global Cluster 연결 후: ignore_changes로 변경 무시
+    ignore_changes = [global_cluster_identifier]
+    # prevent_destroy는 제거: terraform destroy도 막기 때문에
+    # 대신 deletion_protection으로 보호 (prod 환경)
+  }
+
+  engine         = "aurora-mysql"
+  engine_version = "8.0.mysql_aurora.3.08.2"
 
   # Secondary 리전(DR)일 경우 자격 증명을 전송하지 않음 (서울에서 상속)
   master_username = var.is_dr_region ? null : local.db_creds["DB_USER"]
@@ -98,11 +121,11 @@ resource "aws_rds_cluster" "main" {
   # Secondary는 백업 권한이 없으므로 최소치 설정
   backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
   preferred_backup_window = "03:00-04:00"
-  deletion_protection     = var.environment == "prod" ? true : false
-  skip_final_snapshot     = true
+  deletion_protection     = var.rds_deletion_protection != null ? var.rds_deletion_protection : (var.environment == "prod" ? true : false)  # 변수로 제어 가능, 기본값은 환경에 따라 설정
+  skip_final_snapshot     = true  # destroy 시 스냅샷 없이 삭제 (자동 백업은 backup_retention_period로 관리)
 
   tags = {
-      Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
+    Name = var.is_dr_region ? "${var.project_name}-dr-aurora-cluster" : "${var.project_name}-${var.environment}-aurora-cluster"
   }
 }
 
@@ -119,13 +142,16 @@ resource "aws_rds_cluster_instance" "main" {
   db_subnet_group_name = local.db_subnet_group_name
   publicly_accessible  = false
 
+  # lifecycle prevent_destroy는 제거: terraform destroy도 막기 때문에
+  # deletion_protection이 클러스터 레벨에서 보호함
+
   tags = { Name = var.is_dr_region ? "${var.project_name}-dr-db-${count.index}" : "${var.project_name}-${var.environment}-db-${count.index}" }
 }
 
 # 5. passit_user 자동 생성 (서울 리전에서만 실행)
 resource "null_resource" "create_passit_user" {
-  count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
-  # count = 0
+  # count = (var.enable_rds && !var.is_dr_region && var.create_passit_user && var.passit_user_password != "") ? 1 : 0
+  count = 0  # passit_user 이미 생성됨 - 재생성 방지
 
   depends_on = [
     aws_rds_cluster.main,
@@ -134,15 +160,15 @@ resource "null_resource" "create_passit_user" {
 
   triggers = {
     cluster_endpoint = aws_rds_cluster.main[0].endpoint
-    db_name         = local.db_creds["DB_NAME"]
-    user_name       = var.passit_user_name
-    user_password   = var.passit_user_password
-    secret_version  = var.db_secret_name != "" ? data.aws_secretsmanager_secret_version.db_secret_version[0].version_id : "manual"
+    db_name          = local.db_creds["DB_NAME"]
+    user_name        = var.passit_user_name
+    user_password    = var.passit_user_password
+    secret_version   = var.db_secret_name != "" ? data.aws_secretsmanager_secret_version.db_secret_version[0].version_id : "manual"
   }
 
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = <<-EOT
+    command     = <<-EOT
       set -e
 
       BASTION_ID="${var.bastion_instance_id}"

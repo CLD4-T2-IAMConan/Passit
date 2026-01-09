@@ -120,6 +120,7 @@ module "eks" {
   source = "../../modules/eks"
 
   region       = var.region
+  account_id   = var.account_id
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -146,8 +147,7 @@ module "eks" {
   #    policy_associations = v.policy_associations
   #  }
   #} : {}
-  access_entries                           = {}
-  enable_cluster_creator_admin_permissions = false
+  access_entries = {}
 }
 
 # ============================================
@@ -194,7 +194,11 @@ module "bastion" {
   # Security Group References
   rds_security_group_id         = local.rds_security_group_id
   elasticache_security_group_id = local.elasticache_security_group_id
-  eks_cluster_security_group_id = module.eks.cluster_security_group_id
+  # EKS 클러스터 보안 그룹 ID는 리소스 output이므로, 계획 단계에서 결정할 수 없음
+  # terraform apply 시 -target 옵션을 사용하여 EKS 클러스터를 먼저 생성한 후,
+  # 두 번째 apply에서 이 값을 설정하여 리소스를 생성할 수 있음
+  # 또는 이 값을 null로 설정하여 리소스를 생성하지 않도록 함
+  eks_cluster_security_group_id = null
 
   depends_on = [module.network, module.security, module.eks]
 }
@@ -277,12 +281,6 @@ module "monitoring" {
   prometheus_namespace            = "monitoring"
   prometheus_service_account_name = "prometheus-agent"
 
-
-  log_retention_days          = var.log_retention_days
-  application_error_threshold = var.application_error_threshold
-
-
-
   depends_on = [
     module.eks,
     module.cicd # AWS Load Balancer Controller webhook이 준비될 때까지 대기
@@ -293,15 +291,12 @@ module "monitoring" {
   grafana_admin_user     = var.grafana_admin_user
   grafana_admin_password = var.grafana_admin_password
 
-
-  prometheus_workspace_name       = "${var.project_name}-${var.environment}-amp"
-  prometheus_namespace            = "monitoring"
-  prometheus_service_account_name = "prometheus-agent"
-
-
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
   fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 300
+  fluentbit_wait                 = false
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
@@ -327,7 +322,7 @@ module "cicd" {
   region       = var.region
   team         = var.team
   owner        = var.owner
-  # vpc_id       = var.vpc_cidr
+  vpc_id       = module.network.vpc_id
 
   # EKS 연동 (IRSA for Argo CD)
   cluster_name      = module.eks.cluster_name
@@ -346,7 +341,7 @@ module "cicd" {
   # ALB가 EKS Ingress에서 생성된 후 enable_frontend=true로 변경
   enable_frontend      = var.enable_frontend
   frontend_bucket_name = var.frontend_bucket_name
-  alb_name             = "passit-dev-alb" # ALB 생성 후 "passit-dev-alb"로 변경
+  alb_name             = "" # ALB 생성 후 "passit-dev-alb"로 변경
 
   # registry (GHCR)
   enable_ghcr_pull_secret = var.enable_ghcr_pull_secret

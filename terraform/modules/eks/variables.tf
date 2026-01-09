@@ -96,11 +96,11 @@ variable "node_max_size" {
 variable "access_entries" {
   description = "Map of access entries to add to the EKS cluster. Key is the entry name, value is the access entry configuration."
   type = map(object({
-    principal_arn      = string
+    principal_arn = string
     policy_associations = optional(map(object({
-      policy_arn   = string
+      policy_arn = string
       access_scope = optional(object({
-        type = string
+        type       = string
         namespaces = optional(list(string))
       }))
     })))
@@ -111,4 +111,12 @@ variable "access_entries" {
 variable "node_security_group_id" {
   description = "The ID of the security group for EKS nodes"
   type        = string
+  default     = null
+}
+
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
 }

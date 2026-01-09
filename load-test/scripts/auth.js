@@ -21,8 +21,8 @@ export const options = {
 
 // 환경 변수
 const BASE_URL = __ENV.BASE_URL || "http://localhost:8081";
-const TEST_EMAIL = __ENV.TEST_EMAIL || `loadtest-${Date.now()}@example.com`;
-const TEST_PASSWORD = __ENV.TEST_PASSWORD || "Test1234!";
+const TEST_EMAIL = __ENV.TEST_EMAIL || "admin@passit.com";
+const TEST_PASSWORD = __ENV.TEST_PASSWORD || "admin123!";
 
 export default function () {
   // 로그인 API 테스트

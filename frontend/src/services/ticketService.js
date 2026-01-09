@@ -2,7 +2,7 @@
  * 티켓 관리 API 서비스
  * Ticket Service (8082)와 통신
  */
-import { ticketAPI } from "../api/axiosInstances";
+import { ticketAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
 
 class TicketService {

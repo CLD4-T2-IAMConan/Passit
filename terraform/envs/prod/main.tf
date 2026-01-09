@@ -100,6 +100,7 @@ module "eks" {
   source = "../../modules/eks"
 
   region       = var.region
+  account_id   = var.account_id
   project_name = var.project_name
   environment  = var.environment
   team         = var.team
@@ -108,9 +109,9 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
 
-  vpc_id                 = module.network.vpc_id
-  private_subnet_ids     = module.network.private_subnet_ids
-  node_security_group_id = module.eks.node_security_group_id
+  vpc_id             = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+  # node_security_group_id는 EKS 모듈이 자동 생성하므로 전달하지 않음 (순환 참조 방지)
 
   # Public endpoint access for Terraform/kubectl (임시로 0.0.0.0/0 허용, 추후 특정 IP로 제한 권장)
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
@@ -154,12 +155,47 @@ module "autoscaling" {
 # ============================================
 # Data Module (RDS, ElastiCache, S3)
 # ============================================
+# RDS Global Cluster - 자동 감지
+# Global Cluster가 이미 존재하는지 자동으로 확인하고, 있으면 기존 것을 사용, 없으면 새로 생성
+data "external" "check_global_cluster" {
+  program = ["bash", "-c", <<-EOT
+    CLUSTER_ID="${var.project_name}-global-db"
+    REGION="${var.region}"
+
+    # AWS CLI로 Global Cluster 존재 여부 확인
+    if aws rds describe-global-clusters \
+      --global-cluster-identifier "$CLUSTER_ID" \
+      --region "$REGION" \
+      --query 'GlobalClusters[0].GlobalClusterIdentifier' \
+      --output text 2>/dev/null | grep -q "$CLUSTER_ID"; then
+      echo "{\"exists\":\"true\",\"id\":\"$CLUSTER_ID\"}"
+    else
+      echo "{\"exists\":\"false\",\"id\":\"\"}"
+    fi
+  EOT
+  ]
+}
+
+locals {
+  global_cluster_exists = data.external.check_global_cluster.result.exists == "true"
+  existing_global_cluster_id = local.global_cluster_exists ? data.external.check_global_cluster.result.id : ""
+}
+
 resource "aws_rds_global_cluster" "this" {
+  count = local.global_cluster_exists ? 0 : 1
+
   global_cluster_identifier = "${var.project_name}-global-db"
   engine                    = "aurora-mysql"
   engine_version            = "8.0.mysql_aurora.3.08.2"
   database_name             = "passit" # 초기 생성 시에만 필요
   storage_encrypted         = true
+}
+
+locals {
+  # 기존 Global Cluster가 있으면 자동 감지한 ID 사용, 없으면 새로 생성한 것 사용
+  global_cluster_id = local.global_cluster_exists ? local.existing_global_cluster_id : (
+    length(aws_rds_global_cluster.this) > 0 ? aws_rds_global_cluster.this[0].id : ""
+  )
 }
 
 
@@ -205,6 +241,9 @@ module "data" {
   rds_serverless_min_acu = var.rds_serverless_min_acu
   rds_serverless_max_acu = var.rds_serverless_max_acu
 
+  # RDS Deletion Protection
+  rds_deletion_protection = var.rds_deletion_protection
+
   # Existing Resources
   existing_db_subnet_group_name             = var.existing_db_subnet_group_name
   existing_rds_parameter_group_name         = var.existing_rds_parameter_group_name
@@ -213,6 +252,7 @@ module "data" {
 }
 
 module "data_tokyo" {
+  count  = var.enable_dr ? 1 : 0
   source = "../../modules/data"
 
   providers = {
@@ -226,11 +266,14 @@ module "data_tokyo" {
   owner        = var.owner
 
   is_dr_region       = true
-  global_cluster_id  = aws_rds_global_cluster.this.global_cluster_identifier
+  global_cluster_id  = aws_rds_global_cluster.this.id
   create_passit_user = false
   create_s3          = false
-  create_elasticache = false
+  enable_elasticache = false
 
+  vpc_id                       = data.aws_vpc.tokyo_vpc[0].id
+  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets[0].ids
+  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg[0].id
   depends_on = [
       aws_rds_global_cluster.this, # 1. 글로벌 클러스터 껍데기가 먼저 있어야 함
       module.data                  # 2. 서울 리전의 DB(Primary)가 먼저 생성 완료되어야 함
@@ -241,8 +284,8 @@ module "data_tokyo" {
   eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg.id
 
   # Security Groups
-  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg.id
-  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg.id
+  rds_security_group_id         = data.aws_security_group.tokyo_rds_sg[0].id
+  elasticache_security_group_id = data.aws_security_group.tokyo_cache_sg[0].id
 
   # ElastiCache/RDS 상세 설정 (서울과 동일하게 유지하거나 조정)
   rds_instance_class = var.rds_instance_class # 동일하게 r6g.large 등 사용
@@ -282,10 +325,13 @@ module "monitoring" {
   fluentbit_namespace            = "kube-system"
   fluentbit_service_account_name = "fluent-bit"
   fluentbit_chart_version        = "0.48.6"
+  enable_fluentbit               = false  # Fargate 환경: DaemonSet을 지원하지 않으므로 비활성화 (Fargate는 자동으로 CloudWatch Logs에 전송)
+  fluentbit_timeout              = 600
+  fluentbit_wait                 = true
 
   log_retention_days          = var.log_retention_days
   application_error_threshold = var.application_error_threshold
-#   alarm_sns_topic_arn         = var.alarm_sns_topic_arn
+  alarm_sns_topic_arn         = var.alarm_sns_topic_arn
 
 }
 

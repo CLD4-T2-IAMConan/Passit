@@ -63,7 +63,7 @@ variable "elasticache_security_group_id" {
 variable "eks_cluster_security_group_id" {
   description = "EKS Cluster Security Group ID (선택적)"
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "owner" {
