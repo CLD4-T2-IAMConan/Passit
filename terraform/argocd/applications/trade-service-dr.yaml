@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: passit-services-dev
+  name: trade-service-dr
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,16 +9,17 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/CLD4-T2-IAMConan/Passit.git
-    targetRevision: main
-    path: terraform/argocd/applications
-    directory:
-      recurse: false
-      exclude: "{*-prod.yaml,*-dr.yaml,*.md,kustomization.yaml}" # prod, README, kustomization 제외
+    # ⭐ 직접 service-trade repository 참조 (submodule 대신)
+    repoURL: https://github.com/CLD4-T2-IAMConan/service-trade.git
+    targetRevision: main  # service-trade repo의 기본 브랜치
+    path: helm
+    helm:
+      valueFiles:
+        - values-dr.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: trade
 
   syncPolicy:
     automated:

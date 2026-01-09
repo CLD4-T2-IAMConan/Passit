@@ -15,7 +15,7 @@ spec:
     directory:
       recurse: false
       # prod 환경: dev, dr, README, kustomization 제외
-      exclude: "{*-dev.yaml,*.md,kustomization.yaml}"
+      exclude: "{*-dev.yaml,*-dr.yaml,*.md,kustomization.yaml}"
 
   destination:
     server: https://kubernetes.default.svc

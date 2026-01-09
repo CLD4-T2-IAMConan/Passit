@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: passit-services-dev
+  name: passit-services-dr
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -14,7 +14,8 @@ spec:
     path: terraform/argocd/applications
     directory:
       recurse: false
-      exclude: "{*-prod.yaml,*-dr.yaml,*.md,kustomization.yaml}" # prod, README, kustomization 제외
+      # prod 환경: dev, dr, README, kustomization 제외
+      exclude: "{*-dev.yaml,*-prod.yaml,*.md,kustomization.yaml}"
 
   destination:
     server: https://kubernetes.default.svc
