@@ -3,7 +3,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "passit-terraform-state-prod-kr" # terraform/shared에서 확인 필요
+    bucket         = "passit-terraform-state-prod" # terraform/shared에서 확인 필요
     key            = "prod/terraform.tfstate"
     region         = "ap-northeast-2"
     dynamodb_table = "passit-terraform-locks-prod" # terraform/shared에서 확인 필요

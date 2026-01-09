@@ -208,7 +208,7 @@ module "data" {
   region            = var.region
   team              = var.team
   owner             = var.owner
-  global_cluster_id = aws_rds_global_cluster.this.id
+  global_cluster_id = local.global_cluster_id
 
   # Network Configuration
   vpc_id                = local.vpc_id
@@ -266,7 +266,7 @@ module "data_tokyo" {
   owner        = var.owner
 
   is_dr_region       = true
-  global_cluster_id  = aws_rds_global_cluster.this.id
+  global_cluster_id = local.global_cluster_id
   create_passit_user = false
   create_s3          = false
   enable_elasticache = false
@@ -274,14 +274,6 @@ module "data_tokyo" {
   vpc_id                       = data.aws_vpc.tokyo_vpc[0].id
   private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets[0].ids
   eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg[0].id
-  depends_on = [
-      aws_rds_global_cluster.this, # 1. 글로벌 클러스터 껍데기가 먼저 있어야 함
-      module.data                  # 2. 서울 리전의 DB(Primary)가 먼저 생성 완료되어야 함
-  ]
-
-  vpc_id                       = data.aws_vpc.tokyo_vpc.id
-  private_db_subnet_ids        = data.aws_subnets.tokyo_db_subnets.ids
-  eks_worker_security_group_id = data.aws_security_group.tokyo_eks_node_sg.id
 
   # Security Groups
   rds_security_group_id         = data.aws_security_group.tokyo_rds_sg[0].id
