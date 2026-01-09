@@ -25,6 +25,42 @@ test.describe("거래/양도 플로우", () => {
   let dealId;
 
   test.beforeAll(async ({ browser }) => {
+    test.setTimeout(120000); // 2분 타임아웃
+    
+    // 백엔드 서버 상태 확인
+    let backendAvailable = false;
+    const backendUrls = [
+      'http://localhost:8081/api/auth/health',
+      'http://localhost:8081/actuator/health',
+      'https://dmvwgbcww82sl.cloudfront.net/api/auth/health',
+    ];
+    
+    for (const url of backendUrls) {
+      try {
+        const response = await fetch(url, { 
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        }).catch(() => null);
+        
+        if (response && response.ok) {
+          backendAvailable = true;
+          console.log(`✅ 백엔드 서버 확인: ${url}`);
+          break;
+        }
+      } catch (e) {
+        // 다음 URL 시도
+      }
+    }
+    
+    if (!backendAvailable) {
+      console.log("⚠️ 백엔드 서버가 실행 중이지 않습니다.");
+      console.log("💡 백엔드 서버 시작 방법:");
+      console.log("   - service-account: cd service-account && ./gradlew bootRun");
+      console.log("   - service-ticket: cd service-ticket && ./gradlew bootRun");
+      console.log("   - service-trade: cd service-trade && ./gradlew bootRun");
+      console.log("⚠️ 테스트를 계속 진행하지만 로그인 실패가 예상됩니다.");
+    }
+    
     // 구매자와 판매자 계정 생성
     const page = await browser.newPage();
     const timestamp = Date.now();
@@ -69,12 +105,18 @@ test.describe("거래/양도 플로우", () => {
       const sellerLoginData = await sellerLoginResponse.json();
       if (sellerLoginData.success) {
         // 티켓 목록에서 첫 번째 티켓 ID 가져오기
-        const ticketListResponse = await page.request.get(`${baseURL}/api/tickets?page=0&size=1`);
+        const ticketListResponse = await page.request.get(`${baseURL}/api/tickets?page=0&size=1`, {
+          headers: {
+            Authorization: `Bearer ${sellerLoginData.data.accessToken}`
+          }
+        });
         const ticketListData = await ticketListResponse.json();
         
         if (ticketListData.success && ticketListData.data?.content?.length > 0) {
           ticketId = ticketListData.data.content[0].id;
           console.log(`🎫 테스트용 티켓 ID: ${ticketId}`);
+        } else {
+          console.log("⚠️ 사용 가능한 티켓이 없습니다. 티켓을 먼저 생성해주세요.");
         }
       }
 
@@ -192,6 +234,18 @@ test.describe("거래/양도 플로우", () => {
 
     if (count > 0) {
       await dealListPage.expectDealsVisible();
+      
+      // 첫 번째 거래 ID 저장
+      const firstDeal = dealListPage.dealCards.first();
+      const dealHref = await firstDeal.getAttribute('href').catch(() => null);
+      if (dealHref) {
+        const match = dealHref.match(/\/deals\/(\d+)/);
+        if (match) {
+          dealId = parseInt(match[1]);
+          console.log(`💼 거래 ID 저장: ${dealId}`);
+        }
+      }
+      
       console.log("✅ 구매 내역이 표시됩니다");
     } else {
       await dealListPage.expectEmpty();
@@ -237,6 +291,14 @@ test.describe("거래/양도 플로우", () => {
       
       // 거래 상세 페이지 확인
       await page.waitForURL(/\/deals\/\d+\/detail/, { timeout: 10000 });
+      
+      // URL에서 dealId 추출
+      const url = page.url();
+      const match = url.match(/\/deals\/(\d+)/);
+      if (match) {
+        dealId = parseInt(match[1]);
+        console.log(`💼 거래 ID: ${dealId}`);
+      }
       
       const dealAcceptPage = new DealAcceptPage(page);
       await dealAcceptPage.expectDealInfoVisible();
@@ -294,11 +356,21 @@ test.describe("거래/양도 플로우", () => {
       const dealAcceptPage = new DealAcceptPage(page);
       await dealAcceptPage.expectDealInfoVisible();
 
-      // 수락 버튼이 있으면 클릭 (실제로는 테스트 환경에 따라 스킵 가능)
-      const acceptButton = page.getByRole("button", { name: /수락|거래 수락/i });
-      if (await acceptButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-        // 실제 수락은 하지 않고 버튼 존재만 확인
-        console.log("✅ 거래 수락 버튼이 표시됩니다");
+      // 수락 버튼이 있으면 클릭
+      const acceptButton = page.getByRole("button", { name: /수락|거래 수락|accept/i });
+      if (await acceptButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await acceptButton.click();
+        await page.waitForTimeout(2000);
+        
+        // 확인 다이얼로그 처리
+        const confirmDialog = page.getByRole("button", { name: /확인|ok|yes/i });
+        if (await confirmDialog.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await confirmDialog.click();
+          await page.waitForLoadState("networkidle");
+          await page.waitForTimeout(2000);
+        }
+        
+        console.log("✅ 거래 수락 완료");
       } else {
         console.log("ℹ️ 거래 수락 버튼이 없습니다 (이미 처리된 거래일 수 있음)");
       }

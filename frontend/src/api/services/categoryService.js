@@ -1,4 +1,4 @@
-import { csApiClient } from "../client";
+import { csAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../endpoints";
 
 /**
@@ -11,7 +11,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 카테고리 목록
    */
   getAllCategories: async (withHierarchy = true) => {
-    const response = await csApiClient.get(ENDPOINTS.CATEGORIES.LIST, {
+    const response = await csAPI.get(ENDPOINTS.CATEGORIES.LIST, {
       params: { withHierarchy },
     });
     return response.data;
@@ -23,7 +23,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 카테고리 정보
    */
   getCategoryById: async (id) => {
-    const response = await csApiClient.get(`/categories/${id}`);
+    const response = await csAPI.get(`/categories/${id}`);
     return response.data;
   },
 
@@ -33,7 +33,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 생성된 카테고리 정보
    */
   createCategory: async (data) => {
-    const response = await csApiClient.post(ENDPOINTS.CATEGORIES.ADMIN_CREATE, data);
+    const response = await csAPI.post(ENDPOINTS.CATEGORIES.ADMIN_CREATE, data);
     return response.data;
   },
 
@@ -44,7 +44,7 @@ export const categoryService = {
    * @returns {Promise<Object>} 수정된 카테고리 정보
    */
   updateCategory: async (id, data) => {
-    const response = await csApiClient.put(ENDPOINTS.CATEGORIES.ADMIN_UPDATE(id), data);
+    const response = await csAPI.put(ENDPOINTS.CATEGORIES.ADMIN_UPDATE(id), data);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const categoryService = {
    * @returns {Promise<void>}
    */
   deleteCategory: async (id) => {
-    const response = await csApiClient.delete(ENDPOINTS.CATEGORIES.ADMIN_DELETE(id));
+    const response = await csAPI.delete(ENDPOINTS.CATEGORIES.ADMIN_DELETE(id));
     return response.data;
   },
 };

@@ -1,0 +1,91 @@
+{
+  "dashboard": {
+    "title": "Passit Application Monitoring",
+    "tags": ["passit", "application"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (application, status)",
+            "legendFormat": "{{application}} - {{status}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "HTTP Response Time (95th percentile)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))",
+            "legendFormat": "{{application}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "5xx Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 * sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (application) / sum(rate(http_server_requests_seconds_count[5m])) by (application)",
+            "legendFormat": "{{application}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Pod CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(container_cpu_usage_seconds_total[5m])) by (pod, namespace) * 100",
+            "legendFormat": "{{namespace}}/{{pod}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Pod Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(sum(container_memory_working_set_bytes) by (pod, namespace) / sum(container_spec_memory_limit_bytes) by (pod, namespace)) * 100",
+            "legendFormat": "{{namespace}}/{{pod}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "JVM Heap Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"}) * 100",
+            "legendFormat": "{{application}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ]
+  }
+}
+

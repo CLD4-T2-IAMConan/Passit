@@ -11,12 +11,12 @@
 
 # S3 backend로 마이그레이션 (backend 리소스 생성 후)
 # 주의: prod 버킷을 사용 (shared는 공통 리소스이므로 prod 버킷 사용)
-terraform {
-  backend "s3" {
-    bucket         = "passit-terraform-state-prod"
-    key            = "shared/terraform.tfstate"
-    region         = "ap-northeast-2"
-    dynamodb_table = "passit-terraform-locks-prod"
-    encrypt        = true
-  }
-}
+# terraform {
+#   backend "s3" {
+#     bucket         = "passit-terraform-state-prod-kr"
+#     key            = "shared/terraform.tfstate"
+#     region         = "ap-northeast-2"
+#     dynamodb_table = "passit-terraform-locks-prod"
+#     encrypt        = true
+#   }
+# }

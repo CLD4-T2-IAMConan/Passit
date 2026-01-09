@@ -30,7 +30,6 @@ export default function () {
     ticketId: TEST_TICKET_ID,
     buyerId: TEST_USER_ID,
     quantity: 1,
-    message: `Load test deal request ${Date.now()}`,
   });
 
   const dealParams = {

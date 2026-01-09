@@ -42,10 +42,9 @@ resource "helm_release" "alb_controller" {
   ]
 
   # Helm provider의 inconsistent result 오류 방지
-  # metadata는 Helm이 자동으로 업데이트하므로 변경사항을 무시
   lifecycle {
     ignore_changes = [
-      metadata,
+      set,
     ]
   }
 }

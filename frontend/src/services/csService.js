@@ -2,7 +2,7 @@
  * 고객 지원(CS) 관리 API 서비스
  * CS Service (8085)와 통신
  */
-import { csAPI } from "../api/axiosInstances";
+import { csAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
 
 class CSService {

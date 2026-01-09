@@ -16,7 +16,7 @@ resource "kubernetes_service_account_v1" "backend_service" {
 }
 
 # 서비스별 ClusterRole (최소 권한)
-resource "kubernetes_cluster_role" "backend_service" {
+resource "kubernetes_cluster_role_v1" "backend_service" {
   for_each = toset(var.service_namespaces)
   metadata {
     name = "${each.key}-cluster-role"
@@ -36,7 +36,7 @@ resource "kubernetes_cluster_role" "backend_service" {
 }
 
 # ClusterRoleBinding
-resource "kubernetes_cluster_role_binding" "backend_service" {
+resource "kubernetes_cluster_role_binding_v1" "backend_service" {
   for_each = toset(var.service_namespaces)
   metadata {
     name = "${each.key}-cluster-role-binding"
@@ -45,7 +45,7 @@ resource "kubernetes_cluster_role_binding" "backend_service" {
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.backend_service[each.key].metadata[0].name
+    name      = kubernetes_cluster_role_v1.backend_service[each.key].metadata[0].name
   }
 
   subject {
