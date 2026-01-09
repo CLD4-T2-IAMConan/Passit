@@ -14,7 +14,7 @@ spec:
     path: terraform/argocd/applications
     directory:
       recurse: false
-      exclude: "*-prod.yaml" # prod 환경 Application 제외
+      exclude: "{*-prod.yaml,*.md,kustomization.yaml}" # prod, README, kustomization 제외
 
   destination:
     server: https://kubernetes.default.svc
