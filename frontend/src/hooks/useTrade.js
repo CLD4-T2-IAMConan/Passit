@@ -54,17 +54,14 @@ export const useTrade = () => {
    * 거래 수락 (판매자)
    */
   const acceptDeal = useCallback(
-    async (dealId) => {
+    async (dealId, currentUserId) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.acceptDeal(dealId);
-
-        if (response.success) {
-          setCurrentDeal(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.acceptDeal(dealId, currentUserId);
+        // 백엔드가 ApiResponse를 반환하지 않을 수 있으므로 직접 처리
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -80,17 +77,13 @@ export const useTrade = () => {
    * 거래 거절 (판매자)
    */
   const rejectDeal = useCallback(
-    async (dealId, reason) => {
+    async (dealId, currentUserId, cancelReason) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.rejectDeal(dealId, reason);
-
-        if (response.success) {
-          setCurrentDeal(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.rejectDeal(dealId, currentUserId, cancelReason);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -106,17 +99,13 @@ export const useTrade = () => {
    * 거래 취소 (구매자)
    */
   const cancelDeal = useCallback(
-    async (dealId, reason) => {
+    async (dealId, buyerId) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.cancelDeal(dealId, reason);
-
-        if (response.success) {
-          setCurrentDeal(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.cancelDeal(dealId, buyerId);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -132,17 +121,13 @@ export const useTrade = () => {
    * 거래 확정 (구매자)
    */
   const confirmDeal = useCallback(
-    async (dealId) => {
+    async (dealId, currentUserId) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.confirmDeal(dealId);
-
-        if (response.success) {
-          setCurrentDeal(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.confirmDeal(dealId, currentUserId);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -164,11 +149,10 @@ export const useTrade = () => {
         setError(null);
 
         const response = await tradeService.getDealDetail(dealId);
-
-        if (response.success) {
-          setCurrentDeal(response.data);
-          return { success: true, data: response.data };
-        }
+        // 백엔드가 ApiResponse를 반환할 수 있으므로 처리
+        const data = response.success ? response.data : response;
+        setCurrentDeal(data);
+        return { success: true, data };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -195,18 +179,18 @@ export const useTrade = () => {
           size: params.size ?? pagination.size,
         });
 
-        if (response.success) {
-          const { content, page, size, totalPages, totalElements } = response.data;
+        // 백엔드 응답 형식에 맞게 처리
+        const data = response.success ? response.data : response;
+        const { content, page, size, totalPages, totalElements } = data || {};
 
-          setDeals(content || []);
-          setPagination({
-            page,
-            size,
-            totalPages,
-            totalElements,
-          });
-          return { success: true, data: response.data };
-        }
+        setDeals(content || []);
+        setPagination({
+          page: page ?? 0,
+          size: size ?? 20,
+          totalPages: totalPages ?? 0,
+          totalElements: totalElements ?? 0,
+        });
+        return { success: true, data };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -233,18 +217,18 @@ export const useTrade = () => {
           size: params.size ?? pagination.size,
         });
 
-        if (response.success) {
-          const { content, page, size, totalPages, totalElements } = response.data;
+        // 백엔드 응답 형식에 맞게 처리
+        const data = response.success ? response.data : response;
+        const { content, page, size, totalPages, totalElements } = data || {};
 
-          setDeals(content || []);
-          setPagination({
-            page,
-            size,
-            totalPages,
-            totalElements,
-          });
-          return { success: true, data: response.data };
-        }
+        setDeals(content || []);
+        setPagination({
+          page: page ?? 0,
+          size: size ?? 20,
+          totalPages: totalPages ?? 0,
+          totalElements: totalElements ?? 0,
+        });
+        return { success: true, data };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -271,18 +255,18 @@ export const useTrade = () => {
           size: params.size ?? pagination.size,
         });
 
-        if (response.success) {
-          const { content, page, size, totalPages, totalElements } = response.data;
+        // 백엔드 응답 형식에 맞게 처리
+        const data = response.success ? response.data : response;
+        const { content, page, size, totalPages, totalElements } = data || {};
 
-          setDeals(content || []);
-          setPagination({
-            page,
-            size,
-            totalPages,
-            totalElements,
-          });
-          return { success: true, data: response.data };
-        }
+        setDeals(content || []);
+        setPagination({
+          page: page ?? 0,
+          size: size ?? 20,
+          totalPages: totalPages ?? 0,
+          totalElements: totalElements ?? 0,
+        });
+        return { success: true, data };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -328,17 +312,14 @@ export const useTrade = () => {
    * 결제 준비
    */
   const preparePayment = useCallback(
-    async (paymentData) => {
+    async (paymentId, currentUserId) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.preparePayment(paymentData);
-
-        if (response.success) {
-          setCurrentPayment(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.preparePayment(paymentId, currentUserId);
+        setCurrentPayment(response);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -354,17 +335,14 @@ export const useTrade = () => {
    * 결제 완료 처리
    */
   const completePayment = useCallback(
-    async (paymentResult) => {
+    async (paymentId, tid, authToken) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.completePayment(paymentResult);
-
-        if (response.success) {
-          setCurrentPayment(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.completePayment(paymentId, tid, authToken);
+        setCurrentPayment(response);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -406,17 +384,14 @@ export const useTrade = () => {
    * 결제 상세 조회
    */
   const fetchPaymentDetail = useCallback(
-    async (paymentId) => {
+    async (paymentId, currentUserId) => {
       try {
         startLoading();
         setError(null);
 
-        const response = await tradeService.getPaymentDetail(paymentId);
-
-        if (response.success) {
-          setCurrentPayment(response.data);
-          return { success: true, data: response.data };
-        }
+        const response = await tradeService.getPaymentDetail(paymentId, currentUserId);
+        setCurrentPayment(response);
+        return { success: true, data: response };
       } catch (err) {
         const message = handleError(err);
         setError(message);
@@ -469,18 +444,18 @@ export const useTrade = () => {
           size: params.size ?? pagination.size,
         });
 
-        if (response.success) {
-          const { content, page, size, totalPages, totalElements } = response.data;
+        // 백엔드 응답 형식에 맞게 처리
+        const data = response.success ? response.data : response;
+        const { content, page, size, totalPages, totalElements } = data || {};
 
-          setPayments(content || []);
-          setPagination({
-            page,
-            size,
-            totalPages,
-            totalElements,
-          });
-          return { success: true, data: response.data };
-        }
+        setPayments(content || []);
+        setPagination({
+          page: page ?? 0,
+          size: size ?? 20,
+          totalPages: totalPages ?? 0,
+          totalElements: totalElements ?? 0,
+        });
+        return { success: true, data };
       } catch (err) {
         const message = handleError(err);
         setError(message);

@@ -82,12 +82,56 @@ const AdminUserManagementPage = () => {
         sortDirection,
       });
 
-      if (response.success) {
-        setUsers(response.data.content);
-        setTotalElements(response.data.totalElements);
+      // 응답 구조 처리: response.data가 페이지네이션 객체이거나 직접 배열일 수 있음
+      if (response) {
+        // 페이지네이션 응답인 경우
+        if (response.content && Array.isArray(response.content)) {
+          setUsers(response.content);
+          setTotalElements(response.totalElements || response.total || 0);
+        }
+        // 직접 배열인 경우
+        else if (Array.isArray(response)) {
+          setUsers(response);
+          setTotalElements(response.length);
+        }
+        // data 속성이 있는 경우
+        else if (response.data) {
+          if (Array.isArray(response.data)) {
+            setUsers(response.data);
+            setTotalElements(response.data.length);
+          } else if (response.data.content && Array.isArray(response.data.content)) {
+            setUsers(response.data.content);
+            setTotalElements(response.data.totalElements || response.data.total || 0);
+          } else {
+            setUsers([]);
+            setTotalElements(0);
+          }
+        }
+        // success 속성이 있는 경우
+        else if (response.success && response.data) {
+          if (Array.isArray(response.data)) {
+            setUsers(response.data);
+            setTotalElements(response.data.length);
+          } else if (response.data.content && Array.isArray(response.data.content)) {
+            setUsers(response.data.content);
+            setTotalElements(response.data.totalElements || response.data.total || 0);
+          } else {
+            setUsers([]);
+            setTotalElements(0);
+          }
+        } else {
+          setUsers([]);
+          setTotalElements(0);
+        }
+      } else {
+        setUsers([]);
+        setTotalElements(0);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "회원 목록을 불러오는데 실패했습니다");
+      console.error("회원 목록 조회 실패:", err);
+      setError(err.response?.data?.message || err.message || "회원 목록을 불러오는데 실패했습니다");
+      setUsers([]);
+      setTotalElements(0);
     } finally {
       setLoading(false);
     }

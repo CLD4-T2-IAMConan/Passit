@@ -1,12 +1,8 @@
 // src/pages/PaymentResultPage.js
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-
-// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
-import { API_SERVICES } from "../config/apiConfig";
-const API_BASE_URL = API_SERVICES.TRADE;
+import { tradeAPI } from "../lib/api/client";
 
 function PaymentResultPage() {
   const location = useLocation();
@@ -31,9 +27,15 @@ function PaymentResultPage() {
     const completePayment = async () => {
       try {
         // 404가 나더라도 화면만은 볼 수 있도록 임시적으로 try/catch 밖으로 SUCCESS 로직을 옮깁니다.
-        const response = await axios.post(
-          `${API_BASE_URL}/api/payments/${paymentId}/complete?tid=${tid}&authToken=${authToken}`,
-          {} // POST 요청이므로 Body는 비워둡니다.
+        const response = await tradeAPI.post(
+          `/api/payments/${paymentId}/complete`,
+          {},
+          {
+            params: {
+              tid: tid,
+              authToken: authToken,
+            },
+          }
         );
 
         if (response.data === "PAYMENT_APPROVAL_SUCCESS") {

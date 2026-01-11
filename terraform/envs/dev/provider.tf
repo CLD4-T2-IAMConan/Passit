@@ -28,7 +28,7 @@ provider "aws" {
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {
-    bucket = "passit-terraform-state-prod"
+    bucket = "passit-terraform-state-prod-kr"
     key    = "shared/terraform.tfstate"
     region = "ap-northeast-2"
   }

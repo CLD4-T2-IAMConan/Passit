@@ -34,11 +34,19 @@ const DealListPage = () => {
 
   // 탭 변경 시 데이터 로드
   useEffect(() => {
-    if (activeTab === 0) {
-      fetchPurchaseHistory();
-    } else {
-      fetchSalesHistory();
-    }
+    const loadData = async () => {
+      try {
+        if (activeTab === 0) {
+          await fetchPurchaseHistory();
+        } else {
+          await fetchSalesHistory();
+        }
+      } catch (error) {
+        // 백엔드 API가 아직 구현되지 않은 경우 에러 무시
+        console.warn("거래 목록 조회 실패 (백엔드 미구현 가능성):", error);
+      }
+    };
+    loadData();
   }, [activeTab, fetchPurchaseHistory, fetchSalesHistory]);
 
   const handleTabChange = (event, newValue) => {

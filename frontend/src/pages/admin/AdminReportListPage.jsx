@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Container,
+  Box,
+  Typography,
+  CircularProgress,
+  Alert,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import AdminLayout from "../../layouts/AdminLayout";
 import reportService from "../../services/reportService";
 
 export default function AdminReportListPage() {
@@ -25,43 +40,56 @@ export default function AdminReportListPage() {
     fetch();
   }, []);
 
-  if (loading) return <div style={{ padding: 16 }}>로딩 중...</div>;
-  if (errorMsg) return <div style={{ padding: 16, color: "crimson" }}>{errorMsg}</div>;
-
   return (
-    <div style={{ padding: 16 }}>
-      <h2>신고 관리</h2>
+    <AdminLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress />
+          </Box>
+        ) : errorMsg ? (
+          <Alert severity="error">{errorMsg}</Alert>
+        ) : (
+          <Box>
+            <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
+              신고 관리
+            </Typography>
 
-      {reports.length === 0 ? (
-        <div style={{ marginTop: 12 }}>신고 데이터 없음</div>
-      ) : (
-        <table width="100%" style={{ marginTop: 12, borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>상태</th>
-              <th>대상</th>
-              <th>사유</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((r) => (
-              <tr
-                key={r.reportId ?? r.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate(`/admin/reports/${r.reportId ?? r.id}`)}
-              >
-                <td>{r.reportId ?? r.id}</td>
-                <td>{r.status}</td>
-                <td>
-                  {r.targetType} #{r.targetId}
-                </td>
-                <td>{r.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+            {reports.length === 0 ? (
+              <Typography sx={{ mt: 2 }}>신고 데이터가 없습니다.</Typography>
+            ) : (
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>ID</TableCell>
+                      <TableCell>상태</TableCell>
+                      <TableCell>대상</TableCell>
+                      <TableCell>사유</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {reports.map((r) => (
+                      <TableRow
+                        key={r.reportId ?? r.id}
+                        sx={{ cursor: "pointer", "&:hover": { bgcolor: "action.hover" } }}
+                        onClick={() => navigate(`/admin/reports/${r.reportId ?? r.id}`)}
+                      >
+                        <TableCell>{r.reportId ?? r.id}</TableCell>
+                        <TableCell>{r.status}</TableCell>
+                        <TableCell>
+                          {r.targetType} #{r.targetId}
+                        </TableCell>
+                        <TableCell>{r.reason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Box>
+        )}
+      </Container>
+    </AdminLayout>
   );
 }

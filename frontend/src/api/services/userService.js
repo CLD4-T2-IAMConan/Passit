@@ -1,4 +1,4 @@
-import apiClient from "../client";
+import { accountAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../endpoints";
 
 /**
@@ -10,16 +10,7 @@ export const userService = {
    * @returns {Promise<Object>} 사용자 정보
    */
   getMe: async () => {
-    // 1. 로컬스토리지에서 직접 토큰을 꺼냅니다.
-    const token = localStorage.getItem("token");
-
-    // 2. 요청 시 headers 옵션에 토큰을 포함시킵니다.
-    const response = await apiClient.get(ENDPOINTS.USERS.ME, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const response = await accountAPI.get(ENDPOINTS.USERS.ME);
     return response.data;
   },
 
@@ -29,7 +20,7 @@ export const userService = {
    * @returns {Promise<Object>} 업데이트된 사용자 정보
    */
   updateMe: async (updates) => {
-    const response = await apiClient.patch(ENDPOINTS.USERS.UPDATE, updates);
+    const response = await accountAPI.patch(ENDPOINTS.USERS.UPDATE_ME, updates);
     return response.data;
   },
 
@@ -38,7 +29,7 @@ export const userService = {
    * @returns {Promise<void>}
    */
   deleteAccount: async () => {
-    const response = await apiClient.delete(ENDPOINTS.USERS.DELETE);
+    const response = await accountAPI.delete(ENDPOINTS.USERS.DELETE_ME);
     return response.data;
   },
 
@@ -48,7 +39,7 @@ export const userService = {
    * @returns {Promise<void>}
    */
   changePassword: async (data) => {
-    const response = await apiClient.post(ENDPOINTS.USERS.CHANGE_PASSWORD, data);
+    const response = await accountAPI.post(ENDPOINTS.USERS.CHANGE_PASSWORD, data);
     return response.data;
   },
 
@@ -58,7 +49,7 @@ export const userService = {
    * @returns {Promise<void>}
    */
   verifyPassword: async (password) => {
-    const response = await apiClient.post("/users/me/verify-password", { password });
+    const response = await accountAPI.post(ENDPOINTS.USERS.VERIFY_PASSWORD, { password });
     return response.data;
   },
 
@@ -68,7 +59,7 @@ export const userService = {
    * @returns {Promise<void>}
    */
   setPassword: async (data) => {
-    const response = await apiClient.post("/users/me/set-password", data);
+    const response = await accountAPI.post(ENDPOINTS.USERS.SET_PASSWORD, data);
     return response.data;
   },
 };

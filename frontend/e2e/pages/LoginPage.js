@@ -104,10 +104,165 @@ export class LoginPage {
       throw new Error("로그인 버튼을 찾을 수 없습니다.");
     }
 
-    await submitButton.click();
+    // 버튼 상태 확인
+    const isDisabled = await submitButton.isDisabled().catch(() => false);
+    const isVisible = await submitButton.isVisible().catch(() => false);
+    console.log(`🔍 로그인 버튼 상태: visible=${isVisible}, disabled=${isDisabled}`);
+
+    // 폼 유효성 검사 확인
+    const emailValid = await this.emailInput.evaluate((el) => el.validity.valid).catch(() => false);
+    const passwordValid = await this.passwordInput.evaluate((el) => el.validity.valid).catch(() => false);
+    console.log(`🔍 폼 유효성: email=${emailValid}, password=${passwordValid}`);
+
+    // 네트워크 요청 모니터링 시작 (모든 요청 캡처)
+    const networkRequests = [];
+    const allRequests = [];
+    const requestListener = (request) => {
+      const url = request.url();
+      allRequests.push({ url, method: request.method() });
+      if (url.includes('/api/auth/login') || url.includes('/auth/login') || url.includes('8081')) {
+        networkRequests.push({
+          url: request.url(),
+          method: request.method(),
+        });
+      }
+    };
+    
+    const responseListener = (response) => {
+      const url = response.url();
+      if (url.includes('/api/auth/login') || url.includes('/auth/login') || url.includes('8081')) {
+        networkRequests.push({
+          url: response.url(),
+          status: response.status(),
+        });
+      }
+    };
+
+    // 콘솔 에러 캡처
+    const consoleErrors = [];
+    const consoleListener = (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    };
+    this.page.on('console', consoleListener);
+
+    this.page.on('request', requestListener);
+    this.page.on('response', responseListener);
+
+    // 로그인 버튼 클릭 전 상태 확인
+    const beforeClickUrl = this.page.url();
+    console.log(`📍 로그인 버튼 클릭 전 URL: ${beforeClickUrl}`);
+    
+    // 폼 제출 직접 트리거 (여러 방법 시도)
+    try {
+      // 방법 1: 폼의 submit 이벤트 직접 트리거
+      const form = this.page.locator('form').first();
+      const formExists = await form.isVisible({ timeout: 2000 }).catch(() => false);
+      
+      if (formExists) {
+        console.log("📝 폼 제출 이벤트 직접 트리거");
+        await form.evaluate((form) => {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        });
+        await this.page.waitForTimeout(500);
+      }
+      
+      // 방법 2: 로그인 버튼 클릭
+      await submitButton.click({ force: true });
+      console.log("✅ 로그인 버튼 클릭 완료 (직접 클릭)");
+    } catch (e) {
+      console.log(`⚠️ 폼 제출 실패: ${e.message}`);
+      // 방법 3: Enter 키 시뮬레이션
+      console.log("⚠️ Enter 키 시도");
+      await this.passwordInput.press('Enter');
+    }
+    
+    // 폼 제출 이벤트 확인
+    await this.page.waitForTimeout(1000);
+    
+    // 실제로 API 호출이 발생했는지 확인
+    const apiUrl = await this.page.evaluate(() => {
+      // window 객체에서 API 설정 확인
+      return {
+        accountApi: window.REACT_APP_ACCOUNT_API_URL || 'not found',
+        cloudfront: window.REACT_APP_CLOUDFRONT_URL || 'not found',
+        apiBase: window.REACT_APP_API_BASE_URL || 'not found',
+      };
+    }).catch(() => ({}));
+    console.log("🔍 프론트엔드 API 설정:", JSON.stringify(apiUrl, null, 2));
+    
+    // 폼 제출이 실제로 발생했는지 확인
+    await this.page.waitForTimeout(500);
+    
+    // 로그인 API 응답 대기 (여러 패턴 시도)
+    let loginResponse = null;
+    try {
+      loginResponse = await this.page.waitForResponse(
+        (response) => {
+          const url = response.url();
+          return (
+            (url.includes('/api/auth/login') || 
+             url.includes('/auth/login') ||
+             url.includes('8081') ||
+             url.includes('account')) &&
+            response.status() !== 0
+          );
+        },
+        { timeout: 10000 }
+      );
+      console.log(`✅ 로그인 API 응답 수신: ${loginResponse.url()} - ${loginResponse.status()}`);
+    } catch (e) {
+      console.log("⚠️ 로그인 API 응답을 기다리는 중 타임아웃 발생");
+      console.log("💡 가능한 원인:");
+      console.log("   1. 백엔드 서버가 실행 중이지 않음");
+      console.log("   2. API URL이 잘못 설정됨");
+      console.log("   3. 네트워크 요청이 실제로 발생하지 않음");
+    }
 
     // 로그인 처리 대기
     await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(2000); // 추가 대기 시간
+
+    // 네트워크 요청 모니터링 종료
+    this.page.off('request', requestListener);
+    this.page.off('response', responseListener);
+
+    // 콘솔 에러 확인
+    if (consoleErrors.length > 0) {
+      console.log("⚠️ JavaScript 콘솔 에러:", consoleErrors);
+    }
+
+    // 네트워크 요청 로그 출력
+    if (networkRequests.length > 0) {
+      console.log("📡 로그인 네트워크 요청:", JSON.stringify(networkRequests, null, 2));
+    } else {
+      console.log("⚠️ 로그인 API 요청이 감지되지 않았습니다.");
+      console.log("💡 가능한 원인:");
+      console.log("   1. 프론트엔드가 CloudFront URL을 사용 중 (로컬 프록시 미사용)");
+      console.log("   2. 로그인 버튼 클릭이 실제로 폼 제출을 트리거하지 않음");
+      console.log("   3. JavaScript 에러로 인해 API 호출이 차단됨");
+      console.log("   4. 폼 유효성 검사 실패");
+      
+      // 최근 네트워크 요청 확인 (최대 10개)
+      const recentRequests = allRequests.slice(-10);
+      console.log("📡 최근 네트워크 요청 (최대 10개):", JSON.stringify(recentRequests, null, 2));
+      
+      // 페이지의 모든 네트워크 요청 확인
+      const performanceRequests = await this.page.evaluate(() => {
+        return window.performance.getEntriesByType('resource')
+          .filter(r => r.name.includes('api') || r.name.includes('auth') || r.name.includes('8081'))
+          .map(r => ({
+            name: r.name,
+            type: r.initiatorType,
+            duration: r.duration
+          }));
+      });
+      console.log("📡 Performance API로 확인한 요청:", JSON.stringify(performanceRequests, null, 2));
+    }
+    
+    // 리스너 제거
+    this.page.off('console', consoleListener);
   }
 
   /**

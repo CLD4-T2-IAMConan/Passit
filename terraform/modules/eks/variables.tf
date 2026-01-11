@@ -113,3 +113,8 @@ variable "node_security_group_id" {
   type        = string
   default     = null
 }
+
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}

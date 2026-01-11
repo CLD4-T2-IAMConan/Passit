@@ -2,9 +2,10 @@
  * 인증 관련 API 서비스
  * Account Service (8081)와 통신
  */
-import { accountAPI } from "../api/axiosInstances";
+import { accountAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
 import { API_SERVICES } from "../config/apiConfig";
+import tokenManager from "../lib/auth/tokenManager";
 
 class AuthService {
   /**
@@ -77,12 +78,12 @@ class AuthService {
       }
     }
 
-    // 토큰과 사용자 정보를 localStorage에 저장
+    // 토큰과 사용자 정보를 tokenManager를 통해 저장
     if (data && data.accessToken) {
-      localStorage.setItem("accessToken", data.accessToken);
+      tokenManager.setAccessToken(data.accessToken);
     }
     if (data && data.refreshToken) {
-      localStorage.setItem("refreshToken", data.refreshToken);
+      tokenManager.setRefreshToken(data.refreshToken);
     }
     if (data && data.userId) {
       const userInfo = {
@@ -93,7 +94,7 @@ class AuthService {
         provider: data.provider,
         role: data.role,
       };
-      localStorage.setItem("user", JSON.stringify(userInfo));
+      tokenManager.setUser(userInfo);
     }
 
     return data || {};
@@ -121,10 +122,10 @@ class AuthService {
    */
   async refreshToken(refreshToken) {
     const response = await accountAPI.post(ENDPOINTS.AUTH.REFRESH, { refreshToken });
-    const { accessToken } = response.data.data;
+    const { accessToken } = response.data.data || response.data;
 
     if (accessToken) {
-      localStorage.setItem("accessToken", accessToken);
+      tokenManager.setAccessToken(accessToken);
     }
 
     return response.data;
@@ -147,10 +148,10 @@ class AuthService {
     const { token, refreshToken, userId, email, name, provider } = queryParams;
 
     if (token) {
-      localStorage.setItem("accessToken", token);
+      tokenManager.setAccessToken(token);
     }
     if (refreshToken) {
-      localStorage.setItem("refreshToken", refreshToken);
+      tokenManager.setRefreshToken(refreshToken);
     }
     if (userId) {
       const userInfo = {
@@ -159,7 +160,7 @@ class AuthService {
         name,
         provider: provider || "KAKAO",
       };
-      localStorage.setItem("user", JSON.stringify(userInfo));
+      tokenManager.setUser(userInfo);
     }
 
     return {
@@ -177,7 +178,7 @@ class AuthService {
    * @returns {boolean}
    */
   isAuthenticated() {
-    return !!localStorage.getItem("accessToken");
+    return tokenManager.isAuthenticated();
   }
 
   /**
@@ -185,8 +186,7 @@ class AuthService {
    * @returns {Object|null}
    */
   getCurrentUser() {
-    const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+    return tokenManager.getUser();
   }
 
   /**
@@ -194,7 +194,7 @@ class AuthService {
    * @returns {string|null}
    */
   getAccessToken() {
-    return localStorage.getItem("accessToken");
+    return tokenManager.getAccessToken();
   }
 
   /**
@@ -202,16 +202,14 @@ class AuthService {
    * @returns {string|null}
    */
   getRefreshToken() {
-    return localStorage.getItem("refreshToken");
+    return tokenManager.getRefreshToken();
   }
 
   /**
    * 인증 데이터 모두 삭제
    */
   clearAuthData() {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    tokenManager.clearAll();
   }
 }
 

@@ -2,10 +2,13 @@
 
 # Helm Values 자동 업데이트 스크립트
 # Terraform output 값들을 각 서비스의 Helm values 파일에 자동으로 반영합니다.
+# Terraform 실패 시 AWS CLI로 직접 리소스를 조회합니다.
 
 set -e
 
 ENVIRONMENT=${1:-dev}
+AWS_PROFILE=${2:-motionbit}
+AWS_REGION=${3:-ap-northeast-2}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
@@ -13,6 +16,9 @@ TERRAFORM_DIR="$SCRIPT_DIR/../envs/$ENVIRONMENT"
 echo "DEBUG:"
 echo "SCRIPT_DIR=$SCRIPT_DIR"
 echo "PROJECT_ROOT=$PROJECT_ROOT"
+echo "ENVIRONMENT=$ENVIRONMENT"
+echo "AWS_PROFILE=$AWS_PROFILE"
+echo "AWS_REGION=$AWS_REGION"
 
 if [ ! -d "$TERRAFORM_DIR" ]; then
     echo "❌ Error: $TERRAFORM_DIR 디렉토리가 존재하지 않습니다."
@@ -23,6 +29,12 @@ echo "=========================================="
 echo "Helm Values 자동 업데이트"
 echo "=========================================="
 echo "Environment: ${ENVIRONMENT}"
+echo "AWS Profile: ${AWS_PROFILE}"
+echo "AWS Region: ${AWS_REGION}"
+echo ""
+echo "사용법:"
+echo "  $0 [environment] [aws-profile] [aws-region]"
+echo "  예: $0 prod motionbit ap-northeast-2"
 echo "=========================================="
 echo ""
 
@@ -45,15 +57,34 @@ else
     USE_YQ=true
 fi
 
-# Terraform output 값 추출
-echo "📋 Terraform output 값 추출 중..."
+# Terraform output 값 추출 (실패 시 AWS CLI fallback)
+echo "=========================================="
+echo "📋 리소스 정보 추출 중..."
+echo "=========================================="
 cd ${TERRAFORM_DIR}
 
-
 # Output 값 추출
+echo "🔍 RDS Endpoint 추출 중..."
 RDS_ENDPOINT=$(terraform output -raw rds_cluster_endpoint 2>/dev/null || echo "")
 
+# Terraform 실패 시 AWS CLI로 직접 조회
+if [ -z "$RDS_ENDPOINT" ]; then
+    echo "  ⚠️  Terraform output 실패. AWS CLI로 직접 조회합니다..."
+    RDS_ENDPOINT=$(aws rds describe-db-clusters \
+        --region $AWS_REGION \
+        --profile $AWS_PROFILE \
+        --query "DBClusters[?contains(DBClusterIdentifier, 'passit-${ENVIRONMENT}')].Endpoint | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    if [ -n "$RDS_ENDPOINT" ] && [ "$RDS_ENDPOINT" != "None" ]; then
+        echo "  ✅ AWS CLI로 RDS Endpoint 조회 성공: $RDS_ENDPOINT"
+    else
+        echo "  ❌ AWS CLI로도 RDS Endpoint를 찾을 수 없습니다."
+    fi
+fi
+
 # Valkey Endpoint 추출 (여러 방법 시도)
+echo "🔍 Valkey/Redis Endpoint 추출 중..."
 VALKEY_ENDPOINT=$(terraform output -raw valkey_primary_endpoint 2>/dev/null || echo "")
 
 if [ -z "$VALKEY_ENDPOINT" ]; then
@@ -63,16 +94,66 @@ if [ -z "$VALKEY_ENDPOINT" ]; then
         # "valkey_primary_endpoint = " 부분 제거하고 값만 추출
         VALKEY_ENDPOINT=$(echo "$VALKEY_OUTPUT" | sed 's/.*= *"\(.*\)"/\1/' | sed 's/.*= *\(.*\)/\1/' | tr -d ' "')
     fi
-    
-    # 여전히 없으면 건너뛰기 (state show는 오래 걸릴 수 있음)
-    if [ -z "$VALKEY_ENDPOINT" ]; then
-        echo "  ⚠️  Valkey endpoint를 찾을 수 없습니다. (ElastiCache가 아직 생성 중일 수 있음)"
+fi
+
+# Terraform 실패 시 AWS CLI로 직접 조회
+if [ -z "$VALKEY_ENDPOINT" ]; then
+    echo "  ⚠️  Terraform output 실패. AWS CLI로 직접 조회합니다..."
+
+    # ElastiCache (Redis/Valkey) 조회
+    VALKEY_ENDPOINT=$(aws elasticache describe-replication-groups \
+        --region $AWS_REGION \
+        --profile $AWS_PROFILE \
+        --query "ReplicationGroups[?contains(ReplicationGroupId, 'passit-${ENVIRONMENT}')].NodeGroups[0].PrimaryEndpoint.Address | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    if [ -n "$VALKEY_ENDPOINT" ] && [ "$VALKEY_ENDPOINT" != "None" ]; then
+        echo "  ✅ AWS CLI로 ElastiCache Endpoint 조회 성공: $VALKEY_ENDPOINT"
+    else
+        # MemoryDB도 시도
+        VALKEY_ENDPOINT=$(aws memorydb describe-clusters \
+            --region $AWS_REGION \
+            --profile $AWS_PROFILE \
+            --query "Clusters[?contains(Name, 'passit-${ENVIRONMENT}')].ClusterEndpoint.Address | [0]" \
+            --output text 2>/dev/null || echo "")
+
+        if [ -n "$VALKEY_ENDPOINT" ] && [ "$VALKEY_ENDPOINT" != "None" ]; then
+            echo "  ✅ AWS CLI로 MemoryDB Endpoint 조회 성공: $VALKEY_ENDPOINT"
+        else
+            echo "  ⚠️  Valkey/Redis endpoint를 찾을 수 없습니다. (생성되지 않았거나 생성 중일 수 있음)"
+            VALKEY_ENDPOINT=""
+        fi
     fi
 fi
 
 # S3 Bucket - 여러 이름 시도
+echo "🔍 S3 Bucket 추출 중..."
 S3_BUCKET_PROFILE=$(terraform output -raw s3_profile_bucket_id 2>/dev/null || terraform output -raw s3_uploads_bucket_id 2>/dev/null || echo "")
 S3_BUCKET_TICKET=$(terraform output -raw s3_ticket_bucket_id 2>/dev/null || echo "")
+
+# Terraform 실패 시 AWS CLI로 직접 조회
+if [ -z "$S3_BUCKET_PROFILE" ]; then
+    echo "  ⚠️  Terraform output 실패. AWS CLI로 S3 Bucket 조회합니다..."
+    S3_BUCKET_PROFILE=$(aws s3api list-buckets \
+        --profile $AWS_PROFILE \
+        --query "Buckets[?contains(Name, 'passit-${ENVIRONMENT}-profile') || contains(Name, 'passit-${ENVIRONMENT}-uploads')].Name | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    if [ -n "$S3_BUCKET_PROFILE" ] && [ "$S3_BUCKET_PROFILE" != "None" ]; then
+        echo "  ✅ AWS CLI로 Profile S3 Bucket 조회 성공: $S3_BUCKET_PROFILE"
+    fi
+fi
+
+if [ -z "$S3_BUCKET_TICKET" ]; then
+    S3_BUCKET_TICKET=$(aws s3api list-buckets \
+        --profile $AWS_PROFILE \
+        --query "Buckets[?contains(Name, 'passit-${ENVIRONMENT}-ticket')].Name | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    if [ -n "$S3_BUCKET_TICKET" ] && [ "$S3_BUCKET_TICKET" != "None" ]; then
+        echo "  ✅ AWS CLI로 Ticket S3 Bucket 조회 성공: $S3_BUCKET_TICKET"
+    fi
+fi
 
 # IRSA Role ARN 추출 (jq 없이도 작동하도록)
 echo "  🔍 IRSA Role ARN 추출 중..."
@@ -104,25 +185,52 @@ else
     IRSA_TICKET=""
     IRSA_TRADE=""
     IRSA_CS=""
+    IRSA_CHAT=""
     IRSA_OUTPUT_ERROR=1
 fi
 
-# output이 없거나 에러가 있으면 건너뛰기
+# output이 없거나 에러가 있으면 AWS CLI로 조회
 if [ $IRSA_OUTPUT_ERROR -ne 0 ] || [ -z "$IRSA_OUTPUT_RAW" ] || echo "$IRSA_OUTPUT_RAW" | grep -q "Error\|No outputs"; then
-    echo "  ⚠️  terraform output이 실패했습니다."
-    echo "  💡 IRSA Role은 나중에 수동으로 추가하세요."
-    echo "     각 서비스의 values-${ENVIRONMENT}.yaml 파일에서:"
-    echo "     serviceAccount:"
-    echo "       annotations:"
-    echo "         eks.amazonaws.com/role-arn: <IRSA_ROLE_ARN>"
-    echo ""
-    echo "     또는 다음 명령어로 확인:"
-    echo "     cd terraform/envs/${ENVIRONMENT} && terraform output backend_irsa_roles"
-    echo ""
-    IRSA_ACCOUNT=""
-    IRSA_TICKET=""
-    IRSA_TRADE=""
-    IRSA_CS=""
+    echo "  ⚠️  terraform output이 실패했습니다. AWS CLI로 IAM Role 조회합니다..."
+
+    # AWS CLI로 IRSA Role 조회
+    IRSA_ACCOUNT=$(aws iam list-roles \
+        --profile $AWS_PROFILE \
+        --query "Roles[?contains(RoleName, 'passit-account-${ENVIRONMENT}')].Arn | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    IRSA_TICKET=$(aws iam list-roles \
+        --profile $AWS_PROFILE \
+        --query "Roles[?contains(RoleName, 'passit-ticket-${ENVIRONMENT}')].Arn | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    IRSA_TRADE=$(aws iam list-roles \
+        --profile $AWS_PROFILE \
+        --query "Roles[?contains(RoleName, 'passit-trade-${ENVIRONMENT}')].Arn | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    IRSA_CS=$(aws iam list-roles \
+        --profile $AWS_PROFILE \
+        --query "Roles[?contains(RoleName, 'passit-cs-${ENVIRONMENT}')].Arn | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    IRSA_CHAT=$(aws iam list-roles \
+        --profile $AWS_PROFILE \
+        --query "Roles[?contains(RoleName, 'passit-chat-${ENVIRONMENT}')].Arn | [0]" \
+        --output text 2>/dev/null || echo "")
+
+    # None을 빈 문자열로 변환
+    [ "$IRSA_ACCOUNT" = "None" ] && IRSA_ACCOUNT=""
+    [ "$IRSA_TICKET" = "None" ] && IRSA_TICKET=""
+    [ "$IRSA_TRADE" = "None" ] && IRSA_TRADE=""
+    [ "$IRSA_CS" = "None" ] && IRSA_CS=""
+    [ "$IRSA_CHAT" = "None" ] && IRSA_CHAT=""
+
+    if [ -n "$IRSA_ACCOUNT" ] || [ -n "$IRSA_TICKET" ] || [ -n "$IRSA_TRADE" ] || [ -n "$IRSA_CS" ] || [ -n "$IRSA_CHAT" ]; then
+        echo "  ✅ AWS CLI로 IRSA Role 조회 완료"
+    else
+        echo "  ⚠️  IRSA Role을 찾을 수 없습니다. 나중에 수동으로 추가하세요."
+    fi
 elif command -v jq &> /dev/null; then
     # jq가 있으면 사용
     echo "  ✅ jq를 사용하여 IRSA 값 추출"
@@ -131,6 +239,7 @@ elif command -v jq &> /dev/null; then
     IRSA_TICKET=$(echo "$IRSA_JSON" | jq -r '.value.ticket // empty' 2>/dev/null || echo "")
     IRSA_TRADE=$(echo "$IRSA_JSON" | jq -r '.value.trade // empty' 2>/dev/null || echo "")
     IRSA_CS=$(echo "$IRSA_JSON" | jq -r '.value.cs // empty' 2>/dev/null || echo "")
+    IRSA_CHAT=$(echo "$IRSA_JSON" | jq -r '.value.chat // empty' 2>/dev/null || echo "")
 else
     # jq가 없으면 terraform output을 텍스트로 파싱
     echo "  ⚠️  jq가 없어서 텍스트 파싱으로 IRSA 값 추출 시도..."
@@ -176,6 +285,15 @@ else
     if [ -z "$IRSA_CS" ]; then
         IRSA_CS=$(echo "$IRSA_OUTPUT_RAW" | sed -n 's/.*cs[[:space:]]*=[[:space:]]*\(arn:aws:iam::[^",}]*\).*/\1/p' | head -1 || echo "")
     fi
+
+    # chat 추출
+    IRSA_CHAT=$(echo "$IRSA_OUTPUT_RAW" | grep -i '"chat"' | grep -o 'arn:aws:iam::[0-9]*:role/[^",}]*' | head -1 || echo "")
+    if [ -z "$IRSA_CHAT" ]; then
+        IRSA_CHAT=$(echo "$IRSA_OUTPUT_RAW" | sed -n 's/.*"chat"[[:space:]]*=[[:space:]]*"\(arn:aws:iam::[^"]*\)".*/\1/p' | head -1 || echo "")
+    fi
+    if [ -z "$IRSA_CHAT" ]; then
+        IRSA_CHAT=$(echo "$IRSA_OUTPUT_RAW" | sed -n 's/.*chat[[:space:]]*=[[:space:]]*\(arn:aws:iam::[^",}]*\).*/\1/p' | head -1 || echo "")
+    fi
 fi
 
 # 값 확인
@@ -188,43 +306,23 @@ echo "  IRSA Account: ${IRSA_ACCOUNT:-❌ 없음}"
 echo "  IRSA Ticket: ${IRSA_TICKET:-❌ 없음}"
 echo "  IRSA Trade: ${IRSA_TRADE:-❌ 없음}"
 echo "  IRSA CS: ${IRSA_CS:-❌ 없음}"
+echo "  IRSA Chat: ${IRSA_CHAT:-❌ 없음}"
 echo ""
 
 # 필수 값 확인
 if [ -z "$RDS_ENDPOINT" ]; then
     echo "❌ Error: RDS Endpoint가 없습니다."
-    echo "   terraform apply를 먼저 실행하세요."
+    echo "   Terraform 또는 AWS CLI로도 RDS를 찾을 수 없습니다."
+    echo "   terraform apply를 먼저 실행하거나 RDS가 생성되었는지 확인하세요."
     exit 1
 fi
 
 # Valkey는 선택적 (없어도 계속 진행)
 if [ -z "$VALKEY_ENDPOINT" ]; then
-    echo "⚠️  경고: Valkey Endpoint를 추출하지 못했습니다."
     echo ""
-    echo "   가능한 원인:"
-    echo "   1. ElastiCache가 아직 생성 중입니다 (생성에 10-15분 소요)"
-    echo "   2. Terraform apply가 완전히 완료되지 않았습니다"
-    echo "   3. ElastiCache 리소스가 아직 primary_endpoint_address를 반환하지 않습니다"
-    echo ""
-    echo "   확인 방법:"
-    echo "   cd terraform/envs/dev"
-    echo "   terraform output valkey_primary_endpoint"
-    echo "   terraform state show module.data.aws_elasticache_replication_group.valkey | grep primary_endpoint"
-    echo ""
-    echo "   또는 AWS Console에서 확인:"
-    echo "   - ElastiCache > Replication groups > passit-dev-valkey"
-    echo ""
-    echo "   계속 진행하시겠습니까? (Valkey 없이도 RDS, S3, IRSA는 업데이트됩니다) (y/n)"
-    read -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-    echo ""
-    echo "   💡 나중에 Valkey endpoint를 수동으로 추가하세요:"
-    echo "   각 서비스의 values-${ENVIRONMENT}.yaml 파일에서:"
-    echo "   redis:"
-    echo "     host: \"<valkey-endpoint>\""
+    echo "⚠️  경고: Valkey/Redis Endpoint를 찾을 수 없습니다."
+    echo "   ${ENVIRONMENT} 환경에 ElastiCache/MemoryDB가 생성되지 않았을 수 있습니다."
+    echo "   Valkey 없이도 RDS, S3, IRSA는 업데이트됩니다."
     echo ""
 fi
 
@@ -391,8 +489,7 @@ fi
 # Chat Service (있는 경우)
 if [ -d "$PROJECT_ROOT/service-chat/helm" ]; then
     echo "📦 Chat Service"
-    # Chat service는 IRSA가 없을 수 있음
-    update_service_values "chat" "" "" "chat-service.passit.com"
+    update_service_values "chat" "$IRSA_CHAT" "" "chat-service.passit.com"
     echo ""
 fi
 

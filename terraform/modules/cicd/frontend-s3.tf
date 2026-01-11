@@ -24,10 +24,11 @@ resource "aws_s3_bucket" "frontend" {
   tags = local.tags
 
   # 기존 버킷이 이미 존재하는 경우 import 후 사용
+  # terraform import module.cicd.aws_s3_bucket.frontend[0] <bucket-name>
   lifecycle {
-    ignore_changes = [
-      # 버킷이 이미 존재하는 경우 생성 오류 방지
-    ]
+    # 버킷이 이미 존재하는 경우 생성 오류 방지
+    # 처음 배포 시: 리소스 생성
+    # 이후 배포 시: 기존 리소스 import 후 사용 가능
   }
 }
 

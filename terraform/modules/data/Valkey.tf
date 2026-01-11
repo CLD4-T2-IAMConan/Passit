@@ -14,27 +14,48 @@ locals {
 }
 
 # ============================================
-# ElastiCache Subnet Group (기존 리소스 또는 새로 생성)
+# ElastiCache Subnet Group (자동 감지)
 # ============================================
-# 주의: data source가 실패하면 Terraform이 중단되므로,
-# existing_elasticache_subnet_group_name이 설정되어 있어도 항상 새로 생성합니다.
-# 
-# 해결 방법:
-# 1. 리소스가 없으면: existing_elasticache_subnet_group_name을 빈 문자열("")로 설정
-# 2. 리소스가 있으면: terraform import를 사용하여 기존 리소스를 import
-#
-# 현재는 리소스가 없을 때를 대비하여 항상 새로 생성하도록 설정합니다.
-# 기존 리소스를 사용하려면 terraform import를 사용하세요.
+# Subnet Group 존재 여부를 자동으로 확인하고, 있으면 기존 것 사용, 없으면 새로 생성
+
+data "external" "check_elasticache_subnet_group" {
+  count = var.enable_elasticache ? 1 : 0
+  program = ["bash", "-c", <<-EOT
+    GROUP_NAME="${var.project_name}-${var.environment}-valkey-subnet-group"
+    REGION="${var.region}"
+    
+    # AWS CLI로 Subnet Group 존재 여부 확인
+    if aws elasticache describe-cache-subnet-groups \
+      --cache-subnet-group-name "$GROUP_NAME" \
+      --region "$REGION" \
+      --query 'CacheSubnetGroups[0].CacheSubnetGroupName' \
+      --output text 2>/dev/null | grep -q "$GROUP_NAME"; then
+      echo "{\"exists\":\"true\",\"name\":\"$GROUP_NAME\"}"
+    else
+      echo "{\"exists\":\"false\",\"name\":\"\"}"
+    fi
+  EOT
+  ]
+}
+
+locals {
+  elasticache_subnet_group_exists = var.enable_elasticache && length(data.external.check_elasticache_subnet_group) > 0 ? (
+    data.external.check_elasticache_subnet_group[0].result.exists == "true"
+  ) : false
+  existing_elasticache_subnet_group_name = local.elasticache_subnet_group_exists ? (
+    data.external.check_elasticache_subnet_group[0].result.name
+  ) : ""
+}
 
 # 기존 Subnet Group 조회 (있는 경우)
 data "aws_elasticache_subnet_group" "existing" {
-  count = var.enable_elasticache && var.existing_elasticache_subnet_group_name != "" ? 1 : 0
-  name  = var.existing_elasticache_subnet_group_name
+  count = local.elasticache_subnet_group_exists ? 1 : 0
+  name  = local.existing_elasticache_subnet_group_name
 }
 
 # 새 Subnet Group 생성 (없는 경우)
 resource "aws_elasticache_subnet_group" "valkey" {
-  count      = var.enable_elasticache && var.existing_elasticache_subnet_group_name == "" ? 1 : 0
+  count      = var.enable_elasticache && !local.elasticache_subnet_group_exists ? 1 : 0
   name       = "${var.project_name}-${var.environment}-valkey-subnet-group"
   subnet_ids = var.private_db_subnet_ids
 
@@ -44,21 +65,59 @@ resource "aws_elasticache_subnet_group" "valkey" {
       Name = "${var.project_name}-${var.environment}-valkey-subnet-group"
     }
   )
+
+  lifecycle {
+    # ElastiCache Replication Group이 삭제된 후에만 서브넷 그룹 삭제 가능
+    # 클러스터가 존재하는 동안은 삭제 방지
+    create_before_destroy = false
+  }
 }
 
 locals {
   # 기존 리소스가 있으면 기존 것 사용, 없으면 새로 생성한 것 사용
-  elasticache_subnet_group_name = var.enable_elasticache ? (var.existing_elasticache_subnet_group_name != "" ? data.aws_elasticache_subnet_group.existing[0].name : aws_elasticache_subnet_group.valkey[0].name) : ""
+  elasticache_subnet_group_name = var.enable_elasticache ? (
+    local.elasticache_subnet_group_exists ? data.aws_elasticache_subnet_group.existing[0].name : (
+      length(aws_elasticache_subnet_group.valkey) > 0 ? aws_elasticache_subnet_group.valkey[0].name : ""
+    )
+  ) : ""
 }
 
 # ============================================
-# ElastiCache Parameter Group (기존 리소스 또는 새로 생성)
+# ElastiCache Parameter Group (자동 감지)
 # ============================================
-# Note: ElastiCache parameter group은 data source가 없으므로,
-# 기존 리소스가 있으면 변수로 이름만 받아서 사용하고, 없으면 새로 생성
+# Parameter Group 존재 여부를 자동으로 확인하고, 있으면 기존 것 사용, 없으면 새로 생성
+
+data "external" "check_elasticache_parameter_group" {
+  count = var.enable_elasticache ? 1 : 0
+  program = ["bash", "-c", <<-EOT
+    GROUP_NAME="${var.project_name}-${var.environment}-valkey-pg"
+    REGION="${var.region}"
+    
+    # AWS CLI로 Parameter Group 존재 여부 확인
+    if aws elasticache describe-cache-parameter-groups \
+      --cache-parameter-group-name "$GROUP_NAME" \
+      --region "$REGION" \
+      --query 'CacheParameterGroups[0].CacheParameterGroupName' \
+      --output text 2>/dev/null | grep -q "$GROUP_NAME"; then
+      echo "{\"exists\":\"true\",\"name\":\"$GROUP_NAME\"}"
+    else
+      echo "{\"exists\":\"false\",\"name\":\"\"}"
+    fi
+  EOT
+  ]
+}
+
+locals {
+  elasticache_parameter_group_exists = var.enable_elasticache && length(data.external.check_elasticache_parameter_group) > 0 ? (
+    data.external.check_elasticache_parameter_group[0].result.exists == "true"
+  ) : false
+  existing_elasticache_parameter_group_name = local.elasticache_parameter_group_exists ? (
+    data.external.check_elasticache_parameter_group[0].result.name
+  ) : ""
+}
 
 resource "aws_elasticache_parameter_group" "valkey" {
-  count = var.enable_elasticache && var.existing_elasticache_parameter_group_name == "" ? 1 : 0
+  count = var.enable_elasticache && !local.elasticache_parameter_group_exists ? 1 : 0
   name   = "${var.project_name}-${var.environment}-valkey-pg"
   family = "valkey8"
 
@@ -74,10 +133,20 @@ resource "aws_elasticache_parameter_group" "valkey" {
       Name = "${var.project_name}-${var.environment}-valkey-pg"
     }
   )
+
+  lifecycle {
+    # ElastiCache Replication Group이 삭제된 후에만 파라미터 그룹 삭제 가능
+    # 클러스터가 존재하는 동안은 삭제 방지
+    create_before_destroy = false
+  }
 }
 
 locals {
-  elasticache_parameter_group_name = var.enable_elasticache ? (var.existing_elasticache_parameter_group_name != "" ? var.existing_elasticache_parameter_group_name : aws_elasticache_parameter_group.valkey[0].name) : ""
+  elasticache_parameter_group_name = var.enable_elasticache ? (
+    local.elasticache_parameter_group_exists ? local.existing_elasticache_parameter_group_name : (
+      length(aws_elasticache_parameter_group.valkey) > 0 ? aws_elasticache_parameter_group.valkey[0].name : ""
+    )
+  ) : ""
 }
 
 # ============================================

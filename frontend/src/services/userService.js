@@ -2,8 +2,9 @@
  * 사용자 프로필 관리 API 서비스
  * Account Service (8081)와 통신
  */
-import { accountAPI } from "../api/axiosInstances";
+import { accountAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
+import tokenManager from "../lib/auth/tokenManager";
 
 class UserService {
   /**
@@ -16,6 +17,14 @@ class UserService {
   }
 
   /**
+   * 내 정보 조회 (getMe - getMyInfo의 별칭)
+   * @returns {Promise}
+   */
+  async getMe() {
+    return this.getMyInfo();
+  }
+
+  /**
    * 내 정보 수정
    * @param {Object} userData - { name, nickname, phone, bio }
    * @returns {Promise}
@@ -23,10 +32,10 @@ class UserService {
   async updateMyInfo(userData) {
     const response = await accountAPI.patch(ENDPOINTS.USERS.UPDATE_ME, userData);
 
-    // localStorage의 사용자 정보도 업데이트
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    // tokenManager를 통해 사용자 정보 업데이트
+    const currentUser = tokenManager.getUser() || {};
     const updatedUser = { ...currentUser, ...userData };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    tokenManager.setUser(updatedUser);
 
     return response.data;
   }
@@ -39,9 +48,7 @@ class UserService {
     const response = await accountAPI.delete(ENDPOINTS.USERS.DELETE_ME);
 
     // 탈퇴 성공 시 로컬 데이터 삭제
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    tokenManager.clearAll();
 
     return response.data;
   }

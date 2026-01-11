@@ -2,9 +2,10 @@
  * 채팅 관리 API 서비스
  * Chat Service (8084)와 통신
  */
-import { chatAPI } from "../api/axiosInstances";
+import { chatAPI } from "../lib/api/client";
 import { ENDPOINTS } from "../api/endpoints";
 import { API_SERVICES } from "../config/apiConfig";
+import tokenManager from "../lib/auth/tokenManager";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
@@ -152,11 +153,13 @@ class ChatService {
 
   /**
    * WebSocket 연결
-   * @param {string} accessToken
+   * @param {string} accessToken - 토큰 (선택적, 없으면 tokenManager에서 가져옴)
    * @param {Function} onConnected - 연결 성공 콜백
    * @param {Function} onError - 에러 콜백
    */
-  connect(accessToken, onConnected, onError) {
+  connect(accessToken = null, onConnected, onError) {
+    // 토큰이 제공되지 않으면 tokenManager에서 가져오기
+    const token = accessToken || tokenManager.getAccessToken();
     // CloudFront를 통한 Chat Service 접근 (WebSocket: /ws/*)
     const wsURL = `${API_SERVICES.CHAT}${ENDPOINTS.CHAT.WS_ENDPOINT}`;
 

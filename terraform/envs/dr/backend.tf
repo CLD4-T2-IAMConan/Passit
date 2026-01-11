@@ -3,7 +3,7 @@
 
 terraform {
   backend "s3" {
-    bucket         = "passit-terraform-state-dr"
+    bucket         = "passit-terraform-state-dr-jp"
     key            = "dr/terraform.tfstate"
     region         = "ap-northeast-1"
     dynamodb_table = "passit-terraform-locks-dr"

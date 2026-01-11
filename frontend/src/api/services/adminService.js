@@ -1,4 +1,4 @@
-import apiClient from "../client";
+import { accountAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../endpoints";
 
 /**
@@ -10,7 +10,7 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 목록
    */
   getAllUsers: async () => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.LIST);
+    const response = await accountAPI.get(ENDPOINTS.USERS.LIST);
     return response.data;
   },
 
@@ -20,7 +20,7 @@ export const adminService = {
    * @returns {Promise<Object>} 페이지네이션된 회원 목록
    */
   searchUsers: async (params = {}) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.SEARCH, {
+    const response = await accountAPI.get(ENDPOINTS.USERS.SEARCH, {
       params: {
         keyword: params.keyword || undefined,
         status: params.status || undefined,
@@ -39,7 +39,7 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 상세 정보
    */
   getUserById: async (userId) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.DETAIL(userId));
+    const response = await accountAPI.get(ENDPOINTS.USERS.DETAIL(userId));
     return response.data;
   },
 
@@ -49,7 +49,7 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 정보
    */
   getUserByEmail: async (email) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.BY_EMAIL(email));
+    const response = await accountAPI.get(ENDPOINTS.USERS.BY_EMAIL(email));
     return response.data;
   },
 
@@ -59,7 +59,7 @@ export const adminService = {
    * @returns {Promise<Object>} 회원 목록
    */
   getUsersByStatus: async (status) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.USERS.BY_STATUS(status));
+    const response = await accountAPI.get(ENDPOINTS.USERS.BY_STATUS(status));
     return response.data;
   },
 
@@ -69,7 +69,7 @@ export const adminService = {
    * @returns {Promise<Object>} 생성된 회원 정보
    */
   createUser: async (userData) => {
-    const response = await apiClient.post(ENDPOINTS.ADMIN.USERS.CREATE, userData);
+    const response = await accountAPI.post(ENDPOINTS.USERS.CREATE, userData);
     return response.data;
   },
 
@@ -80,7 +80,7 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   updateUser: async (userId, updates) => {
-    const response = await apiClient.put(ENDPOINTS.ADMIN.USERS.UPDATE(userId), updates);
+    const response = await accountAPI.put(ENDPOINTS.USERS.UPDATE(userId), updates);
     return response.data;
   },
 
@@ -91,7 +91,7 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   updateUserRole: async (userId, role) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.UPDATE_ROLE(userId), { role });
+    const response = await accountAPI.patch(ENDPOINTS.USERS.UPDATE_ROLE(userId), { role });
     return response.data;
   },
 
@@ -101,7 +101,7 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   suspendUser: async (userId) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.SUSPEND(userId));
+    const response = await accountAPI.patch(ENDPOINTS.USERS.SUSPEND(userId));
     return response.data;
   },
 
@@ -111,7 +111,7 @@ export const adminService = {
    * @returns {Promise<Object>} 수정된 회원 정보
    */
   activateUser: async (userId) => {
-    const response = await apiClient.patch(ENDPOINTS.ADMIN.USERS.ACTIVATE(userId));
+    const response = await accountAPI.patch(ENDPOINTS.USERS.ACTIVATE(userId));
     return response.data;
   },
 
@@ -121,7 +121,7 @@ export const adminService = {
    * @returns {Promise<void>}
    */
   deleteUser: async (userId) => {
-    const response = await apiClient.delete(ENDPOINTS.ADMIN.USERS.DELETE(userId));
+    const response = await accountAPI.delete(ENDPOINTS.USERS.DELETE(userId));
     return response.data;
   },
 
@@ -131,7 +131,7 @@ export const adminService = {
    * @returns {Promise<void>}
    */
   hardDeleteUser: async (userId) => {
-    const response = await apiClient.delete(ENDPOINTS.ADMIN.USERS.HARD_DELETE(userId));
+    const response = await accountAPI.delete(ENDPOINTS.USERS.HARD_DELETE(userId));
     return response.data;
   },
 };

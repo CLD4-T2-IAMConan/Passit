@@ -43,6 +43,7 @@ import ticketService from "../api/services/ticketService";
 import userService from "../services/userService";
 import authService from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
+import tokenManager from "../lib/auth/tokenManager";
 import { createChatRoom } from "../api/services/chat/chat.api";
 import DealRequestModal from "../components/Ticket/DealRequestModal";
 import LoadingModal from "../components/Ticket/LoadingModal";
@@ -208,7 +209,7 @@ const TicketDetailPage = () => {
     }
 
     // JWT 토큰 확인
-    const token = localStorage.getItem("accessToken");
+    const token = tokenManager.getAccessToken();
     if (!token) {
       setSubmitError("로그인 토큰이 없습니다. 다시 로그인해주세요.");
       return;
@@ -341,52 +342,27 @@ const TicketDetailPage = () => {
     setSubmitError(null);
 
     try {
-      const tradeBaseURL = process.env.REACT_APP_TRADE_API_URL || "http://trade-service.passit.com";
-      const response = await fetch(`${tradeBaseURL}/api/deals/request`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({
-          buyerId: currentUser.userId,
-          ticketId: ticketId,
-          quantity: quantity,
-          expireAt: expireAtISOString,
-        }),
+      // tradeService 사용
+      const tradeService = (await import("../services/tradeService")).default;
+      const response = await tradeService.createDealRequest({
+        buyerId: currentUser.userId,
+        ticketId: ticketId,
+        quantity: quantity,
+        expireAt: expireAtISOString,
       });
 
-      if (response.ok) {
+      // 백엔드가 ApiResponse를 반환할 수 있으므로 처리
+      if (response && (response.success || response.dealId)) {
         setIsDealRequestModalOpen(false);
         setIsSuccessModalOpen(true);
       } else {
-        // 에러 응답 처리 (JSON이 아닐 수도 있음)
-        let errorMessage = "요청 처리 중 오류가 발생했습니다.";
-        try {
-          const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorData.error || errorMessage;
-          } else {
-            // JSON이 아닌 경우 텍스트로 읽기
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
-          }
-        } catch (parseError) {
-          // 파싱 실패 시 기본 메시지 사용
-          console.error("에러 응답 파싱 실패:", parseError);
-          errorMessage = `서버 오류 (${response.status}): ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
+        throw new Error(
+          response?.error || response?.message || "요청 처리 중 오류가 발생했습니다."
+        );
       }
     } catch (error) {
       console.error("❌ 양도 요청 실패:", error);
-      // SyntaxError나 다른 파싱 에러인 경우 더 명확한 메시지 표시
-      if (error instanceof SyntaxError) {
-        setSubmitError("서버 응답을 처리하는 중 오류가 발생했습니다. 서버 상태를 확인해주세요.");
-      } else {
-        setSubmitError(error.message || "요청 처리 중 알 수 없는 오류가 발생했습니다.");
-      }
+      setSubmitError(error.message || "요청 처리 중 알 수 없는 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }

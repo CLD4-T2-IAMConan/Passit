@@ -22,7 +22,7 @@ import {
   RateReview as ReviewIcon,
 } from "@mui/icons-material";
 import { activityService } from "../../api/services/activityService";
-import apiClient from "../../api/client";
+import { accountAPI, ticketAPI } from "../../lib/api/client";
 import { ENDPOINTS } from "../../api/endpoints";
 
 const ActivityPage = () => {
@@ -121,7 +121,7 @@ const ActivityPage = () => {
     const ticketMap = { ...ticketInfoMap };
     for (const ticketId of ticketIds) {
       try {
-        const response = await apiClient.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
+        const response = await ticketAPI.get(ENDPOINTS.TICKETS.DETAIL(ticketId));
         if (response.data) {
           ticketMap[ticketId] = response.data;
         }

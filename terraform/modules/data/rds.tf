@@ -11,6 +11,12 @@ resource "aws_db_subnet_group" "main" {
   subnet_ids = var.private_db_subnet_ids
 
   tags = { Name = "${var.project_name}-${var.environment}-rds-subnet-group" }
+
+  lifecycle {
+    # RDS 클러스터가 삭제된 후에만 서브넷 그룹 삭제 가능
+    # 클러스터가 존재하는 동안은 삭제 방지
+    create_before_destroy = false
+  }
 }
 
 locals {
@@ -80,10 +86,18 @@ resource "aws_rds_cluster" "main" {
   count              = var.enable_rds ? 1 : 0
   cluster_identifier = "${var.project_name}-${var.environment}-aurora-cluster"
 
-  # Global Cluster 연결 (기존 클러스터는 연결 불가하므로 lifecycle으로 처리)
-  global_cluster_identifier = var.global_cluster_id != "" ? var.global_cluster_id : null
+  # Global Cluster 연결
+  # 처음 배포 시: global_cluster_id = "" (또는 null)로 설정하여 일반 클러스터로 생성
+  # 이후 Global Cluster 연결 시: 
+  #   1. AWS 콘솔에서 수동으로 Global Cluster에 연결
+  #   2. terraform import로 기존 클러스터를 state에 추가
+  #   3. global_cluster_id 변수를 설정하고 ignore_changes로 이후 변경 무시
+  global_cluster_identifier = var.global_cluster_id != "" && var.global_cluster_id != null ? var.global_cluster_id : null
 
   lifecycle {
+    # Global Cluster 연결은 AWS 콘솔에서 수동으로 수행 후 ignore_changes로 유지
+    # 처음 배포 시: global_cluster_id = null (일반 클러스터)
+    # 이후 Global Cluster 연결 후: ignore_changes로 변경 무시
     ignore_changes = [global_cluster_identifier]
     # prevent_destroy는 제거: terraform destroy도 막기 때문에
     # 대신 deletion_protection으로 보호 (prod 환경)
@@ -100,6 +114,9 @@ resource "aws_rds_cluster" "main" {
   db_subnet_group_name            = local.db_subnet_group_name
   vpc_security_group_ids          = [var.rds_security_group_id]
   db_cluster_parameter_group_name = local.rds_parameter_group_name
+
+  storage_encrypted = true
+  kms_key_id = var.is_dr_region ? data.aws_kms_alias.rds_default[0].target_key_arn : null
 
   # Secondary는 백업 권한이 없으므로 최소치 설정
   backup_retention_period = var.is_dr_region ? 1 : (var.environment == "prod" ? 7 : 1)
@@ -260,7 +277,6 @@ SQL
 }
 
 data "aws_kms_alias" "rds_default" {
-  count = var.enable_rds_dr ? 1 : 0
-  # 도쿄 리전용 프로바이더가 적용된 모듈에서 호출되므로 해당 리전의 기본 키를 찾습니다.
-  name = "alias/passit-rds-dr"
+  count    = var.is_dr_region ? 1 : 0  # DR 리전일 때만 조회
+  name     = "alias/passit-rds-dr"
 }

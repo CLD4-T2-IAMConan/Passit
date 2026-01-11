@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   Box,
   Typography,
@@ -19,12 +18,8 @@ import {
   DialogActions,
 } from "@mui/material";
 import { ConfirmationNumber } from "@mui/icons-material";
-// 🚨 [추가] userService import
 import userService from "../services/userService";
-
-// CloudFront를 통한 Trade Service 접근 (/api/trades/*, /api/deals/*)
-import { API_SERVICES } from "../config/apiConfig";
-const API_BASE_URL = API_SERVICES.TRADE;
+import { tradeAPI } from "../lib/api/client";
 
 // 🌟 MUI 커스텀 모달 스타일
 const modalStyle = {
@@ -93,7 +88,7 @@ const BuyerPaymentPage = () => {
       setError(null); // 오류 초기화
 
       // 🚨 [수정] API 호출 시, 인증된 사용자 ID를 백엔드로 전송
-      const response = await axios.get(`${API_BASE_URL}/api/payments/${payment_id}/detail`, {
+      const response = await tradeAPI.get(`/api/payments/${payment_id}/detail`, {
         params: {
           currentUserId: currentUserId, // 백엔드에서 인증 확인용으로 사용 가능
         },
@@ -153,15 +148,13 @@ const BuyerPaymentPage = () => {
     try {
       // 1. 백엔드에서 결제 준비 데이터 가져오기 (GET /api/payments/{id}/prepare)
       console.log("📤 API 호출: /api/payments/{id}/prepare");
-      const prepareResponse = await axios.get(
-        `${API_BASE_URL}/api/payments/${payment_id}/prepare`,
-        {
-          params: {
-            currentUserId: currentUserId,
-          },
-        }
-      );
-      const data = prepareResponse.data;
+      const prepareResponse = await tradeAPI.get(`/api/payments/${payment_id}/prepare`, {
+        params: {
+          currentUserId: currentUserId,
+        },
+      });
+      // 백엔드가 직접 데이터를 반환하거나 ApiResponse로 감싸서 반환할 수 있음
+      const data = prepareResponse.data?.data || prepareResponse.data;
       console.log("✅ 결제 준비 데이터 수신:", data);
 
       // 2. NICEPAY SDK가 로드되었는지 확인
